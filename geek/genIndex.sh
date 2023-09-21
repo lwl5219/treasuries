@@ -37,6 +37,7 @@ cat > $main <<ENDCAT
     <div class="tree">
 ENDCAT
 
+current_folder=$(basename "$(pwd)")
 dirs=$(ls -d */)
 idx=0
 for dir in $dirs; do
@@ -44,7 +45,7 @@ for dir in $dirs; do
   cd "$dir"
   for f in $(find . -type f | sort -d); do
     echo $f
-    echo "<a href='${dir}${f}'>${f}</a>" >> ../${main}
+    echo "<a href='${current_folder}/${dir}${f}'>${f}</a>" >> ../${main}
   done
   cd ..
   echo '</div></div>' >> $main
