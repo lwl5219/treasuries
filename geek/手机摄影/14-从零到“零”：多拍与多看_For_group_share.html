@@ -1,0 +1,890 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!--<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>-->
+    <title>14-从零到“零”：多拍与多看</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>14-从零到“零”：多拍与多看</h1>
+<p>你好，我是随你们去。这节课我想和你分享的内容很直白，那就是多拍与多看。如果你想把照片拍得更好，这是必须要做的事情，也是最重要的事情。这也是为什么我会专门用一节课来讲这几个字。</p><p>两年前的夏天，我在网上通过一套入门课程学习 iOS 应用程序开发。那是针对零基础的一套开发课程，我跟着视频里老师的进度边看边写代码，有些部分回看了 2-3 遍，有的地方是倍速播放，我累计学了 40 小时左右。</p><p>课程全部看完后，我也跟着老师的代码写了几个简单 app，按理说我已经学习完 iOS 开发入门所需的所有知识了，但那会儿的我对于 iOS 应用程序开发能力的感受仅仅是略好于「一无所知」。知识都知道，但汇聚在一起就无法透彻理解，我对于如何开始做一款自己的 app 毫无头绪。</p><p>为了解决这个问题，我硬着头皮创建了一个全新的 app 工程，计划做一款记录梦话的简单 app，我将它命名为「胡言乱语」。</p><p><img src="https://static001.geekbang.org/resource/image/9f/8f/9f4089c9cce9b7a424aaba2b888a5d8f.png" alt="" title="「胡言乱语」开发期间的截图"></p><p>「胡言乱语」是一款非常简单的 app，它的背后逻辑是通过判断当前环境音量，来决定是否保存录音文件。但对于当时初学者的我来说，在实际开发过程中遇到了许多问题。</p><p>这里遇到的许许多多问题其实都源于我最初的那个大问题，那就是如何做出一个自己的 app。当我新建工程后，这个大问题就被一步步划分为无数个小问题：如何新建工程、如何建立 Tab 栏、如何开启录音、如何获取录音音量、如何保存文件到本地、如何保持在后台运行、如何清除缓存 …… 面对这些单个的小问题，根据问题的不同，我的解决办法分为两种：在学习过的教程里寻找答案，以及在搜索引擎里寻找答案。</p><!-- [[[read_end]]] --><p>在学习过的教程里寻找答案，这是我认为将所学知识应用到实践中的最佳办法。通过这样的经历，我才对所学内容有真正深刻的理解。而在搜索引擎里寻找答案，这是因为遇到了一些教程里没讲到的问题，但由于有了对于基础知识的学习，面对搜索引擎里的那些答案，我也可以快速吸收和利用，在之后开发其它 app 的经历中，在搜索引擎里寻找答案成了我解决问题的主要途径。</p><p>当所有的问题被这样一个个解决之后，「胡言乱语」最终得以成功上架 App Store。这是我第一个独立完成的 iOS app。在经历从零到成功上架这样一个过程后，我对之前所学的 iOS 开发知识理解透彻了许多，也让我可以开启之后的独立开发工作。</p><p>因为开发「胡言乱语」的主要目的是尝试对所学知识进行应用，功能并不够完善，所以「胡言乱语」在获得几百个下载量后，我就主动把它下架了。</p><p>这是我学习 iOS 开发的一段小故事，我希望它可以向你解释「从零到“零”」的含义是什么。当你学到这里时，我能说你的手机摄影知识其实已经学习完了。从知识的获取来说，你从零基础入门，到现在基础已经足够了。</p><p>不过，从知识的理解和应用来说，你目前还只是刚刚起步，远远不够。在我个人的观点里，要完全习得一门全新技能，看完对应教程只是入门的开始。如果我们不进行大量的练习和应用，那么和没有学习的结果是相差无几的。</p><p>在学习开发中，我们要做的是看大量的优秀代码和自己多写代码。你可以回顾一下我们从小到大的那些学习经历，无论是上课、演讲还是写作，其实都是有着类似的过程，要经历大量练习。在我的开发故事里，练习的方式是看代码和写代码。而在学习拍照中，我们的练习方式则是看照片和拍照片。</p><p>说了这么多，就是为了让你意识到多拍与多看的必要性。接下来我会以自己的经验，来具体分享一下多拍与多看的实施方法。</p><h2>关于多拍</h2><p>我们先来聊聊多拍。多拍，首先肯定是要多，要进行大量拍摄。拍，指的是完成完整的拍摄流程，这包括了构思、拍摄、挑选、后期。此外，在大量拍摄的过程中，我们也不能盲目拍摄，应该边拍边进行交流和反思，避免一直原地踏步。</p><p>在手机摄影里，有一个非常好的练习方式来进行多拍，那就是尝试坚持每日一拍。我在学习了足够的手机摄影相关知识后，就尝试过一整年的每日一拍，这可以被称为 365 拍摄计划，是比较常见但也很难坚持的一种练习方式。</p><p>严谨执行 365 拍摄计划的方法是：每天在公开平台分享一张自己拍的照片，这张照片需要当天拍摄，并且进行了有必要的后期处理。</p><p><img src="https://static001.geekbang.org/resource/image/cb/5c/cbfec1bc204168c7e383295075a59c5c.jpeg" alt="" title="2016 年期间我用手机进行每日一拍的部分照片"></p><p>规则看起来很简单，但如果你真的下定决心要在一年内每天都进行拍摄，那么除了表面上巨大的拍摄数量外，还会有许多你在开始之前想不到的痛苦与煎熬。</p><p>例如，你可能会遇到某天很忙，忙到几乎忘记拍照，结果快到凌晨时才发现当天的照片还没有拍，需要想尽办法去拍一张像样的照片；再比如说，由于长时间在同一地点进行拍摄，有一天你会感觉难以找到新的拍摄内容。</p><p>这两种情况，是我在执行 365 拍摄计划时最常遇到的问题，但它们对于锻炼拍摄能力来说又非常有意思。这些问题会锻炼我们的拍摄思维，会去要求我们仔细观察环境，从熟悉的环境里找到全新的视角与拍摄内容。</p><p>在执行 365 拍摄计划的过程中，你还需要定期停下来进行必要的交流和反思，针对自己照片的问题进行改进。具体的方式方法有许多种，我这里举例两种：你可以定期将一段时间里拍摄的照片精选出来发给我（在微博@随你们去 私信即可），我会帮你找出其中存在的基础问题。你也可以拿自己拍摄的照片去对比别人优秀的照片，思考其中的差距在哪里，可以如何改进。</p><p>其实随着大量看图，你的审美会随之提升，对于自己拍摄照片的好坏也会有更好的判断，这也是不断反思的一个过程。</p><p>简单小结一下，对于多拍，你可以给自己制定类似于每日一拍的计划，但具体每天拍多少，坚持拍多久，这取决于你自己的想法。然后，在执行计划的过程中，一定要严谨做到完成完整的拍摄流程，并定期进行必要的交流和反思。</p><h2>关于多看</h2><p>多看是指大量地看优秀作品。这里的关键词是：大量、优秀。对于你看的作品类型，并不局限于摄影图片，还可以看电影、绘画等等。我们看这些的目的并非是去简单粗暴地进行模仿，而是为了提升自身审美。良好的审美对于高质量照片的拍摄必不可少。</p><p><strong>先说大量。</strong></p><p>和多拍里我讲的每日一拍一样，看图的最佳实践也是尽可能每天都看。你可以专门每天抽出一段时间来看图，也可以通过更新自己日常阅读的信息流来达到这一目的，当然最好的方式是前者。</p><p><strong>再聊优秀。</strong></p><p>要想找到优秀的作品并不难，我这里主要是提供一些思路，具体要看什么，我认为你用不着和我看的一样，因为每个人喜欢的风格并不一致。</p><p><img src="https://static001.geekbang.org/resource/image/fd/9d/fdacdac5169byy1d59ba417fb781cd9d.png" alt=""></p><p>你可以通过高质量的网站来找到优秀的图源，例如 Pinterest、Behance、Instagram、500px 等。</p><p><img src="https://static001.geekbang.org/resource/image/de/1c/de9096500ab653fdce1afa0a2589641c.jpg" alt=""></p><p>对于相对质量没有那么高的网站，例如图虫、绿洲、微博、小红书等，你也可以通过别人的推荐或者别人的关注列表，关注到优秀的博主，以获取优秀的看图资源。例如在微博平台，你可以关注@MagnumPhotos玛格南图片社 、@CNU_blank 、@假杂志 、@VOICERme 之类的账号，然后再通过他们的关注列表，去关注到更多美学相关的优质账号。</p><p><img src="https://static001.geekbang.org/resource/image/b7/8c/b7b24307f53287b1985b75f42e7ed78c.jpg" alt="" title="第 75 届奥斯卡最佳摄影奖电影《Road to Perdition》剧照"></p><p>你还可以看高质量的电影，如果你没有把握，那么可以先将历届奥斯卡最佳摄影奖电影作品找出来看一看，我认为这是一个靠谱的好方法。</p><p><img src="https://static001.geekbang.org/resource/image/71/cd/71f036b869d8eb604c085c8e29c3a7cd.png" alt="" title="约瑟夫·寇德卡作品"></p><p>除了刚才所说的网络途径外，你也可以去阅读实体书籍、画册。在看画册时，我们可以从那些历史上有名的摄影大师们看起，例如上一课中提到的雅克·亨利·拉蒂格、亚历山大·罗钦可、约瑟夫·寇德卡等。</p><p>在这样大量查看优秀作品的过程中，你可以将自己喜欢的作品整理保存下来，每过一段时间去回顾一下它们。在这个不断回顾的过程中，你可能会发现以前收藏整理的作品没有那么喜欢了，这时，就意味着你的审美水平向前进了一步。</p><h2>总结</h2><p>每次有人问我要怎么样才能拍好照片时，我的回答都是：多拍多看。这简短四个字，是我认为拍好照片的唯一做法。你可能想问，既然答案如此简单，那么之前花那么大功夫讲的内容是为什么呢？那些内容是帮助你少走弯路的地图。但地图再详细，你看得再熟悉，如果你不迈出步，那么依旧是零。</p><p>有些课程的标语，会说能让你在多少时间内成为某方面的高手。实际上，那只是看完那套课程一遍所需要的时间。看完一遍后，我们不会就一下子就变成高手了，我们只是知道了一些方法与知识，但并不能运用得游刃有余。</p><p>我举一个比较极端的例子：你把一本字典阅读一遍，然后就能立马对每个字的运用都了如指掌吗？我想显然是不可能的。那你该回头继续看继续背吗？也许是一种方法。但我认为，得去实践，得自己去进行大量写作和阅读。换到拍照这件事上，更是如此。我们学习完课程后，需要做的是进行大量地拍摄和看图，这是继续进步的唯一途径。</p><h2>作业</h2><p>好了，这节课到这里也就结束了。我最后给你留了一个小作业，这节课的作业不用进入部落提交，我希望你选择一段时间，尝试完成一次小规模的每日一拍，同时更新你的看图资源。</p>
+</div>
+</body>
+</html>

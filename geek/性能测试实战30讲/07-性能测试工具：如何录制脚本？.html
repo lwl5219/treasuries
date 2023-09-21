@@ -1,0 +1,1078 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>07-性能测试工具：如何录制脚本？</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>07-性能测试工具：如何录制脚本？</h1>
+<p>对于一个性能测试工具来说，如果能实现以下几大功能，那么就基本上就满足了性能测试工具的功能。</p><ol>
+<li>录制或编写脚本功能</li>
+<li>参数化功能</li>
+<li>关联功能</li>
+<li>场景功能</li>
+<li>报告生成功能</li>
+</ol><p>但是除此以外，在工作的细节上还有更多要求，就要看工具的实施能力了。</p><p>有很多性能测试工程师希望工具能做得非常全面，又人性化，而纵观当前的性能工具，真正能够做到傻瓜式录制完脚本，自动设置好参数化、关联、场景，直接产出结果的工具是没有的。不管是云性能测试平台，还是分布式性能测试工具（当然性能测试工具几乎全部具有分布式能力），都需要性能测试人员来定义参数化数据、设置关联、配置场景。</p><p>因此，在性能测试的过程中，对工具的配置就成为了性能测试工程师的基本能力。</p><p>今天，我们就来看下在性能测试工具中，如何录制脚本。今天的文章有些特殊，可能是专栏中少有的，有详细操作的文章。</p><h2>性能工具的脚本能力</h2><p>性能测试工具的脚本编写能力分为两类，一个是录制，另一个是手工编写。</p><p>现在市场上的性能测试工具虽然支持录制功能，但大部分也只是支持HTTP协议。在我们熟知的工具中，也只有LoadRunner支持更多协议的录制能力。不过幸好，现在我们所面对的应用大部分是HTTP协议的应用。</p><p>对手工编写脚本的部分，因为大部分都取决于业务场景，所以很难提出共性。如果有人提出针对性的场景，我们再做相应的示例就行。</p><!-- [[[read_end]]] --><p>因此今天的文章将着重讲一下测试工具的录制功能。很多人以为性能工具录制功能非常简单，点几下就能生成一个脚本，但是录制完之后，针对脚本的增强完善就做得非常少了。事实上，针对脚本，我们不仅要录制下来，还要了解录制的原理和录制完之后的脚本增强。不然，在场景中还是会遇到各种各样的问题。</p><h2>性能工具中的录制功能</h2><p>录制功能从原理上来说，分成两种：</p><ol>
+<li>本地录制：通过截取并解析与服务器的交互协议包，生成脚本文件。比如说LoadRunner调起IE的时候，不用修改IE的代理设置，就可以直接抓取HTTP包，并通过自己的解析器解析成脚本。</li>
+<li>代理录制：通过代理服务器设置，转发客户端和服务器的交互协议包，生成脚本文件。JMeter中的脚本录制功能就是这样做的。</li>
+</ol><p>这两者的不同点主要在于操作上。本地录制相对简单，但有些场景受限，比如说操作只能在某台服务器上，但是这台服务器又不允许安装工具；代理录制操作复杂一些，但可以满足更多的场景。</p><p>通过这张图，我们可以简单看到代理录制的逻辑：</p><p><img src="https://static001.geekbang.org/resource/image/2c/49/2c444b52c9b614bd7779394e6ed18849.jpg" alt=""></p><ol>
+<li>我们在IP为2.2.2.2上的主机上，打开一个代理程序，开81端口，所有到81端口的都转发到1.1.1.1的80端口。</li>
+<li>当3.3.3.3主机要访问1.1.1.1的的80端口，可以通过访问2.2.2.2的81端口进行转发。</li>
+</ol><p>这里需要你注意的是，代理是用来转发数据包的，并不是重定向哦。不管是在本机用代理，还是远程用代理，这个逻辑都是不会变的。</p><p>有了这个逻辑之后，你要明白的一点是，<strong>客户机不一定要和代理服务器在同一台机器上</strong>。</p><p>为什么要强调这一点呢？因为有很多人用工具来录制时，都不知道这个逻辑，只知道工具是那么操作的。这也是很多人不能理解Port mapping的原因。</p><p>不同的工具录制方式略有不同。今天我们用常见的两个性能测试工具LoadRunner和JMeter做为示例工具。</p><h3>JMeter的录制功能</h3><p>首先打开JMeter，添加一个线程组，再添加一个HTTP(S) Test Script Recorder。界面如下：</p><p><img src="https://static001.geekbang.org/resource/image/df/f8/df8730ffbbfb0e68879a88e8699035f8.png" alt=""></p><p>这里有几个关键点说明一下：</p><ul>
+<li>Target Controller：这里指定录制出的脚本要放到哪里去。如果你想把不同的脚本放到不同的线程组中去，在录制的时候就可以拆分开。</li>
+<li>Grouping：分组，这个分组功能很实用。但是如何分组就和具体的目标相关了，这一点下面我们再细说。</li>
+</ul><p>点击start按钮时，会提示创建一个根CA证书。这个证书生成在bin目录中，文件名是：ApacheJMeterTemporaryRootCA.crt，七天有效期。这个证书将被用来客户端转发HTTPS的请求。与此同时，还有另一个证书在同目录中生成，名字是proxyserver.jks，这是JMeter自己生成的根证书。</p><p><img src="https://static001.geekbang.org/resource/image/be/19/be8ef3815ed27b60f11aae9679457219.png" alt=""></p><p>前面我们说到了，JMeter是用代理的方式来录制的。如果服务端用了SSL证书，在代理时也要加SSL证书，那么代理录制的结构就会变成这样。</p><p><img src="https://static001.geekbang.org/resource/image/8f/c9/8f51e323947ca6b8109241f1c71e0ec9.jpg" alt=""></p><p>上面的SSL证书就是用来处理上图中蓝色的这一部分。</p><p>我们点击ok之后，就会出现这个界面。在这个界面中，只有两个配置项。</p><ul>
+<li>Prefix：请求名的前缀。</li>
+<li>Create new transaction after request(ms)：一个请求完成之后，如果下一个请求超出了这里设置的时间间隔，就创建一个新的事务。</li>
+</ul><p><img src="https://static001.geekbang.org/resource/image/bf/ff/bff35c026d490ec75425a0d6e41a36ff.png" alt=""></p><p>然后到主机上设置代理。</p><p>注意，这里我要敲黑板了呀：这里的代理设置，是在需要访问的客户机上。这个客户机，不一定是压力机所在的机器。这里的localhost，也应该设置的是代理服务所在的主机IP。</p><p><img src="https://static001.geekbang.org/resource/image/74/49/74e3652701b526509b410790f0fa2549.png" alt=""></p><p>请注意，如果你要设置为录制HTTPS，还需要做如下两步。</p><p>第一步是，浏览器代理要把Secure Web Proxy(HTTPS)选择上，同时填上相应的代理IP和端口，下图是macOS上的图示。</p><p><img src="https://static001.geekbang.org/resource/image/b3/46/b3ef5c0c4ce44566ee31157c17cd1846.png" alt=""></p><p>但你会发现，这时仍然录制不了HTTPS应用，访问时会出现如下提示：</p><p><img src="https://static001.geekbang.org/resource/image/35/4f/3530bde553697ac448eac94e26ee524f.png" alt=""></p><p>这时就要在客户端机器上导入上面提到的ApacheJMeterTemporaryRootCA.crt。我们打开证书管理软件，在macOS上是Keychain Access，Windows上是certmgr.msc。</p><p>这里以macOS为例。</p><p>首先打开Keychain Access。</p><p><img src="https://static001.geekbang.org/resource/image/68/2e/6861248706928c135e68bed9ee28232e.png" alt=""></p><p>点击上图中的Import Items。选择ApacheJMeterTemporaryRootCA.crt，导入之后选择证书。会看到如下提示：</p><p><img src="https://static001.geekbang.org/resource/image/dd/92/ddfdc4ef2050f922c9ea1b7ed3977d92.png" alt=""></p><p>因为这个证书不在系统信任的默认列表里，所以会提示证书不可信。</p><p>另外这里我可以再多说一句，你注意的是，全球的可信任的根证书都是默认添加到系统中的，如果你在访问网站时，提示你要安装什么证书，一定要明确知道证书是从哪来的，不要随意安装未知来源的证书。目前国内的HTTPS覆盖度不高，仍然有大量的HTTP网页，这是需要推进的网络安全之一。</p><p>然后我们双击此证书。</p><p><img src="https://static001.geekbang.org/resource/image/f7/16/f779bc63cd421ba92b1de098899b5616.png" alt=""></p><p>改为Always Trust即可。提示如下：</p><p><img src="https://static001.geekbang.org/resource/image/41/8c/417c1e58d3081ca6515ec8977532b78c.png" alt=""></p><p>这时，HTTP和HTTPS都会被录制下来。然后在客户机上打开浏览器，访问你的页面，这样就录制到脚本了。</p><p>下面我们再来说下Grouping这个功能。</p><p>Grouping的设置有如下几种，如果需要将脚本分开，先确定需要如何拆分。示例如下：</p><p><img src="https://static001.geekbang.org/resource/image/22/8b/2214f144340139acd8c84a15c86c938b.png" alt=""></p><p>第一个选项是Do not group samples，也就是不分组。</p><p>这是很多人使用的默认选项，这就相当于没有事务的概念了，每个请求都会单独统计TPS和响应时间信息。</p><p><img src="https://static001.geekbang.org/resource/image/41/83/41bb7af036a9910db9d8fd4bb6cf4083.png" alt=""></p><p>第二个选项是Add separators between groups，在组间添加分隔，就为了好看！</p><p><img src="https://static001.geekbang.org/resource/image/25/35/251bcebb7e4451c881ba718ca21d6535.png" alt=""></p><p>第三个选项是，Put each group in a new controller，每个组放一个新的控制器。这是一个Simple Controller，它的作用也是只有一个：就为了好看！</p><p>因为脚本太长了，看起来不方便，所以分个组，看着清晰一些。话说回来，你们见过在JMeter中有很长脚本的吗？是不是很多人都没有见过？</p><p><img src="https://static001.geekbang.org/resource/image/74/0a/7451c99638e005cfe98d80ed0def060a.png" alt=""></p><p>第四个选项是，Put each group in a new transaction controller，将每个组放入一个新的事务控制器中。</p><p><img src="https://static001.geekbang.org/resource/image/9b/34/9b5766b5a61fe76ed82a33f671ae9c34.png" alt=""></p><p>Transaction Controller和Simple Controller的区别就是Transaction Controller会做为事务统计脚本执行的时间，而Simple controller不会。</p><p>第五个选项是Store 1st sampler for each group only，只存储每个组的第一个样本。</p><p>网上大部分都只描述了上面这句，但是请注意我这里还有一句关键的：从HTML文件获取所有内含的资源和自动重定向将开启。也就是说，虽说只记录了一个Sampler，但是资源也会下载，重定向也会开启。</p><p>我们把这个过程抓出来看一下，因为JMeter没有把这个过程显示出来。所以这里用Chrome Developer Tool抓一下看看。举例来说，我们在浏览器里只输入了一个https://www.jd.com。抓出如下结果。</p><p><img src="https://static001.geekbang.org/resource/image/5a/a4/5a24f2adae925faac98b057a507525a4.png" alt=""></p><p>在上面的图中，你可以看到，www.jd.com，第一个就是307 Internal Redirect。接着请求Document，然后下面是静态资源。在录制时，选择Store 1st sampler for each group only之后，只会录制到第一个请求，而后面这些在回放脚本时也都会访问。</p><p>在JMeter的代理录制中，还有一个界面如下：</p><p><img src="https://static001.geekbang.org/resource/image/96/0d/968fe93634c0f18c806fa922f300d50d.png" alt=""></p><p>中文界面中通常将之翻译为包含模式、排除模式。“模式”一词一加就显得格外高大上了。</p><p>通常这里都会写上正则表达式，比如说常用的一些：</p><pre><code>.*
+.*.png
+.*.gif
+.*.jpg
+.*.php
+.*.jsp
+.*.html
+.*.htm
+.*.js
+..(js|css|PNG|jpg|ico|png|gif).
+</code></pre><p>由于正则是一个很大的话题，这里我们就不展开了，只要你懂正则，在这里就可以适用。</p><p>通过上面的内容，我们已经把JMeter录制的原理和操作的过程都详细地描述了一遍，关于JMeter的录制功能，就介绍到这里。</p><p>在此重点提醒你一下，录制是通过代理做的，一定要知道代理的原理，代理就是转发的功能。</p><h3>承上启下的话</h3><p>为什么JMeter这样的功能单一，性能又不好的性能测试工具能这么快的占领市场呢？</p><p>在我看来，工具能不能用取决于它能不能满足需要。在很多的性能测试场景中，JMeter已经够用了。因为性能压力工具只需要两条曲线：TPS和响应时间（如果出错最多就再看一下错误率曲线）。这些功能，JMeter都可以提供。</p><p>现在的性能项目中，我们要的压力其实并没有很大，并且大部分都是HTTP、TCP之类的常见协议，脚本所使用的资源并不多。一般能达到万级TPS的都很少很少，所以弄几个机器，JMeter也就够用了，再加上免费开源，何乐而不为呢？</p><p>而LoadRunner的失败之处就是价格高，更新慢。一想到HP糟蹋了LoadRunner，我就伤心落泪。</p><h3>LoadRunner中的录制功能</h3><p>我们都知道LoadRunner其实可以录制很多协议，这也是它前期扩展市场的很重要的功能。应该说，在录制这个功能点上，所有的性能测试工具都不如LoadRunner。并且LoadRunner在其他很多功能上都是强大的，强大到什么程度呢？就是有很多你不需要的，不常用的功能，它都具备。</p><p>很多人都知道，LoadRunner中的Vuser Generator只支持Windows。你有没有想过这是为什么？其实解释起来也简单，LoadRunner一开始是基于WinInet做的，就是Windows Internet API。后来可能是觉得WinInet太恶心了，于是换成了Windows socket。而Windows socket跟UNIX socket还是有一些小区别。</p><p>所以从历史延续下来，Vuser Gnenerator就一直在Windows上了。</p><p>为什么不做UNIX的版本呢？其实在我看来，完全没有这个必要。因为Load Generator已经支持UNIX了。从使用的角度说，Vuser Gnenerator没有必要做UNIX的版本，因为它还有Port Mapping的功能，这样在UNIX上的操作也照样录得下来。。</p><p>下面我们就单说LoadRunner的录制功能。</p><h3>常规录制</h3><p>首先，我们打开Vuser Generator，点击Start Record，出现如下界面：</p><p><img src="https://static001.geekbang.org/resource/image/c7/67/c79f3d7d072478b223d557987951c767.png" alt=""></p><p>在这个图中，首先的选择是：</p><p><img src="https://static001.geekbang.org/resource/image/0c/b7/0c0600701f1c6b71c8389eb243ab8bb7.png" alt=""></p><p>这里用IE或者应用程序都可以，只要支持我们选择的HTTP协议就行。</p><p>Recording into action这里是默认的action，请你一定要注意的是init、action、end这三个都是action，并没有什么区别。控制init和end只执行一遍和action会重复执行多次的功能也不在它们自己身上，而是在run logic里。这一点我将在后面的文章中再细说。</p><p>点击Options之后，跳出界面如下：</p><p><img src="https://static001.geekbang.org/resource/image/21/c9/21e1969112927b0e16adc2e013241cc9.png" alt=""></p><p>在这个界面中，有很多可以调的内容。这里举几个重要的点。</p><p>首先是HTML-based script和URL-based script。</p><p><img src="https://static001.geekbang.org/resource/image/d5/16/d57f3c15ea014cf1502e136a590b4e16.png" alt=""></p><p>这个功能点之所以重要，是因为这两个选项录制出来的脚本有很大差别。</p><p>其实这一点和JMeter的Store 1st sampler for each group only是一样的含义。</p><p>如果选择了HTML-based script，就是一个页面一个请求了，而在回放和压力时，这个页面的所有资源都会请求。</p><p>如果选择了URL-based script，就是每个资源一个请求。这个选项有好处是，便于控制和查找问题。如果不想要某个资源，直接注释掉就好。</p><p>其次，我们需要注意关联功能。</p><p><img src="https://static001.geekbang.org/resource/image/52/43/52e00fd4eb4e6dab16f0acee5031d843.png" alt=""></p><p>你可以在这里事先设置好关联的规则，比如说这样的：</p><pre><code>JSESSIONID=5687300192384o4^&amp;&amp;^&amp;890523#123456;
+</code></pre><p>你就可以设置左边界为：JSESSIONID=，左边界为冒号，然后在你录制的时候，如果规则匹配到就会自动创建关联。</p><p>点击OK之后就开始录制了。出现一个工具条，如下所示：</p><p><img src="https://static001.geekbang.org/resource/image/2d/93/2dac210c135e85e99d8e0405d72a3093.png" alt=""></p><p>在这个功能条上具有的功能是：暂停、停止、新建Action，创建集合点、创建事务的起点和终端、加备注、加文检查点。</p><p>一般在业务流比较长的脚本中，<br>
+性能测试工程师都会通过新建Action把操作区分开，也会在录制过程中创建好必要的事务。</p><p>最后录制出的脚本如下：</p><p><img src="https://static001.geekbang.org/resource/image/9f/3c/9fe88180c56b27edd542db9ff715d73c.png" alt=""><br>
+注意哦，URL-based script的时候，有一个concurrent group，这个并发组是同时发出请求的。<br>
+在JMeter中有一个Parallel Downloads，你还记得吗？</p><p>这两者功能一样。</p><p>上面就是LR中常规的录制功能。录制前，看下readme，看LR支持什么浏览器。在版本12.6的readme中，已经声明支持Windows 10 + IE了。但是我们在使用的过程中还是遇到各种各样的问题，比如调不出浏览器、录不出脚本、卡死的问题。</p><p>还有，有些应用只支持Chrome，而有时，有些应用只能在某些特定的机器的执行，而那些机器又不能装Vuser Generator。</p><p>在这样的场景中，我们只能使用Port Mapping的功能。是的，在LoadRunner中，Port Mapping就是代理录制的方式。</p><h3>Port Mapping</h3><p>首先打开Vuser Generator，点击Start Record，配置成如下界面：</p><p><img src="https://static001.geekbang.org/resource/image/55/37/554a3e2ef78259e73ecc4616bc176c37.png" alt=""></p><p>注意，这里一定要选择的是LoadRunner安装目录bin中的wplus_init_wsock.exe，从这个名字你也能知道它是基于Windows Socket的。</p><p>然后，点击Options - Port Mapping，如下所示：</p><p><img src="https://static001.geekbang.org/resource/image/84/29/847bf5c6d80b59f3772cb07d12c95929.png" alt=""><br>
+点击New Entry。配置如下：</p><p><img src="https://static001.geekbang.org/resource/image/b3/49/b39d5e0317acd982a42f97f5689a0d49.png" alt=""></p><p>从上图中你可以看到，它的代理功能是很全面和强大的，不仅支持不同的Service ID，也支持SSL。</p><p>这时的访问逻辑是下面这样的：</p><p><img src="https://static001.geekbang.org/resource/image/0a/8e/0ab937e601a8f2029527be1ccb0de08e.jpg" alt=""></p><p>一路OK，返回之后我们就可以开始录制了。会打开一个代理程序。截图如下：</p><p><img src="https://static001.geekbang.org/resource/image/b8/36/b8cc2119b6eeb7164bbb47987d88ed36.png" alt=""></p><p>这时候本地会开一个92的端口。</p><p><img src="https://static001.geekbang.org/resource/image/59/74/591d5598781d5a107b2d56f93a2e6f74.png" alt=""></p><p>请注意，这时如果是远程访问，要注意不要让防火墙拦截了。</p><p>接着打开浏览器，输入地址http://10.211.55.3:92/，可以看到打开的是http://39.105.21.22:91/的界面。</p><p><img src="https://static001.geekbang.org/resource/image/dc/ca/dc5d435bca5f519905a7e49db49e72ca.png" alt=""></p><p>同时，录制工具条中也显示出有事件产生。</p><p><img src="https://static001.geekbang.org/resource/image/5d/84/5d4e718b7cfd98398b4dc915180b5784.png" alt=""></p><p>当我们停止录制后，查看脚本如下：</p><p><img src="https://static001.geekbang.org/resource/image/3a/98/3acc0dac595c23bedc5229f966d15398.png" alt=""></p><p>看到没有，这里的访问IP在直接回放时是不对的。所以要将ip:port换成39.105.21.22:91才能回放。替换后如下：</p><p><img src="https://static001.geekbang.org/resource/image/7d/eb/7d699171119d5aab83af784220e421eb.png" alt=""></p><p>这样就可以回放成功了。</p><p><img src="https://static001.geekbang.org/resource/image/61/d8/613e6d89e4480263bbce1c2aa08f0dd8.png" alt=""></p><p>如果回放不成功，我们就需要根据出错日志判断要做什么样的脚本增强。大部分的脚本都是需要做关联的，所以后面我们将讲一下关联的功能如何做，以及关联的原理。</p><p>Loadrunner的Port Mapping还可以支持FTP、SOCKET、POP等协议。这个功能点也不复杂，操作起来也简单，只要想明白访问链路就可以了。</p><p>LR的录制常用功能基本就这些了。</p><h2>总结</h2><p>这篇文章，应该是我写的所有的文章中，最最基础的一篇了，并且，从操作上，一步步地描述，也比较清晰。如果你有性能工具使用经验，肯定会觉得这篇过于简单。</p><p>可是为什么还要写呢？</p><p>因为在性能测试的过程中，有很多新手对录制的逻辑并不清楚。代理录制的这个动作他们也可以很快学会。但是很快就忘记了，我曾经给一些人手把手教过如何做代理录制。结果第二天就不记得了。其实并不是不记得动作，而是出了问题，脑子里没有判断问题的逻辑，所以根本无从下手排查。</p><p>另外，你需要注意的是，录制功能并不是性能测试工具必备的功能。对性能测试工具来说，关键功能是能实现模拟批量的真实请求逻辑。至于脚本是如何实现的，怎么做就是可以的。所以我们可以用其他的工具，比如说BadBoby、Fiddler甚至Wireshark抓到交互请求，再放到JMeter中实现脚本，也完全是可以的。</p><p>当然没有脚本就无从实现压力，所以脚本的实现是性能测试工程师必备的基础技术，理解原理也是必须的。</p><h2>思考题</h2><p>学完今天的文章后，你能用自己的话说一下代理录制的逻辑是什么吗？以及，当访问网页时，为什么第一个请求至关重要？</p><p>欢迎你在评论区写下你的思考，也欢迎把这篇文章分享给你的朋友或者同事，一起交流进步一下。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            @zzw  2019-12-31 10:31:51
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            第一个问题：代理录制的逻辑是什么吗？<br><br>你也许听过这样一句至理名言：“计算机科学领域里的任何问题，都可以通过引入一个中间层来解决”。TCP&#47;IP 协议栈是这样，而代理也是这样。<br>所谓的代理(Proxy)是 HTTP 协议中请求方和应答方中间的一个环节。既可以转发客户端的请求，也可以转发服务器的应答。<br>代理常见种类：匿名代理、透明代理、正向代理、反向代理.<br>代理可以做的事：负载均衡、内容缓存、安全防护、数据处理。<br><br>此处简单理解 JMeter 录制脚本则通过代理是通过转发数据包并拦截上下行的数据解析生成脚本，但录制出来的脚本都是原始的 http 请求，并没有经过适当的封装，所以录制功能比较弱。<br><br><br>第二个问题：当访问网页时，为什么第一个请求至关重要？<br><br>实际上，对浏览器来说，他们做的事情，就是把一个 URL 变成一个屏幕上显示的网页。这个过程是这样的：<br>1.浏览器首先使用 HTTP 协议或者 HTTPS 协议，向服务端请求页面；<br>2.把请求回来的 HTML 代码经过解析，构建成 DOM 树；<br>3.计算 DOM 树上的 CSS 属性；<br>4.最后根据 CSS 属性对元素逐个进行渲染，得到内存中的位图；<br>5.一个可选的步骤是对位图进行合成，这会极大地增加后续绘制的速度；<br>6.合成之后，再绘制到界面上。<br><br>简单理解浏览器的工作原理就很容易回答这个问题了，第一次请求后需要构建 Dom 树（内存中的数据结构），而这棵 DOM 树其实就是前端程序的业务状态。 [1赞]
+        </div>
+        
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            月亮和六便士  2019-12-30 16:53:16
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            上一篇与这一篇:姚明与郭敬明的差距 [1赞]
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2019-12-30 20:38:57</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">哈哈，总要有基础的部分。<br>前面就有人说我为什么不讲点简单的。<br>后面我们再回到姚明好不好？</div>
+</div>
+            
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            LensAclrtn  2019-12-30 15:29:36
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            1. 代理录制的逻辑是什么？<br><br>不管是在本地代理还是远程代理, 都是通过代理的设置,在客户端和服务端之间插入一个中间件,中间件接手客户端的请求并转发到服务端.<br>说白了就是端口映射, 也就是老师文章里说的Port mapping<br><br>另外, 端口映射工作在传输层,重定向工作在应用层, 他们是两个东西<br><br>不知道我这么理解有没有问题?<br><br>2. 访问网页时，为什么第一个请求至关重要？<br>第一个请求如果都有问题,那后面就算有请求也没有再分析跟踪的必要来. [1赞]
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2019-12-30 20:39:52</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">两个问题理解的都没有问题。让我都无言以对了。</div>
+</div>
+            
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            buffalo  2019-12-31 00:11:01
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            这一篇很实用，最近听高老师的段子有种追美剧的感觉😄 对locust很有兴趣，不知道后面是否会有涉及。个人感觉如果是python平台的话locust很容易使用，而且方便将性能测试用例自动调度执行插入CI环节做回归验证。使用起来与Jmeter有些不同，更方便对已有测试用例资产的重用 
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2019-12-31 07:11:29</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">从排名上看这个工具还是市场不大，所以没打算讲。<br>其实一开始我连工具都没打算讲。哈。</div>
+</div>
+            
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            土耳其小土豆  2019-12-30 15:02:11
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            录制的原理是客户端与服务端交互的时候，截取服务端的数据并保存 
+        </div>
+        
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            土耳其小土豆  2019-12-30 14:43:49
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            不知道录制的原理，但是学会了jmeter的录制，LR的录制以前用过，谢谢高老师分享 
+        </div>
+        
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            律飛  2019-12-30 12:22:31
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            访问网页时，第一个请求是页面，进行DNS解析，建立TCP连接，发起Http网页搜索，后续请求才能顺利的执行。如果第一个请求失败，就没有后续请求，就像先遣部队没有打通道路，后续大部队就不能抵达战场一样，所以第一个请求至关重要。<br> 
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2019-12-30 13:03:25</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">这么说也不是不可以。哈。</div>
+</div>
+            
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            律飛  2019-12-30 12:00:54
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            本节课我看了几遍，不是老师讲得不好，而是本人没接触过Jmeter、Loadrunner工具，没有对话能力呀！几个月前，用华为的PTS做了几个简单场景的压力测试，主要是利用Fiddle先抓包分析，按照PTS要求编制脚本，属于手工编制的脚本。PTS也有脚本录制功能，因为当时有其他工作，本职也不是测试，所以没有深入去研究。<br>代理录制就是通过测试工具代理录制功能，在浏览器与服务器之间充当第三方代理，从而自动获取并记录交互信息，为最终测试脚本生成提供快捷有效的基础和依据，集成了手工编制测试脚本中的抓包软件信息获取、分析、编制脚本几个功能。 
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2019-12-30 13:04:09</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">那要学习性能测试就得去练工具的使用了。<br><br>另外，PTS好像是阿里的。</div>
+</div>
+            
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            简凡  2019-12-30 12:00:28
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            1、代理录制的逻辑是什么？<br>--- 请求响应的时候，不是直接到目的地，而是经过代理服务器，这时代理服务就可以拿到对应的请求和结果了；<br>2、访问网页时，为什么第一个请求至关重要？<br>--- 在录制的时候，有时是只录制第一个请求，后续的资源和其他重定向的请求，都是通过第一个请求来获取的。 
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2019-12-30 13:06:55</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">关于2， 第一个是DOM，没有它，后面的全都没了。<br></div>
+</div>
+            
+    </div>
+</li>
+            </ul>
+</div>
+</body>
+</html>

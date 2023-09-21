@@ -1,0 +1,919 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <!--<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>-->
+    <title>07-后期调色：基础工具使用</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>07-后期调色：基础工具使用</h1>
+<p><video poster="https://static001.geekbang.org/resource/image/8c/56/8cb7049af4f67d83c1a07eea16820a56.jpg" preload="none" controls=""><source src="https://media001.geekbang.org/customerTrans/7e27d07d27d407ebcc195a0e78395f55/52a15e1d-1757d0abf49-0000-0000-01d-dbacd.mp4" type="video/mp4"><source src=" https://media001.geekbang.org/95120e520a3d4c63be3bab268d56373d/32e2173d24c04f1e8ad5863dc071ab98-4cb2e7755f00d16b593e10dc3010f1bc-sd.m3u8" type="application/x-mpegURL"></video></p><p>你好，我是随你们去。终于到了我们的后期实践部分。</p><p>这节课是基础调色示例，我会以 VSCO、Snapseed、SKRWT 三个 app 为例，给你演示 3 张照片从原图到完成后期的整个过程。在其中除了 SKRWT 是一个单纯的透视调整工具外，VSCO、Snapseed 都是功能丰富的综合性工具，虽然它们各有特色，但都足以单独完成一张照片的后期调色。</p><p>为了你更直观地看到这节课里做的各种调整，基于这节课所讲的内容，我为你准备了一个实操的视频，你可以把文章和视频结合起来一块学习。</p><p><img src="https://static001.geekbang.org/resource/image/4e/39/4e32aebdd78921487115c0162fac5939.png" alt=""></p><h2><strong>清晨月亮</strong></h2><p><img src="https://static001.geekbang.org/resource/image/97/5c/9763a45539a98cd0b10307f6e490fc5c.png" alt=""></p><p>第一张例图是在我日出前拍摄的月亮。对于蓝调时刻来说，时间越是接近日出日落，天空颜色就会越淡，但是光线会相对充足一些。所以在这个时间拍摄出来的照片虽然不够蓝，但是对于手机来说画质会更好。我们可以在后期调整或者拍摄时，通过降低曝光来使得照片更蓝一点。</p><p>那对于这张照片来说，我们便是需要通过后期调整来加强蓝色色调的感觉。</p><p><img src="https://static001.geekbang.org/resource/image/0f/c3/0f795b60f8c6a45c259081c12b0eacc3.jpg" alt=""></p><p>照片导入 VSCO 里，首先进行的是裁剪工作。</p><p>这张月亮的照片我想适当放大一点点月亮，但画质不能损失过多，同时也去掉画面左边这块相对比较大的叶子，让画面整体看起来比较平均，以及调整月亮到画面居中位置。</p><p><img src="https://static001.geekbang.org/resource/image/41/89/41957cdb8f20fb1c3806fb6e626ff189.jpg" alt=""></p><p>构图优化完成后，我们先来调整画面的曝光和对比度，这两个选项对于整体色彩基调的影响比较大。</p><!-- [[[read_end]]] --><p>通过我们最初的分析，如果你想要得到更深的蓝色色调，那么就需要调低曝光。正好这张照片的内容主体月亮，是画面中唯一的高光部分。所以即便是大幅度调低曝光，画面也不会受影响，因为画面中最亮的部分只是被调整到了适中亮度。</p><p>需要注意的是，VSCO 相比其它工具而言，它每个调整的选项都比较克制。这里我几乎将曝光降至最低，但可能还不如一些工具降至一半的效果。所以，请不要参考我的调整参数，尽可能参考画面效果。</p><p>曝光调整之后是对比度调整，通过加强对比度，让画面中亮的地方更亮，暗的地方更暗，对于这张照片来说便是月亮变亮一些，同时植物变暗接近于剪影。</p><p><img src="https://static001.geekbang.org/resource/image/d3/db/d3d0343530b41e4ccff5c9d461cc22db.jpg" alt=""></p><p>之后我们进行饱和度的调整，为了让蓝色效果更明显一些，这里稍微加了一点饱和度。</p><p>在高光与阴影调整方面，这张照片的高光是月亮部分，阴影是植物部分，我希望月亮的细节纹理可以被展示出来，而植物尽可能保持剪影效果就好了，于是我添加了高光效果，不改变阴影效果。</p><p>这里说明一下，绝大部分后期工具的高光和阴影部分都是可以双向调整的，但是在 VSCO 这里只能单向调整，分别是保留高光细节和保留阴影细节，直观来看则是降低高光亮度和提升阴影亮度。</p><p><img src="https://static001.geekbang.org/resource/image/7c/dc/7cb4e92364e3b617dc1e10f7146564dc.jpg" alt=""></p><p>我们来进行这张照片色彩调整的最后一步，进行色温色调调整。</p><p>在色温方面，我希望颜色偏蓝，不过照片本身已经比较蓝了，于是这里调整幅度并不大。</p><p>色调方面，如果你往左调整会呈现偏绿色的天空，而往右调整会呈现偏紫色的天空，这里的效果取决于个人喜好，我调整到了一个偏绿色的效果。</p><p><img src="https://static001.geekbang.org/resource/image/3b/53/3b76cb0b7c57fbf153cb92646595ac53.jpg" alt=""></p><p>最后再添加一点点暗角，让画面四周暗下来，画面视觉往中间集中。添加一点点颗粒，增加微弱的胶片质感。</p><p>至此，我们这张照片的调色就全部完成了。</p><p><img src="https://static001.geekbang.org/resource/image/8a/62/8a015cb94b5eab96bbeff6ae7974d762.jpg" alt=""></p><p>分享一个操作小技巧，在调整的过程中，你可以通过双手捏合来放大照片某处，以方便查看后期效果的细节。<br>
+<img src="https://static001.geekbang.org/resource/image/98/a2/98a988f2608c7a65ba6fea1bb60a12a2.jpg" alt=""></p><p>最后，我们这次完成后期调色的照片是这样的。</p><h2><strong>暖阳下的建筑</strong></h2><p><img src="https://static001.geekbang.org/resource/image/55/92/55651ef1e5b1ed69121f257200457492.jpg" alt=""></p><p>第二张例图是在光线条件很好的情况下，顺光拍摄的一张照片。这张照片我在拍摄时希望它能被横平竖直地展示出来，但我当时没有无人机，唯一可选择的拍摄机位是站在楼下，于是我需要利用俯拍将建筑完整拍摄下来，并且在拍摄时水平线尽可能保持水平，这样方便后期纠正。</p><p><img src="https://static001.geekbang.org/resource/image/cd/8f/cde2fe4189eeff3921e01737e605a08f.jpg" alt=""></p><p>根据刚才的分析，我们首先将照片导入 SKRWT，进行透视纠正。</p><p>SKRWT 里共有 5 个针对透视纠正的调整选项，依照底部导航栏的顺序，分别是水平线调整、水平方向调整、垂直方向调整、广角调整以及拉伸调整，我们平时用于纠正照片到横平竖直时，会使用除广角调整之外的 4 个调整选项，但具体你要使用哪个选项，需要根据拍摄角度和纠正程度的不同来分别选择。</p><p>针对这张照片，由于我拍摄时已经是保持了水平线水平，并且正面对建筑，所以水平线调整和水平方向调整就不用了，我需要用到垂直方向调整来纠正我的俯拍效果。由于俯拍的幅度比较大，相对应的，我们在纠正时的调整幅度也很大。</p><p><img src="https://static001.geekbang.org/resource/image/05/3c/0567fde2a874b1a40da93e825974dd3c.jpg" alt=""></p><p>SKRWT 会根据我们的调整进行自动裁剪，但是这会损失一些画面内容，所以我们需要根据自己的需要来进行裁剪调整。</p><p>进入裁剪界面后，你可以看到，由于我们刚才的调整幅度过大，裁剪页面也显得有些奇怪，这时候裁剪比较不好用，而且导出时的照片分辨率会出错，对于分辨率的问题，我认为是一个 bug。总而言之，针对页面不友好以及导出分辨率的问题，我们可以在确定调整好透视后，进行一次合并（MERGING），这样再去打开裁剪页面，一切问题就都好了。</p><p><img src="https://static001.geekbang.org/resource/image/e1/0a/e1d9794727bf83eb20ebc2931e25130a.jpg" alt=""></p><p>完成合并后，裁剪之前还有一件事我们刚才忘记做了。回忆一下透视调整前的照片，对比现在的照片，你可以发现建筑高度被压缩了，原本长形的窗户现在都快变成了正方形。这时，我们就需要打开拉伸调整功能，适当拉长画面，尽可能接近真实效果。</p><p><img src="https://static001.geekbang.org/resource/image/45/97/45c6ece11b58b4f3e222fca2deba5097.jpg" alt=""></p><p>一切调整好后，最后便是裁剪。进入裁剪页面后，我们可以看到一些因为透视调整被自动裁剪掉的画面，这里我选择了 2:3 的比例，来体现建筑的高度。</p><p><img src="https://static001.geekbang.org/resource/image/98/fe/98d9dd3cb7f2c56b24dee05ebe7988fe.jpg" alt=""></p><p>照片透视调整完成后，我们来进行下一步：调色。由于这张照片本身的色彩就比较好，如果不是想对照片风格进行大改变的话，后期的调整优化空间很小，我们这次示例只是微调，加强一下明暗的光影对比效果。</p><p>将图片导入 Snapseed 里，打开「调整图片」选项。</p><p><img src="https://static001.geekbang.org/resource/image/89/18/892a96f5cdf3dd5087f962baa1bca018.jpg" alt=""></p><p>你可以看到，在「调整图片」选项里提供了很多基础的调整功能。</p><p>这张照片的亮度基本刚好，用不着再次调整，由于光影效果明显，我首先选择处理的是高光与阴影。在高光部分，降低高光亮度，让高光细节突出，也就是更突显建筑的纹理。</p><p><img src="https://static001.geekbang.org/resource/image/12/b3/123981228f353fbb97644d33f42c80b3.jpg" alt=""></p><p>在阴影部分，我降低阴影亮度，让阴影显得更暗，与画面形成更好的对比效果。</p><p><img src="https://static001.geekbang.org/resource/image/8e/2f/8e2ae4c4yy61eec12ccd6b9c7894b62f.jpg" alt=""></p><p>Snapseed 里有个叫「氛围」的功能，这是别处工具里几乎看不到的。「氛围」是一个同时调整高光和阴影的功能，如果调低氛围，画面高光会增加而阴影会降低，反之亦然。我们这张照片并用不到「氛围」功能。</p><p><img src="https://static001.geekbang.org/resource/image/f7/23/f7b01d089879dcf377cef1yyd8ba6d23.jpg" alt=""></p><p>「暖色调」有些类似于色温调整，增加「暖色调」会让照片整体看起来更暖一些，我这里是略微减少了「暖色调」，照片的暖色会被降低一些。</p><p><img src="https://static001.geekbang.org/resource/image/d6/48/d61f3cecf6a22e68bfaa19ac8f3dac48.jpg" alt=""></p><p>最后，调整饱和度和对比度。在这里，我降低饱和度，让照片颜色看起来更淡一些，同时增加了对比度，使得画面的明暗对比效果更强烈。</p><p>到这里，我们这张照片的后期就全部完成了。</p><p><img src="https://static001.geekbang.org/resource/image/72/77/7203f5386ca069017ef5bd1e009afc77.jpg" alt=""></p><p>在这次示例里，主要是介绍如何利用 SKRWT 进行透视纠正，以及 Snapseed 的基础使用。为了便于你理解，这次的透视纠正是一种极端情况的展示，会导致最终的画质会比较差。在绝大部分时候，我们其实用不着进行这样极端的透视纠正。</p><h2><strong>人来人往的菜场</strong></h2><p><img src="https://static001.geekbang.org/resource/image/b6/f0/b60d8c9ee359c8b9243bae1bfb6ac2f0.jpg" alt=""></p><p>最后一张例图是我在阴天时候拍摄的厦门第八菜市场。我当时拍摄时正逢菜场的人流高峰期，画面里有非常多人。我利用 iPhone 的 Live Photos 功能，将人流以长曝光形式展示了出来。这张照片主要存在两个问题，一个是阴天导致画面看起来比较灰，另一个则是由于算法模拟的长曝光效果，会导致画面看起来不够清晰。</p><p><img src="https://static001.geekbang.org/resource/image/af/d6/af22e76a22f207c48a048ea481ed9cd6.jpg" alt=""></p><p>我们还是将照片导入 VSCO 里来看。VSCO 里有提供非常多的滤镜，你可以直接选择一个符合心理预期的滤镜，随后再进行细化调整。例如这张照片我希望呈现一个整体偏暖的效果，那么我可以在顶部分类里选择「暖」，然后选择合适的滤镜。</p><p>不过，为了你理解后期的思路，我们这里就暂时不用滤镜了。</p><p><img src="https://static001.geekbang.org/resource/image/a3/fd/a305d65f77bdce8786bc4a6be54725fd.jpg" alt=""></p><p>首先依然是裁剪的处理。这张照片的透视也需要一点点纠正，达到横平竖直的效果，由于纠正幅度比较小，画质影响并不大，我就直接使用 VSCO 里的倾斜功能进行纠正。</p><p>二次构图裁剪时，这张照片的主题是菜场，所以我让底部菜场占据画面较大的占比，因为背景天空部分死白一片，有些抢夺视线，于是我选择了 1:1 的比例，来减少天空部分的信息。</p><p>这里不选择完全去掉的原因是考虑到照片不能显得太挤了，所以背景留了一些空间出来。除此之外，还有一些画面边缘细节的调整，去除掉我认为的杂乱信息。</p><p><img src="https://static001.geekbang.org/resource/image/c5/36/c5f48885886d4f380cae717bb6628036.jpg" alt=""></p><p>二次构图完成后，刚才有说到这张照片整体偏淡，所以我们首先还是进行曝光和对比度的调整。</p><p>曝光方面，这次不同于第一张例图的月亮，我们的调整幅度不能过大，否则整张照片看起来就很暗，影响观感。</p><p>对比度方面，通过较大幅度增加对比度，这样便加深了整张照片的色彩。</p><p><img src="https://static001.geekbang.org/resource/image/4c/c2/4c9b8d8a16e58e134bcedc9d47af8ec2.jpg" alt=""></p><p>由于这是一张在菜场的照片，背景也相对比较老旧，我希望体现旧一点的风格，所以在饱和度方面，我选择了降低饱和度，让颜色看起来淡一些，同时这也有助于我们接下来的调色：让整体色调趋向一致。</p><p>对比刚才对比度的调整，你不难发现对比度和饱和度都会对画面色彩有着直接的影响，但是它们的具体效果体现又各不相同。</p><p><img src="https://static001.geekbang.org/resource/image/cc/f6/cc7d4a156197675437153fc4cdb5fdf6.jpg" alt=""></p><p>高光和阴影的调整，我调整了高光部分，这样天空会显得暗一些，适当缓解一片死白的问题，同时菜场的灯泡色彩会显得更好一点。阴影部分则没有做调整。</p><p>进行白平衡的调整时，因为我希望这张照片的风格是偏暖的，于是便将色温调到一个较暖的程度。与此同时，我刚才也说过，结合画面内容，我希望照片看起来风格偏旧一些，所以为照片加一点点绿色，也就是色调偏绿调整，我认为这样照片会看着偏旧一些。</p><p>色温较大幅度调暖后，你会发现，照片在观感上看起来变亮了许多，事实的确如此，所以这时我们需要返回去重新调整曝光和对比度。</p><p><img src="https://static001.geekbang.org/resource/image/20/41/2071456bbea3ecaefaed096bf3df0541.jpg" alt=""></p><p>由于刚才白平衡的调整，对画面亮度和色彩都进行了一些改变，我们需要重新调整曝光和对比度。</p><p>曝光方面，我继续降低曝光，让画面在看起来自然的情况下尽可能暗下来；而对比度方面，我进一步加强了对比度，使得整体颜色更深了一些。</p><p><img src="https://static001.geekbang.org/resource/image/43/84/43896ec496bab483effb7348a2febe84.jpg" alt=""></p><p>我们继续进行色彩的调整。这次打开了色调分离，色调分离是可以分别在阴影部分和高光部分叠加上去一层颜色，这层颜色是分离的，不受我们刚才那些调整项的影响。</p><p>在阴影色调，我添加了一些绿色，原因和之前的一样，为了让照片呈现出较旧的风格；而在高光色调部分，我添加了少许蓝色。这部分颜色主要是添加到画面中的白色部分，这里观感上会影响天空的色彩，我认为天空偏蓝一点，比较符合自然真实的情况，画面也会显得有层次一些。</p><p>至此，我们画面的颜色调整就基本结束了，接下来是一些细节的优化。</p><p><img src="https://static001.geekbang.org/resource/image/ea/49/eaa04a4060bbd93fb2d81d1296461b49.jpg" alt=""></p><p>首先是暗角的添加，让视觉倾向画面中心。由于画面本身就比较暗，所以这里暗角的添加幅度会稍微大一些，但仍然是比较自然的。</p><p>为了符合我做旧风格的表达，我向照片添加了少许颗粒，增加一些旧风格的元素。</p><p><img src="https://static001.geekbang.org/resource/image/2c/75/2c9d491c6e37270117f2e47ccayy0375.jpg" alt=""></p><p>最后，我们最初提出的两个问题，还有一个并没有解决：画面看起来不够清晰。所以，在这里我较大幅度增加了锐化，以及添加了一些清晰度，让照片看上去更清晰一些。</p><p>无论是暗角、颗粒还是锐化、清晰度的调整，你都需要遵循一个原则：在满足需求的情况下适可而止，自然是最好的。</p><p>细节也调整完了，至此，我们这张照片的所有调整工作就完成了。</p><p><img src="https://static001.geekbang.org/resource/image/22/5f/2249de581ec9f0992a369e96b918595f.jpg" alt=""></p><p>最后的效果是这样的。</p><h2><strong>总结</strong></h2><p>在这节课里，我使用 VSCO、Snapseed、SKRWT 这 3 个 App，通过 3 张例图，给你介绍了照片纠正以及所有基础调整选项的使用，并同时分享了一些调色的思路。希望你可以自己去多多尝试调色，你也可以直接下载我的照片原图，参考教程进行一次调色，这样也许更便于理解。</p><p>如果你有任何后期相关问题，无论是否与我们的教程有关，都可以通过留言向我提问，我会一一进行解答。</p><h2><strong>作业</strong></h2><p>这次的作业仍然是关于后期修图的，看完这次后期课程后，相信你对于修图应该有了新的理解。请点击 <a href="https://horde.geekbang.org/channel/list/29"><strong>这里</strong></a> ，进入部落提交 1 张完成后期的照片，内容与风格不限。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            阿丘是兔叽🐰  2020-11-03 11:15:43
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            看见老师在后期开始之前就为每一张照片确定了一个大致的风格或者色调，这个是怎么确定的呢？是通过多练习多感受吗？还是多看看拍的好的照片是怎样处理的？ 
+        </div>
+        
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            草原上的萨日朗  2020-11-02 08:07:34
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            裁剪后不会变几百KB大小的照片就很nice 
+        </div>
+        
+    </div>
+</li>
+            </ul>
+</div>
+</body>
+</html>

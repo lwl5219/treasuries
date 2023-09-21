@@ -1,0 +1,984 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>11-性能脚本：用案例和图示帮你理解HTTP协议</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>11-性能脚本：用案例和图示帮你理解HTTP协议</h1>
+<p>当前使用得最为广泛的应用层协议就是HTTP了。我想了好久，还是觉得应该把HTTP协议写一下。</p><p>因为做性能测试分析的人来说，HTTP协议可能是绕不过去的一个槛。在讲HTTP之前，我们得先知道一些基本的信息。</p><p>HTTP（HyperText Transfer Protocol，超文本传输协议），显然是规定了传输的规则，但是它并没有规定内容的规则。</p><p>HTML（HyperText Marked Language，超文本标记语言），规定的是内容的规则。浏览器之所以能认识传输过来的数据，都是因为浏览器具有相同的解析规则。</p><p>希望你先搞清楚这个区别。</p><p>我们首先关注一下HTTP交互的大体内容。想了很久，画了这么一张图，我觉得它展示了我对HTTP协议在交互过程上的理解。</p><p><img src="https://static001.geekbang.org/resource/image/5f/ba/5fe0f2607000183eb8375cb66cfd41ba.jpg" alt=""></p><p>在这张图中，可以看到这些信息：</p><ol>
+<li>在交互过程中，数据经过了Frame、Ethernet、IP、TCP、HTTP这些层面。不管是发送和接收端，都必须经过这些层。这就意味着，任何每一层出现问题，都会影响HTTP传输。</li>
+<li>在每次传输中，每一层都会加上自己的头信息。这一点要说重要也重要，说不重要也不重要。重要是因为如果这些头出了问题，非常难定位（在我之前的一个项目中，就曾经出现过TCP包头的一个option因为BUG产生了变化，查了两个星期，一层层抓包，最后才找到原因）。不重要是因为它们基本上不会出什么问题。</li>
+<li>HTTP是请求-应答的模式。就是说，有请求，就要有应答。没有应答就是有问题。</li>
+<li>客户端接收到所有的内容之后，还要展示。而这个展示的动作，也就是前端的动作。<strong>在当前主流的性能测试工具中，都是不模拟前端时间的</strong><strong>，</strong>比如说JMeter。我们在运行结束后只能看到结果，但是不会有响应的信息。你也可以选择保存响应信息，但这会导致压力机工作负载高，压力基本上也上不去。也正是因为不存这些内容，才让一台机器模拟成千上百的客户端有了可能。</li>
+</ol><!-- [[[read_end]]] --><p>如果你希望能理解这些层的头都是什么，可以直接抓包来看，比如如下示图：</p><p><img src="https://static001.geekbang.org/resource/image/5c/06/5cb8a2717a30ab54334728e8e7658306.png" alt=""></p><p>从这个图中，我们就能看到各层的内容都是什么。当然了，这些都属于网络协议的知识范围，如果你有兴趣，可以去看一下《TCP/IP详解 卷1：协议》。</p><p>我们还是主要来说一说HTTP层的内容。同样，我希望通过最简单的示例的方式，给你解释一下HTTP的知识，而不是纯讲压力工具，或纯理论。</p><p>在我看来，只有实践的操作和理论的结合，才能真正的融会贯通。只讲压力工具而不讲原理，是不可能学会处理复杂问题的；空有理论没有动手能力是不可能解决实际问题的。</p><p>由于压力工具并不处理客户端页面解析、渲染等动作，所以，以下内容都是从协议层出发的，不包括前端页面层的部分。</p><h2>JMeter脚本</h2><p>在这里，我写了一个简单的HTTP GET请求（由于HTTP2.0在市场上还没有普及，所以这里不做特别说明的话，就是HTTP1.1）。</p><p><img src="https://static001.geekbang.org/resource/image/d1/21/d1dd869b165bf14a06102d452a3a6921.png" alt=""></p><p>在前面的文章中，我已经写过了HTTP GET和POST请求。在这里只解释几个重要信息：</p><p>第一个就是Protocol。</p><p>这个当然重要。从“HTTP”这几个字符中，我们就能知道这个协议有什么特点。 HTTP的特点是建议在TCP之上、无连接（TCP就是它的连接）、无状态（后来加了Cookies、Session技术，用KeepAlive来维持，也算是有状态吧）、请求-响应模式等。</p><p>第二个是Method的选项GET。</p><p>HTTP中有多少个Method呢？我在这里做个说明。在RFC中的HTTP相关的定义中（比如RFC2616、2068），定义了HTTP的方法，如下：GET、POST、PUT、PATCH、DELETE、COPY、HEAD、OPTIONS、LINK、UNLINK、PURGE。</p><p>回到我们文章中的选项中来。GET方法是怎么工作的呢？</p><blockquote>
+<p>The GET method means retrieve whatever information (in the form of an entity) is identified by the Request-URI.</p>
+</blockquote><p>也就是说，GET可以得到由URI请求（定义）的各种信息。同样的，其他方法也有清楚的规定。我们要注意的是，HTTP只规定了你要如何交互。它是交互的协议，就是两个人对话，如何能传递过去？小时候一个人手上拿个纸杯子，中间有根线，相互说话能听到，这就是协议。</p><p>第三个是Path，也就是请求的路径。这个路径是在哪里规定的呢？在我这个Spring Boot的示例中。</p><pre><code>   @RequestMapping(value = &quot;pabcd&quot;)
+    public class PABCDController {
+        @Autowired
+        private PABCDService pabcdService;
+        @Autowired
+        private PABCDRedisService pabcdRedisService;
+        @Autowired
+        private PABCDRedisMqService pabcdRedisMqService;
+        @GetMapping(&quot;/redis_mq/query/{id}&quot;)
+        public ResultVO&lt;User&gt; getRedisMqById(@PathVariable(&quot;id&quot;) String id) {
+            User user = pabcdRedisMqService.getById(id);
+            return ResultVO.&lt;User&gt;builder().success(user).build();
+        }
+</code></pre><p>看到了吧。因为我们定义了request的路径，所以，我们必须在Path中写上<code>/pabcd/redis_mq/query</code>这样的路径。</p><p>第四个是Redirect，重定向。HTTP 3XX的代码都和重定向有关，从示意上来看，如下所示。</p><p><img src="https://static001.geekbang.org/resource/image/1d/73/1d03ddd7a269480b0e38dec3c6bb0f73.jpg" alt=""><br>
+用户发了个URL A到服务A上，服务A返回了HTTP代码302和URL B。 这时用户看到了接着访问URL B，得到了服务B的响应。对于JMeter来说，它可以处理这种重定向。</p><p>第五个是Content-Encoding，内容编码。它是在HTTP的标准中对服务端和客户端之间处理内容做的一种约定。当大家都用相同的编码时，相互都认识，或者有一端可以根据对端的编码进行适配解释，否则就会出现乱码的情况。</p><p>默认是UTF8。但是我们经常会碰到这种情况。当我们发送中文字符的时候。比如下面的名字。</p><p><img src="https://static001.geekbang.org/resource/image/d5/0e/d56493383d4c80469d9af7960e94830e.png" alt=""></p><p>当我们发送出去时，会看到它变成了这种编码。如下图所示：</p><p><img src="https://static001.geekbang.org/resource/image/c1/d0/c1884e6b0a4e071edc0d1e17b8ba3fd0.png" alt=""></p><p>如果服务端不去处理，显然交互就错了。如下图所示：</p><p><img src="https://static001.geekbang.org/resource/image/73/3a/73680e9d1fb278dbd0ab144ffe8a373a.png" alt=""></p><p>这时，只能把配置改为如下：</p><p><img src="https://static001.geekbang.org/resource/image/6c/49/6c48ebfddff84238fb5ea01a175eb449.png" alt=""></p><p>我们这里用GBK来处理中文。就会得到正确的结果。</p><p><img src="https://static001.geekbang.org/resource/image/6d/5f/6dbc3c868b1790c001942bd9d777df5f.png" alt=""></p><p>你就会发现现在用了正常的中文字符。在这个例子，有人选择用URL编码来去处理，会发现处理不了。这是需要注意的地方。</p><p>第六个是超时设置。在HTTP协议中，规定了几种超时时间，分别是连接超时、网关超时、响应超时等。</p><p>如下所示，JMeter中可以设置连接和响应超时：</p><p><img src="https://static001.geekbang.org/resource/image/3b/fd/3b0b351b50b2deeb1cbc6853eeb886fd.png" alt=""></p><p>在工具中，我们可以定义连接和响应的超时时间。但通常情况下，我们不用做这样的规定，只要跟着服务端的超时走就行了。但在有些场景中，不止是应用服务器有超时时间，网络也会有延迟，这些会影响我们的响应时间。如果HTTP默认的120s 超时时间不够，我们可以将这里放大。</p><p>在这里为了演示，我将它设置为100ms。我们来看一下执行的结果是什么样。</p><p><img src="https://static001.geekbang.org/resource/image/ab/50/ab12ae557c1a89cb74de32c0a8ed4a50.png" alt=""></p><p>从栈的信息上就可以看到，在读数据的时候，超时了。</p><p>超时的设置是为了保证数据可以正常地发送到客户端。做性能分析的时候，经常有人听到“超时”这个词就觉得是系统慢导致的，其实有时也是因为配置。</p><p>通常，我们会对系统的超时做梳理，每个服务应该是什么样的超时设置，我们要有全局的考量。比如说：</p><p><img src="https://static001.geekbang.org/resource/image/34/13/34e07921468afe8d5bba61093de97813.jpg" alt=""></p><p>超时应该是逐渐放大的（不管你后面用的是什么协议，超时都应该是这个样子）。而我们现在的系统，经常是所有的服务超时都设置得一样大，或者都是跟着协议的默认超时来。在压力小的时候，还没有什么问题，但是在压力大的时候，就会发现系统因为超时设置不合理而导致业务错误。</p><p>如果倒过来的话，你可以想像，用户都返回超时报错了，后端还在处理着呢，那就更有问题了。</p><p>而我们性能测试人员，都是在压力工具中看到的超时错误。如果后端的系统链路比较长，就需要一层层地往后端去查找，看具体是哪个服务有问题。所以在架构层级来分析超时是非常有必要的。</p><p><img src="https://static001.geekbang.org/resource/image/3b/fd/3b0b351b50b2deeb1cbc6853eeb886fd.png" alt=""></p><p>在上图中，还有一个参数是客户端实现（Client Implementation）。其中有三个选项：空值、HTTPClient4、Java。</p><p>官方给出如下的解释。</p><p>JAVA： 使用JVM提供的HTTP实现，相比HttpClient实现来说，这个实现有一些限制，这个限制我会在后面提到。</p><p>HTTPClient4：使用Apache的HTTP组件HttpClient 4.x实现。</p><p>空值：如果为空，则依赖HTTP Request默认方法，或在<code>jmeter.properties</code>文件中的<code>jmeter.httpsample</code>定义的值。</p><p>用JAVA实现可能会有如下限制。</p><ol>
+<li>在连接复用上没有任何控制。就是当一个连接已经释放之后，同一个线程有可能复用这个已经释放掉的连接。</li>
+<li>API最适用于单线程，但是很多设置都是依赖系统属性值的，所以都应用到所有连接上了。</li>
+<li>不支持 Kerberos Authentication（这是一种计算机网络授权协议，用在非安全网络中，对个人通信以安全的手段进行身份认证）。</li>
+<li>不支持通过keystore配置的客户端证书。</li>
+<li>更容易控制重试机制。</li>
+<li>不支持Virtual hosts。</li>
+<li>只支持这些方法： GET、POST、HEAD、OPTIONS、PUT、DELETE和TRACE。</li>
+<li>使用DNS Cache Manager更容易控制DNS缓存。</li>
+</ol><p>第八个就是HTTP层的压缩。我们经常会听到在性能测试过程中，因为没有压缩，导致网络带宽不够的事情。当我们截获一个HTTP请求时，你会看到如下内容。</p><p><img src="https://static001.geekbang.org/resource/image/3a/64/3a339b618e592c19493cd6acce810364.png" alt=""></p><p>这就是有压缩的情况。在我们常用的Nginx中，会用如下常见配置来支持压缩：</p><pre><code>    gzip  on;   #打开gzip
+    gzip_min_length 2k; #低于2kb的资源不用压缩
+    gzip_comp_level 4; #压缩级别【1-9】值越大，压缩率就越高，但是CPU消耗也越多，根据我们在网上看到建议，大部分都是建议设置为中间4、5之类的，这里我建议大家根据自己的项目实际情况，在压力测试之后给出适合的值。
+    gzip_types text/plain application/javascript;  #设置压缩类型
+    gzip_disable &quot;MSIE [1-6]\.&quot;;  # 禁用gzip的条件，支持正则
+</code></pre><p>在RFC2616中，Content Codings部分定义了压缩的格式gzip 和 Deflate，不过我们现在看到的大部分都是gzip。</p><p>不过在压缩这件事情上，我们在压力工具中并不需要做什么太多的动作，最多也就是加个头。</p><p><img src="https://static001.geekbang.org/resource/image/35/54/3566e5a03656918cc92b9a88596f9054.png" alt=""></p><p>第九个就是并发。在RFC2616中的8.1.1节明确说明了为什么要限制浏览器的并发。大概翻译如下，有兴趣的去读下原文：</p><ol>
+<li>少开TCP链接，可以节省路由和主机（客户端、服务端、代理、网关、通道、缓存）的CPU资源和内存资源。</li>
+<li>HTTP请求和响应可以通过Pipelining在一个连接上发送。Pipelining允许客户端发出多个请求而不用等待每个返回，一个TCP连接更为高效。</li>
+<li>通过减少打开的TCP来减少网络拥堵，也让TCP有充足的时间解决拥堵。</li>
+<li>后续请求不用在TCP三次握手上再花时间，延迟降低。</li>
+<li>因为报告错误时，没有关闭TCP连接的惩罚，而使HTTP可以升级得更为优雅（原文使用gracefully）。</li>
+<li>如果不限制的话，一个客户端发出很多个链接到服务器，服务器的资源可以同时服务的客户端就会减少。</li>
+</ol><p>我们常见的浏览器有如下的并发限制。</p><p><img src="https://static001.geekbang.org/resource/image/ff/ad/ffea49962bdbf58bb0cea66e222dcead.png" alt=""></p><p>在压力工具中，并没有参数来控制这个并发值，如果是在同一个线程中，就是并行着执行下去。</p><p>HTTPS只是加了一个S，就在访问中加了一层。这一层可以说的话题有很多，因为技术原理比较多。还好对性能测试中的脚本部分来说，关系并不大，需要时导进去就可以了。而在性能分析中，基本上除了看下不同产品、不同软件硬件的性能验证之外，其他的也没什么可分析的部分。因为证书是个非常标准的产品，加在中间，就是加密算法和位数也会对性能产生影响。如果执行场景时报：<code>javax.net.ssl.SSLHandshakeException: Remote host closed connection during handshake</code>，就应该把证书也加载进来。</p><p>有了前面这些压力工具中常用的HTTP知识之后，有些人肯定会有一种感觉，总觉得有什么内容没有讲到。对了，就是HTML。前面我们提到了，HTML是属于内容的规则，前端是个宏大的话题，以后有机会详聊。</p><p>其实对我们做性能测试的人来说，无需关心HTTP的内容，我们只要关心数据的流向和处理的逻辑就可以了。至于你是A业务还是B业务，在性能分析中都是一样的，逻辑仍然没有变化。</p><p>从性能测试的角度来看，如果你要模拟页面请求，最多也就是正常实现HTTP的方法GET、POST之类的。它发送和接收的内容，只要符合业务系统的正常流程就可以，这样业务才能正常运行。</p><p>比如说，前面提到的POST请求。如果我们发送了一段JSON。内容如下：</p><pre><code>{
+    &quot;userNumber&quot;: &quot;${Counter}&quot;,
+    &quot;userName&quot;: &quot;Zee_${Counter}&quot;,
+    &quot;orgId&quot;: null,
+    &quot;email&quot;: &quot;test${Counter}@dunshan.com&quot;,
+    &quot;mobile&quot;: &quot;18611865555&quot;
+}
+</code></pre><p>代码中的Service负责接收User对象，同时转换它的是如下代码：</p><pre><code>@Override
+    public String toString() {
+        return &quot;User{&quot; +
+            &quot;id='&quot; + id + '\'' +
+            &quot;, userNumber='&quot; + userNumber + '\'' +
+            &quot;, userName='&quot; + userName + '\'' +
+            &quot;, orgId='&quot; + orgId + '\'' +
+            &quot;, email='&quot; + email + '\'' +
+            &quot;, mobile='&quot; + mobile + '\'' +
+            &quot;, createTime=&quot; + createTime +
+            '}';
+    }
+</code></pre><p>然后通过Service的add方法insert到数据库中，这里后面使用的MyBatis：</p><pre><code>    Boolean result = paRedisService.add(user);
+</code></pre><p>而这些，都属于业务逻辑处理的部分，我们分析时把这个链路都想清楚才可以一层层剥离。</p><h2>总结</h2><p>对于HTTP协议来说，我们在性能分析中，主要关心的部分就是传输字节的大小、超时的设置以及压缩等内容。在编写脚本的时候，要注意HTTP头部，至于Body的内容，只要能让业务跑起来即可。</p><h2>思考题</h2><p>你能说一下为什么压力机不模拟前端吗？</p><p>欢迎你在评论区写下你的思考，也欢迎把这篇文章分享给你的朋友或者同事，一起交流一下。</p><h2>精选留言：</h2>
+        <ul>
+        
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            律飛  2020-01-08 22:39:32
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            为什么压力机不模拟前端吗？<br>性能测试的目的是获得系统性能指标，利用断言判断业务是否成功即可，并不关注前端页面显示内容，所以无需保存响应信息。<br>测试工具时，必须多了解参数，知其然并要知其所依然，才能更高效地更自如地配置参数，准确地满足测试要求。 
+        </div>
+        
+    </div>
+</li>
+            
+<br/>
+
+<li>
+    <div>
+        <div style="color: #888;font-size:15.25px;font-weight:400;            line-height:1.2">
+            晴空  2020-01-08 03:34:29
+        </div>
+        <div style="color:#353535;font-weight:400;white-space:normal;            word-break:break-all;line-height:1.6">
+            你能说一下为什么压力机不模拟前端吗？<br>在当前主流的性能测试工具中，都是不模拟前端时间的，比如说 JMeter。我们在运行结束后只能看到结果，但是不会有响应的信息。你也可以选择保存响应信息，但这会导致压力机工作负载高，压力基本上也上不去。也正是因为不存这些内容，才让一台机器模拟成千上百的客户端有了可能。<br><br>另外前端页面展示还有部分是静态的图片或文字等，这些可以列在性能测试范围内也可以列在性能测试范围外。 
+        </div>
+        <br/>
+<div>
+    <div style="color:#888;font-size:15.25px;font-weight:400;        line-height:1.2">作者回复2020-01-08 12:50:20</div>
+    <div style="color:#353535;font-weight:400;white-space:normal;        word-break:break-all;line-height:1.6">嗯。正确理解了内容。</div>
+</div>
+            
+    </div>
+</li>
+            </ul>
+</div>
+</body>
+</html>

@@ -1,0 +1,925 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>18-CentOS：操作系统级监控及常用计数器解析（下）</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <style>
+        html {
+            color: #333;
+            -webkit-text-size-adjust: 100%;
+            -ms-text-size-adjust: 100%;
+            text-rendering: optimizelegibility;
+            font-family: Helvetica Neue, PingFang SC, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif
+        }
+
+        html.borderbox *,
+        html.borderbox :after,
+        html.borderbox :before {
+            box-sizing: border-box
+        }
+
+        article,
+        aside,
+        blockquote,
+        body,
+        button,
+        code,
+        dd,
+        details,
+        dl,
+        dt,
+        fieldset,
+        figcaption,
+        figure,
+        footer,
+        form,
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6,
+        header,
+        hr,
+        input,
+        legend,
+        li,
+        menu,
+        nav,
+        ol,
+        p,
+        pre,
+        section,
+        td,
+        textarea,
+        th,
+        ul {
+            margin: 0;
+            padding: 0
+        }
+
+        article,
+        aside,
+        details,
+        figcaption,
+        figure,
+        footer,
+        header,
+        menu,
+        nav,
+        section {
+            display: block
+        }
+
+        audio,
+        canvas,
+        video {
+            display: inline-block
+        }
+
+        body,
+        button,
+        input,
+        select,
+        textarea {
+            font: 300 1em/1.8 PingFang SC, Lantinghei SC, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, Helvetica, sans-serif
+        }
+
+        button::-moz-focus-inner,
+        input::-moz-focus-inner {
+            padding: 0;
+            border: 0
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0
+        }
+
+        fieldset,
+        img {
+            border: 0
+        }
+
+        blockquote {
+            position: relative;
+            color: #999;
+            font-weight: 400;
+            border-left: 1px solid #1abc9c;
+            padding-left: 1em;
+            margin: 1em 3em 1em 2em
+        }
+
+        @media only screen and (max-width: 640px) {
+            blockquote {
+                margin: 1em 0
+            }
+        }
+
+        abbr,
+        acronym {
+            border-bottom: 1px dotted;
+            font-variant: normal
+        }
+
+        abbr {
+            cursor: help
+        }
+
+        del {
+            text-decoration: line-through
+        }
+
+        address,
+        caption,
+        cite,
+        code,
+        dfn,
+        em,
+        th,
+        var {
+            font-style: normal;
+            font-weight: 400
+        }
+
+        ol,
+        ul {
+            list-style: none
+        }
+
+        caption,
+        th {
+            text-align: left
+        }
+
+        q:after,
+        q:before {
+            content: ""
+        }
+
+        sub,
+        sup {
+            font-size: 75%;
+            line-height: 0;
+            position: relative
+        }
+
+        :root sub,
+        :root sup {
+            vertical-align: baseline
+        }
+
+        sup {
+            top: -.5em
+        }
+
+        sub {
+            bottom: -.25em
+        }
+
+        a {
+            color: #1abc9c
+        }
+
+        a:hover {
+            text-decoration: underline
+        }
+
+        .typo a {
+            border-bottom: 1px solid #1abc9c
+        }
+
+        .typo a:hover {
+            border-bottom-color: #555;
+            color: #555
+        }
+
+        .typo a:hover,
+        a,
+        ins {
+            text-decoration: none
+        }
+
+        .typo-u,
+        u {
+            text-decoration: underline
+        }
+
+        mark {
+            background: #fffdd1;
+            border-bottom: 1px solid #ffedce;
+            padding: 2px;
+            margin: 0 5px
+        }
+
+        code,
+        pre,
+        pre tt {
+            font-family: Courier, Courier New, monospace
+        }
+
+        pre {
+            background: hsla(0, 0%, 97%, .7);
+            border: 1px solid #ddd;
+            padding: 1em 1.5em;
+            display: block;
+            -webkit-overflow-scrolling: touch
+        }
+
+        hr {
+            border: none;
+            border-bottom: 1px solid #cfcfcf;
+            margin-bottom: .8em;
+            height: 10px
+        }
+
+        .typo-small,
+        figcaption,
+        small {
+            font-size: .9em;
+            color: #888
+        }
+
+        b,
+        strong {
+            font-weight: 700;
+            color: #000
+        }
+
+        [draggable] {
+            cursor: move
+        }
+
+        .clearfix:after,
+        .clearfix:before {
+            content: "";
+            display: table
+        }
+
+        .clearfix:after {
+            clear: both
+        }
+
+        .clearfix {
+            zoom: 1
+        }
+
+        .textwrap,
+        .textwrap td,
+        .textwrap th {
+            word-wrap: break-word;
+            word-break: break-all
+        }
+
+        .textwrap-table {
+            table-layout: fixed
+        }
+
+        .serif {
+            font-family: Palatino, Optima, Georgia, serif
+        }
+
+        .typo-dl,
+        .typo-form,
+        .typo-hr,
+        .typo-ol,
+        .typo-p,
+        .typo-pre,
+        .typo-table,
+        .typo-ul,
+        .typo dl,
+        .typo form,
+        .typo hr,
+        .typo ol,
+        .typo p,
+        .typo pre,
+        .typo table,
+        .typo ul,
+        blockquote {
+            margin-bottom: 1rem
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5,
+        h6 {
+            font-family: PingFang SC, Helvetica Neue, Verdana, Microsoft Yahei, Hiragino Sans GB, Microsoft Sans Serif, WenQuanYi Micro Hei, sans-serif;
+            color: #000;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo-h2,
+        .typo-h3,
+        .typo-h4,
+        .typo-h5,
+        .typo-h6,
+        .typo h1,
+        .typo h2,
+        .typo h3,
+        .typo h4,
+        .typo h5,
+        .typo h6 {
+            margin-top: 1.2em;
+            margin-bottom: .6em;
+            line-height: 1.35
+        }
+
+        .typo-h1,
+        .typo h1 {
+            font-size: 2em
+        }
+
+        .typo-h2,
+        .typo h2 {
+            font-size: 1.8em
+        }
+
+        .typo-h3,
+        .typo h3 {
+            font-size: 1.6em
+        }
+
+        .typo-h4,
+        .typo h4 {
+            font-size: 1.4em
+        }
+
+        .typo-h5,
+        .typo-h6,
+        .typo h5,
+        .typo h6 {
+            font-size: 1.2em
+        }
+
+        .typo-ul,
+        .typo ul {
+            margin-left: 1.3em;
+            list-style: disc
+        }
+
+        .typo-ol,
+        .typo ol {
+            list-style: decimal;
+            margin-left: 1.9em
+        }
+
+        .typo-ol ol,
+        .typo-ol ul,
+        .typo-ul ol,
+        .typo-ul ul,
+        .typo li ol,
+        .typo li ul {
+            margin-bottom: .8em;
+            margin-left: 2em
+        }
+
+        .typo-ol ul,
+        .typo-ul ul,
+        .typo li ul {
+            list-style: circle
+        }
+
+        .typo-table td,
+        .typo-table th,
+        .typo table caption,
+        .typo table td,
+        .typo table th {
+            border: 1px solid #ddd;
+            padding: .5em 1em;
+            color: #666
+        }
+
+        .typo-table th,
+        .typo table th {
+            background: #fbfbfb
+        }
+
+        .typo-table thead th,
+        .typo table thead th {
+            background: hsla(0, 0%, 95%, .7)
+        }
+
+        .typo table caption {
+            border-bottom: none
+        }
+
+        .typo-input,
+        .typo-textarea {
+            -webkit-appearance: none;
+            border-radius: 0
+        }
+
+        .typo-em,
+        .typo em,
+        caption,
+        legend {
+            color: #000;
+            font-weight: inherit
+        }
+
+        .typo-em {
+            position: relative
+        }
+
+        .typo-em:after {
+            position: absolute;
+            top: .65em;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            content: "\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB\30FB"
+        }
+
+        .typo img {
+            max-width: 100%
+        }
+
+        .common-content {
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.75rem;
+            white-space: normal;
+            word-break: normal;
+            font-size: 1rem
+        }
+
+        .common-content img {
+            display: block;
+            max-width: 100%;
+            background-color: #eee
+        }
+
+        .common-content audio,
+        .common-content video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        .common-content center,
+        .common-content font {
+            margin-top: 1rem;
+            display: inline-block
+        }
+
+        .common-content center {
+            width: 100%
+        }
+
+        .common-content pre {
+            margin-top: 1rem;
+            padding-left: 0;
+            padding-right: 0;
+            position: relative;
+            overflow: hidden
+        }
+
+        .common-content pre code {
+            font-size: .8rem;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding-left: 1rem;
+            padding-right: 1rem;
+            overflow-x: auto
+        }
+
+        .common-content hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        .common-content b,
+        .common-content h1,
+        .common-content h2,
+        .common-content h3,
+        .common-content h4,
+        .common-content h5,
+        .common-content strong {
+            font-weight: 700
+        }
+
+        .common-content h1,
+        .common-content h2 {
+            font-size: 1.125rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content h3,
+        .common-content h4,
+        .common-content h5 {
+            font-size: 1rem;
+            margin-bottom: .45rem
+        }
+
+        .common-content p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: .15rem
+        }
+
+        .common-content .orange {
+            color: #ff5a05
+        }
+
+        .common-content .reference {
+            font-size: 1rem;
+            color: #888
+        }
+
+        .custom-rich-content h1 {
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 15.25px;
+            border-bottom: 1px solid #eee;
+            line-height: 2.8
+        }
+
+        .custom-rich-content li,
+        .custom-rich-content p {
+            font-size: 14px;
+            color: #888;
+            line-height: 1.6
+        }
+
+        table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        table.hljs-ln,
+        table.hljs-ln tbody,
+        table.hljs-ln td,
+        table.hljs-ln tr {
+            box-sizing: border-box
+        }
+
+        table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none
+        }
+
+        table.hljs-ln td.hljs-ln-code,
+        table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            font-size: 12px;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            color: #24292e;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+        video::-webkit-media-controls {
+            overflow: hidden !important
+        }
+
+        video::-webkit-media-controls-enclosure {
+            width: calc(100% + 32px);
+            margin-left: auto
+        }
+
+        ._29HP61GA_0 {
+            max-width:800px;
+            margin:0 auto;
+            margin-bottom: 20px;
+            font-weight: 400;
+            color: #353535;
+            line-height: 1.76;
+            white-space: normal;
+            word-break: normal;
+            font-size: 17px;
+            -webkit-transition: background-color .3s ease;
+            transition: background-color .3s ease
+        }
+
+        ._29HP61GA_0 .MathJax_Display {
+            overflow: auto
+        }
+
+        ._29HP61GA_0 .poster {
+            position: fixed;
+            left: -10000px;
+            top: -10000px;
+            overflow: hidden;
+            padding: 1rem;
+            background: #ececec
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy {
+            font-size: 13px;
+            color: #888;
+            position: absolute;
+            right: 1em;
+            top: .5em;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 .richcontent-pre-copy .iconfont {
+            font-size: 12px;
+            margin-right: .2em
+        }
+
+        ._29HP61GA_0 a {
+            color: #fa8919;
+            border-bottom: 1px solid #fa8919
+        }
+
+        ._29HP61GA_0 img {
+            display: block;
+            max-width: 100%;
+            position: relative;
+            left: 50%;
+            -webkit-transform: translateX(-50%);
+            transform: translateX(-50%);
+            background-color: #eee;
+            vertical-align: top;
+            border-radius: 0
+        }
+
+        ._29HP61GA_0 audio,
+        ._29HP61GA_0 video {
+            width: 100%;
+            background-color: #eee
+        }
+
+        ._29HP61GA_0 pre {
+            margin-top: 16px;
+            padding: 34px 0 0;
+            margin-bottom: 30px;
+            position: relative;
+            border-radius: 6px;
+            background: rgba(246, 247, 251, .749);
+            border: 0
+        }
+
+        ._29HP61GA_0 pre code {
+            font-size: 12px;
+            font-family: Consolas, Liberation Mono, Menlo, monospace, Courier;
+            display: block;
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box;
+            margin-left: 16px;
+            margin-right: 16px;
+            overflow-x: scroll
+        }
+
+        ._29HP61GA_0 pre code:after {
+            content: "";
+            height: 30px;
+            width: 100%;
+            display: block
+        }
+
+        ._29HP61GA_0 hr {
+            border: none;
+            margin-top: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-top: 1px solid #f5f5f5;
+            height: 1px;
+            background: none
+        }
+
+        ._29HP61GA_0 h1,
+        ._29HP61GA_0 h2,
+        ._29HP61GA_0 h3,
+        ._29HP61GA_0 h4,
+        ._29HP61GA_0 h5 {
+            margin-bottom: 20px;
+            margin-top: 0;
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 b,
+        ._29HP61GA_0 strong {
+            font-weight: 700
+        }
+
+        ._29HP61GA_0 h1 {
+            font-size: 21px
+        }
+
+        ._29HP61GA_0 h2 {
+            font-size: 20px
+        }
+
+        ._29HP61GA_0 h3 {
+            font-size: 19px
+        }
+
+        ._29HP61GA_0 h4 {
+            font-size: 18px
+        }
+
+        ._29HP61GA_0 h5 {
+            font-size: 17px
+        }
+
+        ._29HP61GA_0 center,
+        ._29HP61GA_0 p {
+            font-weight: 400;
+            color: #353535;
+            margin-top: 0;
+            margin-bottom: 30px;
+            word-break: break-word
+        }
+
+        ._29HP61GA_0 center {
+            text-align: center
+        }
+
+        ._29HP61GA_0 blockquote {
+            margin-top: 0;
+            margin-bottom: 34px;
+            border-left: 3px solid #e8e8e8;
+            padding-left: 17px;
+            color: #353535
+        }
+
+        ._29HP61GA_0 blockquote p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol,
+        ._29HP61GA_0 ul {
+            margin-bottom: 30px
+        }
+
+        ._29HP61GA_0 ol p,
+        ._29HP61GA_0 ul p {
+            margin-top: 0;
+            margin-bottom: 0
+        }
+
+        ._29HP61GA_0 ol {
+            list-style: decimal;
+            margin-left: 20px
+        }
+
+        ._29HP61GA_0 ul li {
+            padding-left: 17px;
+            position: relative;
+            margin-bottom: 10px
+        }
+
+        ._29HP61GA_0 ul li:after {
+            content: "";
+            height: 6px;
+            width: 6px;
+            border-radius: 50%;
+            background: #353535;
+            position: absolute;
+            top: 10px;
+            left: 0
+        }
+
+        ._29HP61GA_0 .orange {
+            color: #fa8919
+        }
+
+        ._29HP61GA_0 .reference {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-right {
+            text-align: right
+        }
+
+        ._29HP61GA_0 .m-center {
+            text-align: center;
+            display: block
+        }
+
+        ._29HP61GA_0 .m-gray {
+            color: #888
+        }
+
+        ._29HP61GA_0 .m-small {
+            font-size: 15px
+        }
+
+        ._29HP61GA_0 table.hljs-ln {
+            margin-bottom: 0;
+            border-spacing: 0;
+            border-collapse: collapse
+        }
+
+        ._29HP61GA_0 table.hljs-ln,
+        ._29HP61GA_0 table.hljs-ln tbody,
+        ._29HP61GA_0 table.hljs-ln td,
+        ._29HP61GA_0 table.hljs-ln tr {
+            -webkit-box-sizing: border-box;
+            box-sizing: border-box
+        }
+
+        ._29HP61GA_0 table.hljs-ln td {
+            padding: 0;
+            border: 0
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            min-width: 15px;
+            font-size: 12px;
+            color: rgba(27, 31, 35, .3);
+            text-align: right;
+            white-space: nowrap;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code,
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-numbers {
+            font-family: SFMono-Regular, Consolas, Liberation Mono, Menlo, Courier, monospace;
+            line-height: 20px;
+            vertical-align: top
+        }
+
+        ._29HP61GA_0 table.hljs-ln td.hljs-ln-code {
+            position: relative;
+            padding-right: 10px;
+            padding-left: 10px;
+            overflow: visible;
+            font-size: 13px;
+            color: #666;
+            word-wrap: normal;
+            white-space: pre
+        }
+
+    </style>
+</head>
+<body>
+<div class="_29HP61GA_0">
+<h1>18-CentOS：操作系统级监控及常用计数器解析（下）</h1>
+<p>在上一篇文章中，我们已经讲了监控系统层面的分析思路以及CPU分析，今天我们分析一下操作系统中其他的层面。</p><p>首先是I/O。</p><h2>I/O</h2><p>I/O其实是挺复杂的一个逻辑，但我们今天只说在做性能分析的时候，应该如何定位问题。</p><p>对性能优化比较有经验的人（或者说见过世面比较多的人）都会知道，当一个系统调到非常精致的程度时，基本上会卡在两个环节上，对计算密集型的应用来说，会卡在CPU上；对I/O密集型的应用来说，瓶颈会卡在I/O上。</p><p>我们对I/O的判断逻辑关系是什么呢？</p><p>我们先画一个I/O基本的逻辑过程。我们很多人嘴上说I/O，其实脑子里想的都是Disk I/O，但实际上一个数据要想写到磁盘当中，没那么容易，步骤并不简单。</p><p><img src="https://static001.geekbang.org/resource/image/9c/a4/9ce93cb1b9449dbb1ccc078e631639a4.jpg" alt=""></p><p>这个简化的图是思虑再三的结果。</p><p>I/O有很多原理细节，那我们如何能快速地做出相应的判断呢？首先要祭出的一个工具就是<code>iostat</code>。</p><p><img src="https://static001.geekbang.org/resource/image/b8/31/b8de645585fa5804e26929c88c579031.png" alt=""></p><p>在这张图中，我们取出一条数据来做详细看下：</p><pre><code>Device:   rrqm/s   wrqm/s     r/s     w/s    rkB/s    wkB/s  avgrq-sz 
+vda        0.00     0.67   18.33  114.33   540.00 54073.33   823.32
+avgqu-sz   await r_await w_await  svctm  %util
+127.01  776.75    1.76  901.01   7.54 100.00 
+</code></pre><p>我解释一下其中几个关键计数器的含义。</p><p><code>svctm</code>代表I/O平均响应时间。请注意，这个计数器，有很多人还把它当个宝一样，实际上在man手册中已经明确说了：“Warning! Do not trust this field any more. This field will be removed in a future sysstat version.” 也就是说，这个数据你爱看就爱，不一定准。</p><!-- [[[read_end]]] --><p><code>w_await</code>表示写入的平均响应时间；<code>r_await</code>表示读取的平均响应时间；<code>r/s</code>表示每秒读取次数；<code>w/s</code>表示每秒写入次数。</p><p>而IO/s的关键计算是这样的：</p><pre><code>IO/s = r/s + w/s = 18.33+114.33 = 132.66
+%util = ( (IO/s * svctm) /1000) * 100% = 100.02564%
+</code></pre><p>这个<code>%util</code>是用<code>svctm</code>算来的，既然<code>svctm</code>都不一定准了，那这个值也只能参考了。还好我们还有其他工具可以接着往深了去定位，那就是<code>iotop</code>。</p><pre><code>Total DISK READ :       2.27 M/s | Total DISK WRITE :	  574.86 M/s
+Actual DISK READ:       3.86 M/s | Actual DISK WRITE:      34.13 M/s
+  TID  PRIO  USER     DISK READ  DISK WRITE  SWAPIN     IO&gt;    COMMAND
+  394 be/3 root        0.00 B/s  441.15 M/s  0.00 % 85.47 % [jbd2/vda1-8]
+32616 be/4 root     1984.69 K/s    3.40 K/s  0.00 % 42.89 % kube-controllers
+13787 be/4 root        0.00 B/s    0.00 B/s  0.00 % 35.41 % [kworker/u4:1]
+...............................
+</code></pre><p>从上面的<code>Total DISK WRITE/READ</code>就可以知道当前的读写到底有多少了，默认是按照<code>I/O</code>列来排序的，这里有<code>Total</code>，也有<code>Actual</code>，并且这两个并不相等，为什么呢？</p><p>因为Total的值显示的是用户态进程与内核态进程之间的速度，而Actual显示的是内核块设备子系统与硬件之间的速度。</p><p>而在<code>I/O</code>交互中，由于存在<code>cache</code>和在内核中会做<code>I/O</code>排序，因此这两个值并不会相同。那如果你要说磁盘的读写能力怎么样，我们应该看的是<code>Actual</code>。这个没啥好说的，因为<code>Total</code>再大，不能真实写到硬盘上也是没用的。</p><p>在下面的线程列表中，通过排序，就可以知道是哪个线程（注意在第一列是TID哦）占的<code>I/O</code>高了。</p><h2>Memory</h2><p>关于内存，要说操作系统的内存管理，那大概开一个新专栏也不为过。但是在性能测试的项目中，如果不做底层的测试，基本上在上层语言开发的系统中，比如说Java、Go、C++等，在分析过程中都直接看业务系统就好了。</p><p>在操作系统中，分析业务应用的时候，我们会关注的内存内容如下面的命令所示：</p><pre><code>[root@7dgroup ~]# free -m             
+ 	     total        used        free      shared  buff/cache   available
+Mem:           3791        1873         421         174        1495        1512
+Swap:             0           0           0
+[root@7dgroup ~]#
+
+</code></pre><p><code>total</code>肯定是要优先看的，其次是<code>available</code>，这个值才是系统真正可用的内存，而不是<code>free</code>。</p><p>因为Linux通常都会把用的内存给<code>cache</code>，但是不一定会用，所以<code>free</code>肯定会越来越少，但是<code>available</code>是计算了<code>buff</code>和<code>cache</code>中不用的内存的，所以只要<code>available</code>多，就表示内存够用。</p><p>当出现内存泄露或因其他原因导致物理内存不够用的时候，操作系统就会调用<code>OOM Killer</code>，这个进程会强制杀死消耗内存大的应用。这个过程是不商量的，然后你在“<code>dmesg</code>”中就会看到如下信息。</p><pre><code>[12766211.187745] Out of memory: Kill process 32188 (java) score 177 or sacrifice child
+[12766211.190964] Killed process 32188 (java) total-vm:5861784kB, anon-rss:1416044kB, file-rss:0kB, shmem-rss:0kB
+</code></pre><p>这种情况只要出现，TPS肯定会掉下来，如果你有负载均衡的话，压力工具中的事务还是可能有成功的。但如果你只有一个应用节点，或者所有应用节点都被<code>OOM Killer</code>给干掉了，那TPS就会是这样的结果。</p><p><img src="https://static001.geekbang.org/resource/image/38/83/38825aee9c3d56819c3e242382bbb483.png" alt=""></p><p>对内存监控，可以看到这样的趋势：</p><p><img src="https://static001.geekbang.org/resource/image/7b/3a/7b2cf887b969f5684b266ee82869663a.png" alt=""></p><p>内存慢慢被耗光，但是杀掉应用进程之后，<code>free</code>内存立即就有了。你看上面这个图，就是一个机器上有两个节点，先被杀了一个，另一个接着泄露，又把内存耗光了，于是又被杀掉，最后内存全都空闲了。</p><p>在我的性能工作生涯中，这样的例子还挺常见。当然对这种情况的分析定位，只看物理内存已经没有意义了，更重要的是看应用的内存是如何被消耗光的。</p><p>对于内存的分析，你还可以用<code>nmon</code>和<code>cat/proc/meminfo</code>看到更多信息。如果你的应用是需要大页处理的，特别是大数据类的应用，需要关注下<code>HugePages</code>相关的计数器。</p><p>内存我们就说到这里，总之，要关注<code>available</code>内存的值。</p><h2>NetWork</h2><p>这里我们就来到了网络分析的部分了，在说握手之前，我们先看网络的分析决策链。</p><p><img src="https://static001.geekbang.org/resource/image/34/8c/349d88e811f26e451a1cbd7585b34b8c.jpg" alt=""></p><p>请看上图中，在判断了瓶颈在网络上之后，如果知道某个进程的网络流量大，首先肯定是要考虑减少流量，当然要在保证业务正常运行，TPS也不降低的情况下。</p><h3>Recv_Q和Send_Q</h3><p>当然我们还要干一件事，就是可能你并不知道是在哪个具体的环节上出了问题，那就要学会判断了。网络<code>I/O</code>栈也并不简单，看下图：</p><p><img src="https://static001.geekbang.org/resource/image/58/0f/5837c5a68264aaf8b5a870281cf8060f.png" alt=""></p><p>数据发送过程是这样的。</p><p>应用把数据给到<code>tcp_wmem</code>就结束它的工作了，由内核接过来之后，经过传输层，再经过队列、环形缓冲区，最后通过网卡发出去。</p><p>数据接收过程则是这样的。</p><p>网卡把数据接过来，经过队列、环形缓冲区，再经过传输层，最后通过<code>tcp_rmem</code>给到应用。</p><p>你似乎懂了对不对？那么在这个过程中，我们有什么需要关注的呢？</p><p>首先肯定是看队列，通过<code>netstat</code>或其他命令可以看到<code>Recv_Q</code>和<code>Send_Q</code>，这两项至少可以告诉你瓶颈会在哪一端。如下图所示：</p><p><img src="https://static001.geekbang.org/resource/image/6f/13/6f2fbd3c7299a64a8a28ace03bf84613.jpg" alt=""></p><p>我画个表清晰地判断一下瓶颈点。</p><p><img src="https://static001.geekbang.org/resource/image/be/d1/bef88cefe67796c856f29dc89f4510d1.png" alt=""></p><p>其实这个过程中，我还没有把防火墙加进去，甚至我都没说<code>NAT</code>的逻辑，这些基础知识你需要自己先做足功课。</p><p>在我们做性能分析的过程中，基本上，基于上面这个表格就够通过接收和发送判断瓶颈点发生在谁身上了。</p><p>但是，要是这些队列都没有值，是不是网络就算好了呢？还不是。</p><h3>三次握手和四次挥手</h3><p>我们先看握手图：</p><p><img src="https://static001.geekbang.org/resource/image/a6/45/a68fb795457f127bb0c24a065bf11945.jpg" alt=""></p><p>我发现一点，很多人以为三次握手是非常容易理解的，但是没几个人能判断出和它相关的问题。</p><p>握手的过程，我就不说了，主要看这里面的两个队列：半连接队列和全连接队列。</p><p>在B只接到第一个<code>syn</code>包的时候，把这个连接放到半连接队列中，当接到<code>ack</code>的时候才放到全连接队列中。这两个队列如果有问题，都到不了发送接收数据的时候，你就看到报错了。</p><p>查看半连接全连接溢出的手段也很简单，像下面这种情况就是半连接没建立起来，半连接队列满了，<code>syn</code>包都被扔掉了。</p><pre><code>[root@7dgroup ~]# netstat -s |grep -i listen    
+8866 SYNs to LISTEN sockets dropped
+</code></pre><p>那么半连接队列和什么参数有关呢？</p><ol>
+<li>代码中的<code>backlog</code>：你是不是想起来了<code>ServerSocket(int port, int backlog)中的backlog</code>？是的，它就是半连接的队列长度，如果它不够了，就会丢掉<code>syn</code>包了。</li>
+<li>还有操作系统的内核参数<code>net.ipv4.tcp_max_syn_backlog</code>。</li>
+</ol><p>而像下面这样的情况呢，就是全连接队列已经满了，但是还有连接要进来，已经超过负荷了。</p><pre><code>[root@7dgroup2 ~]# netstat -s |grep overflow    
+154864 times the listen queue of a socket overflowed
+</code></pre><p>这是在性能分析过程中经常遇到的连接出各种错的原因之一，它和哪些参数有关呢？我列在这里。</p><ol>
+<li><code>net.core.somaxconn</code>：系统中每一个端口最大的监听队列的长度。</li>
+<li><code>net.core.netdev_max_backlog</code>：每个网络接口接收数据包的速率比内核处理这些包的速率快时，允许送到队列的数据包的最大数目。</li>
+<li><code>open_file</code>：文件句柄数。</li>
+</ol><p>我们再来看下四次挥手。我遇到性能测试过程中的挥手问题，有很多都是做性能分析的人在不了解的情况下就去做各种优化动作而产生的。</p><p>先看一下TCP挥手图：</p><p><img src="https://static001.geekbang.org/resource/image/69/88/69a6fc7664ae937d13d241a255989988.jpg" alt=""></p><p>在挥手的逻辑中，和性能相关的问题真的非常少。</p><p>但有一个点是经常会问到的，那就是<code>TIME_WAIT</code>。不知道为什么，很多人看到<code>TIME_WAIT</code>就紧张，就想去处理掉，于是搜索一圈，哦，要改<code>recycle/reuse</code>的TCP参数，要改<code>fin_time_out</code>值。</p><p>至于为什么要处理<code>TIME_WAIT</code>，却没几个人能回答得上来。</p><p>在我的性能工作经验中，只有一种情况要处理<code>TIME_WAIT</code>，那就是<strong>端口不够用</strong>的时候。</p><p><code>TCP/IPv4</code>的标准中，端口最大是65535，还有一些被用了的，所以当我们做压力测试的时候，有些应用由于响应时间非常快，端口就会不够用，这时我们去处理<code>TIME_WAIT</code>的端口，让它复用或尽快释放掉，以支持更多的压力。</p><p>所以处理<code>TIME_WAIT</code>的端口要先判断清楚，如果是其他原因导致的，即使你处理了<code>TIME_WAIT</code>，也没有提升性能的希望。</p><p>如果还有人说，还有一种情况，就是内存不够用。我必须得说，那是我没见过世面了，我至今没见过因为<code>TIME_WAIT</code>的连接数把内存耗光了的。</p><p>一个TCP连接大概占3KB，创建10万个连接，才<code>100000x3KB≈300M</code>左右，何况最多才65535呢？服务器有那么穷吗？</p><h2>System</h2><p>确切地说，在性能测试分析的领域里，System似乎实在是没有什么可写的地方。</p><p>我们最常见的System的计数器是<code>in(interrupts:中断)</code>和<code>cs(context switch：上下文切换)</code>。</p><p><img src="https://static001.geekbang.org/resource/image/c4/06/c4b16ca370a2ffa1482915cf3ad57206.png" alt=""></p><p>因为这是我能找得到的最疯狂的System计数器了。</p><p>中断的逻辑在前面跟你说过了。</p><p><code>cs</code>也比较容易理解，就是CPU不得不转到另一件事情上，听这一句你就会知道，中断时肯定会有<code>cs</code>。但是不止中断会引起cs，还有多任务处理也会导致<code>cs</code>。</p><p>因为<code>cs</code>是被动的，这个值的高和低都不会是问题的原因，只会是一种表现，所以它只能用来做性能分析中的证据数据。</p><p>在我们的这个图中，显然是由于<code>in</code>引起的<code>cs</code>，CPU队列那么高也是由<code>in</code>导致的。像这样的问题，你可以去看我们在上篇文章中提到的<code>si CPU</code>高的那个分析链了。</p><h2>Swap</h2><p>Swap的逻辑是什么呢？它是在磁盘上创建的一个空间，当物理内存不够的时候，可以保存物理内存里的数据。如下图所示：</p><p><img src="https://static001.geekbang.org/resource/image/18/6b/1805402973701416c23c16003af5c06b.jpg" alt=""></p><p>先看和它相关的几个参数。</p><p><img src="https://static001.geekbang.org/resource/image/e2/7f/e29ec84d980fb9e667e41010b209427f.png" alt=""></p><p>也就是说，当操作系统中配置了<code>vm.swappiness</code>是30%，那么当内存用到<code>1-30%=70%</code>的时候，就会发生Swap。</p><p><code>swapiness</code>默认是60%。注意，下面还有一个参数叫<code>vm.min_free_kbytes</code>。即使把<code>vm.swappiness</code>改为0，当内存用到小于<code>vm.min_free_kbytes</code>时照样会发生Swap。</p><p>想关掉Swap就<code>swapoff -a</code>。</p><p>和Swap相关的计数器有：<code>top</code>中的<code>Total</code>、<code>free</code>、<code>used</code>和<code>vmstat</code>里的<code>si</code>、<code>so</code>。</p><p>说到Swap，在性能测试和分析中，我的建议是直接把它关了。</p><p>为什么呢？因为当物理内存不足的时候，不管怎么交换性能都是会下降的，不管是Swap还是磁盘上的其他空间，都是从磁盘上取数据，性能肯定会刷刷往下掉。</p><h2>总结</h2><p>对操作系统的监控及常用计数器的分析会涉及到很多的内容，所以两篇文章可能也是覆盖不全的，我只把在性能测试分析工作中经常见到的计数器解析了一遍。总体来说，你需要记住以下三点：</p><ol>
+<li>监控平台再花哨，都只是提供数据来给你分析的。只要知道了数据的来源、原理、含义，用什么工具都不重要。</li>
+<li>性能分析的时候，不会只看操作系统一个模块或哪几个固定计数器的。这些动态的数据，需要有分析链把它们串起来。</li>
+<li>操作系统提供的监控数据是分析链路中不可缺少的一环，除非你能绕过操作系统，又能很确切地定位出根本原因。</li>
+</ol><h2>思考题</h2><p>我为什么说用什么监控平台并不重要呢？</p><p>欢迎你在评论区写下你的思考，也欢迎把这篇文章分享给你的朋友或者同事，一起交流进步。</p>
+</div>
+</body>
+</html>
