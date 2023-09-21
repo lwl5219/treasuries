@@ -1,0 +1,2406 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 5 Generics</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="ch4.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch6.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch5"><span epub:type="pagebreak" id="page_117" class="calibre15"></span>Chapter 5. Generics
+      </h2>
+      
+      <p class="noindent"><strong class="calibre11">S</strong><small class="calibre13">INCE</small> Java 5, generics have been a part of the language. Before generics, you had to cast
+         every object you read from a collection. If someone accidentally inserted an object
+         of the wrong type, casts could fail at runtime. With generics, you tell the compiler
+         what types of objects are permitted in each collection. The compiler inserts casts
+         for you automatically and tells you <em class="calibre9">at compile time</em> if you try to insert an object of the wrong type. This results in programs that are
+         both safer and clearer, but these benefits, which are not limited to collections,
+         come at a price. This chapter tells you how to maximize the benefits and minimize
+         the complications.
+      </p>
+      
+      <h3 class="h2"><a id="lev26" class="calibre4"></a><strong class="calibre10">Item 26: Don’t use raw types</strong></h3>
+      
+      <p class="noindent">First, a few terms. A class or interface whose declaration has one or more <em class="calibre9">type parameters</em> is a <em class="calibre9">generic</em> class or interface [JLS, 8.1.2, 9.1.2]. For example, the <code class="calibre12">List</code> interface has a single type parameter, <code class="calibre12">E</code>, representing its element type. The full name of the interface is <code class="calibre12">List&lt;E&gt;</code> (read “list of <code class="calibre12">E</code>”), but people often call it <code class="calibre12">List</code> for short. Generic classes and interfaces are collectively known as <em class="calibre9">generic types</em>.
+      </p>
+      
+      <p class="indent">Each generic type defines a set of <em class="calibre9">parameterized types</em>, which consist of the class or interface name followed by an angle-bracketed list
+         of <em class="calibre9">actual type parameters</em> corresponding to the generic type’s formal type parameters [JLS, 4.4, 4.5]. For example,
+         <code class="calibre12">List&lt;String&gt;</code> (read “list of string”) is a parameterized type representing a list whose elements
+         are of type <code class="calibre12">String</code>. (<code class="calibre12">String</code> is the actual type parameter corresponding to the formal type parameter <code class="calibre12">E</code>.)
+      </p>
+      
+      <p class="indent">Finally, each generic type defines a <em class="calibre9">raw type</em>, which is the name of the generic type used without any accompanying type parameters
+         [JLS, 4.8]. For example, the raw type corresponding to <code class="calibre12">List&lt;E&gt;</code> is <code class="calibre12">List</code>. Raw types behave as if all of the generic type information were erased from the
+         type declaration. They exist primarily for compatibility with pre-generics code.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_118"></span>Before generics were added to Java, this would have been an exemplary collection declaration.
+         As of Java 9, it is still legal, but far from exemplary:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex1a" id="pch5ex1" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Raw collection type - don't do this!</strong><br class="calibre7"/>
+         <br class="calibre7"/>
+         // My stamp collection. Contains only Stamp instances.<br class="calibre7"/>
+         private final <strong class="calibre11">Collection</strong> stamps = ... ;
+      </p>
+      
+      <p class="noindent">If you use this declaration today and then accidentally put a coin into your stamp
+         collection, the erroneous insertion compiles and runs without error (though the compiler
+         does emit a vague warning):
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex2a" id="pch5ex2" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Erroneous insertion of coin into stamp collection</strong><br class="calibre7"/>
+         stamps.add(new Coin( ... )); // Emits "unchecked call" warning
+      </p>
+      
+      <p class="noindent">You don’t get an error until you try to retrieve the coin from the stamp collection:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex3a" id="pch5ex3" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Raw iterator type - don't do this!</strong><br class="calibre7"/>
+         for (<strong class="calibre11">Iterator</strong> i = stamps.iterator(); i.hasNext(); )<br class="calibre7"/>
+             Stamp stamp = <strong class="calibre11">(Stamp)</strong> i.next(); <strong class="calibre11">// Throws ClassCastException</strong><br class="calibre7"/>
+                 stamp.cancel();
+      </p>
+      
+      <p class="indent">As mentioned throughout this book, it pays to discover errors as soon as possible
+         after they are made, ideally at compile time. In this case, you don’t discover the
+         error until runtime, long after it has happened, and in code that may be distant from
+         the code containing the error. Once you see the <code class="calibre12">ClassCastException</code>, you have to search through the codebase looking for the method invocation that put
+         the coin into the stamp collection. The compiler can’t help you, because it can’t
+         understand the comment that says, “<code class="calibre12">Contains only Stamp instances</code>.”
+      </p>
+      
+      <p class="indent">With generics, the type declaration contains the information, not the comment:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex4a" id="pch5ex4" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Parameterized collection type - typesafe</strong><br class="calibre7"/>
+         private final <strong class="calibre11">Collection&lt;Stamp&gt;</strong> stamps = ... ;
+      </p>
+      
+      <p class="noindent">From this declaration, the compiler knows that <code class="calibre12">stamps</code> should contain only <code class="calibre12">Stamp</code> instances and <em class="calibre9">guarantees</em> it to be true, assuming your entire codebase compiles without emitting (or suppressing;
+         see <a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>) any warnings. When <code class="calibre12">stamps</code> is declared with a parameterized type declaration, the erroneous insertion generates
+         a compile-time error message that tells you <em class="calibre9">exactly</em> what is wrong:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex5a" id="pch5ex5" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Test.java:9: error: incompatible types: Coin cannot be converted<br class="calibre7"/>
+         to Stamp<br class="calibre7"/>
+             c.add(new Coin());<br class="calibre7"/>
+                       ^
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_119"></span>The compiler inserts invisible casts for you when retrieving elements from collections
+         and guarantees that they won’t fail (assuming, again, that all of your code did not
+         generate or suppress any compiler warnings). While the prospect of accidentally inserting
+         a coin into a stamp collection may appear far-fetched, the problem is real. For example,
+         it is easy to imagine putting a <code class="calibre12">BigInteger</code> into a collection that is supposed to contain only <code class="calibre12">BigDecimal</code> instances.
+      </p>
+      
+      <p class="indent">As noted earlier, it is legal to use raw types (generic types without their type parameters),
+         but you should never do it. <strong class="calibre11">If you use raw types, you lose all the safety and expressiveness benefits of generics.</strong> Given that you shouldn’t use them, why did the language designers permit raw types
+         in the first place? For compatibility. Java was about to enter its second decade when
+         generics were added, and there was an enormous amount of code in existence that did
+         not use generics. It was deemed critical that all of this code remain legal and interoperate
+         with newer code that does use generics. It had to be legal to pass instances of parameterized
+         types to methods that were designed for use with raw types, and vice versa. This requirement,
+         known as <em class="calibre9">migration compatibility</em>, drove the decisions to support raw types and to implement generics using <em class="calibre9">erasure</em> (<a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>).
+      </p>
+      
+      <p class="indent">While you shouldn’t use raw types such as <code class="calibre12">List</code>, it is fine to use types that are parameterized to allow insertion of arbitrary objects,
+         such as <code class="calibre12">List&lt;Object&gt;</code>. Just what is the difference between the raw type <code class="calibre12">List</code> and the parameterized type <code class="calibre12">List&lt;Object&gt;</code>? Loosely speaking, the former has opted out of the generic type system, while the
+         latter has explicitly told the compiler that it is capable of holding objects of any
+         type. While you can pass a <code class="calibre12">List&lt;String&gt;</code> to a parameter of type <code class="calibre12">List</code>, you can’t pass it to a parameter of type <code class="calibre12">List&lt;Object&gt;</code>. There are sub-typing rules for generics, and <code class="calibre12">List&lt;String&gt;</code> is a subtype of the raw type <code class="calibre12">List</code>, but not of the parameterized type <code class="calibre12">List&lt;Object&gt;</code> (<a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>). As a consequence, <strong class="calibre11">you lose type safety if you use a raw type such as</strong> <code class="calibre12"><strong class="calibre11">List</strong></code><strong class="calibre11">, but not if you use a parameterized type such as</strong> <code class="calibre12"><strong class="calibre11">List&lt;Object&gt;</strong></code><strong class="calibre11">.</strong></p>
+      
+      <p class="indent">To make this concrete, consider the following program:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex6a" id="pch5ex6" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Fails at runtime - unsafeAdd method uses a raw type (List)!</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             List&lt;String&gt; strings = new ArrayList&lt;&gt;();<br class="calibre7"/>
+             unsafeAdd(strings, Integer.valueOf(42));<br class="calibre7"/>
+             String s = <strong class="calibre11">strings.get(0); // Has compiler-generated cast</strong><br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         private static void unsafeAdd(<strong class="calibre11">List</strong> list, Object o) {<br class="calibre7"/>
+             list.add(o);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_120"></span>This program compiles, but because it uses the raw type <code class="calibre12">List</code>, you get a warning:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex7a" id="pch5ex7" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Test.java:10: warning: [unchecked] unchecked call to add(E) as a<br class="calibre7"/>
+         member of the raw type List<br class="calibre7"/>
+             list.add(o);<br class="calibre7"/>
+                     ^
+      </p>
+      
+      <p class="noindent">And indeed, if you run the program, you get a <code class="calibre12">ClassCastException</code> when the program tries to cast the result of the invocation <code class="calibre12">strings.get(0)</code>, which is an <code class="calibre12">Integer</code>, to a <code class="calibre12">String</code>. This is a compiler-generated cast, so it’s normally guaranteed to succeed, but in
+         this case we ignored a compiler warning and paid the price.
+      </p>
+      
+      <p class="indent">If you replace the raw type <code class="calibre12">List</code> with the parameterized type <code class="calibre12">List&lt;Object&gt;</code> in the <code class="calibre12">unsafeAdd</code> declaration and try to recompile the program, you’ll find that it no longer compiles
+         but emits the error message:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex8a" id="pch5ex8" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Test.java:5: error: incompatible types: List&lt;String&gt; cannot be<br class="calibre7"/>
+         converted to List&lt;Object&gt;<br class="calibre7"/>
+             unsafeAdd(strings, Integer.valueOf(42));<br class="calibre7"/>
+                 ^
+      </p>
+      
+      <p class="indent">You might be tempted to use a raw type for a collection whose element type is unknown
+         and doesn’t matter. For example, suppose you want to write a method that takes two
+         sets and returns the number of elements they have in common. Here’s how you might
+         write such a method if you were new to generics:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex9a" id="pch5ex9" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Use of raw type for unknown element type - don't do this!</strong><br class="calibre7"/>
+         static int numElementsInCommon(<strong class="calibre11">Set s1, Set s2</strong>) {<br class="calibre7"/>
+             int result = 0;<br class="calibre7"/>
+             for (Object o1 : s1)<br class="calibre7"/>
+                 if (s2.contains(o1))<br class="calibre7"/>
+                     result++;<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This method works but it uses raw types, which are dangerous. The safe alternative
+         is to use <em class="calibre9">unbounded wildcard types</em>. If you want to use a generic type but you don’t know or care what the actual type
+         parameter is, you can use a question mark instead. For example, the unbounded wildcard
+         type for the generic type <code class="calibre12">Set&lt;E&gt;</code> is <code class="calibre12">Set&lt;?&gt;</code> (read “set of some type”). It is the most general parameterized <code class="calibre12">Set</code> type, capable of holding <em class="calibre9">any</em> set. Here is how the <code class="calibre12">numElementsInCommon</code> declaration looks with unbounded wildcard types:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex10a" id="pch5ex10" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Uses unbounded wildcard type - typesafe and flexible</strong><br class="calibre7"/>
+         static int numElementsInCommon(<strong class="calibre11">Set&lt;?&gt; s1, Set&lt;?&gt; s2</strong>) { ... }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_121"></span>What is the difference between the unbounded wildcard type <code class="calibre12">Set&lt;?&gt;</code> and the raw type <code class="calibre12">Set</code>? Does the question mark really buy you anything? Not to belabor the point, but the
+         wildcard type is safe and the raw type isn’t. You can put <em class="calibre9">any</em> element into a collection with a raw type, easily corrupting the collection’s type
+         invariant (as demonstrated by the <code class="calibre12">unsafeAdd</code> method on page 119); <strong class="calibre11">you can’t put any element (other than</strong> <code class="calibre12"><strong class="calibre11">null</strong></code><strong class="calibre11">) into a</strong> <code class="calibre12"><strong class="calibre11">Collection&lt;?&gt;</strong></code><strong class="calibre11">.</strong> Attempting to do so will generate a compile-time error message like this:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex11a" id="pch5ex11" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">WildCard.java:13: error: incompatible types: String cannot be<br class="calibre7"/>
+         converted to CAP#1<br class="calibre7"/>
+             c.add("verboten");<br class="calibre7"/>
+                   ^<br class="calibre7"/>
+           where CAP#1 is a fresh type-variable:<br class="calibre7"/>
+             CAP#1 extends Object from capture of ?
+      </p>
+      
+      <p class="indent">Admittedly this error message leaves something to be desired, but the compiler has
+         done its job, preventing you from corrupting the collection’s type invariant, whatever
+         its element type may be. Not only can’t you put any element (other than <code class="calibre12">null</code>) into a <code class="calibre12">Collection&lt;?&gt;</code>, but you can’t assume anything about the type of the objects that you get out. If
+         these restrictions are unacceptable, you can use <em class="calibre9">generic methods</em> (<a href="ch5.xhtml#lev30" class="calibre8">Item 30</a>) or <em class="calibre9">bounded wildcard types</em> (<a href="ch5.xhtml#lev31" class="calibre8">Item 31</a>).
+      </p>
+      
+      <p class="indent">There are a few minor exceptions to the rule that you should not use raw types. <strong class="calibre11">You must use raw types in class literals.</strong> The specification does not permit the use of parameterized types (though it does
+         permit array types and primitive types) [JLS, 15.8.2]. In other words, <code class="calibre12">List.class</code>, <code class="calibre12">String[].class</code>, and <code class="calibre12">int.class</code> are all legal, but <code class="calibre12">List&lt;String&gt;.class</code> and <code class="calibre12">List&lt;?&gt;.class</code> are not.
+      </p>
+      
+      <p class="indent">A second exception to the rule concerns the <code class="calibre12">instanceof</code> operator. Because generic type information is erased at runtime, it is illegal to
+         use the <code class="calibre12">instanceof</code> operator on parameterized types other than unbounded wildcard types. The use of unbounded
+         wildcard types in place of raw types does not affect the behavior of the <code class="calibre12">instanceof</code> operator in any way. In this case, the angle brackets and question marks are just
+         noise. <strong class="calibre11">This is the preferred way to use the</strong> <code class="calibre12"><strong class="calibre11">instanceof</strong></code> <strong class="calibre11">operator with generic types:</strong></p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex12a" id="pch5ex12" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Legitimate use of raw type - instanceof operator</strong><br class="calibre7"/>
+         if (o instanceof <strong class="calibre11">Set</strong>) {       // Raw type<br class="calibre7"/>
+             <strong class="calibre11">Set&lt;?&gt;</strong> s = <strong class="calibre11">(Set&lt;?&gt;)</strong> o;    // Wildcard type<br class="calibre7"/>
+             ...<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_122"></span>Note that once you’ve determined that <code class="calibre12">o</code> is a <code class="calibre12">Set</code>, you must cast it to the wildcard type <code class="calibre12">Set&lt;?&gt;</code>, not the raw type <code class="calibre12">Set</code>. This is a checked cast, so it will not cause a compiler warning.
+      </p>
+      
+      <p class="indent">In summary, using raw types can lead to exceptions at runtime, so don’t use them.
+         They are provided only for compatibility and interoperability with legacy code that
+         predates the introduction of generics. As a quick review, <code class="calibre12">Set&lt;Object&gt;</code> is a parameterized type representing a set that can contain objects of any type,
+         <code class="calibre12">Set&lt;?&gt;</code> is a wildcard type representing a set that can contain only objects of some unknown
+         type, and <code class="calibre12">Set</code> is a raw type, which opts out of the generic type system. The first two are safe,
+         and the last is not.
+      </p>
+      
+      <p class="indentb">For quick reference, the terms introduced in this item (and a few introduced later
+         in this chapter) are summarized in the following table:
+      </p>
+      
+      <table class="tablewidth">
+         
+         <tbody class="calibre16">
+            
+            <tr class="calibre17">
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Term</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Example</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Item</strong></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Parameterized type</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">List&lt;String&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 26</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Actual type parameter</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">String</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 26</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Generic type</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">List&lt;E&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Items 26, 29</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Formal type parameter</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">E</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 26</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Unbounded wildcard type</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">List&lt;?&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 26</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Raw type</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">List</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 26</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Bounded type parameter</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">&lt;E extends Number&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 29</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Recursive type bound</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">&lt;T extends Comparable&lt;T&gt;&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 30</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Bounded wildcard type</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">List&lt;? extends Number&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 31</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Generic method</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">static &lt;E&gt; List&lt;E&gt; asList(E[] a)</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Item 30</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="table1">
+                  <p class="noindent1">Type token</p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">String.class</code></p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1">Item 33</p>
+               </td>
+               
+            </tr>
+            
+         </tbody>
+         
+      </table>
+      
+      <h3 class="h2"><a id="lev27" class="calibre4"></a><span epub:type="pagebreak" id="page_123" class="calibre15"></span><strong class="calibre10">Item 27: Eliminate unchecked warnings</strong></h3>
+      
+      <p class="noindent">When you program with generics, you will see many compiler warnings: unchecked cast
+         warnings, unchecked method invocation warnings, unchecked parameterized vararg type
+         warnings, and unchecked conversion warnings. The more experience you acquire with
+         generics, the fewer warnings you’ll get, but don’t expect newly written code to compile
+         cleanly.
+      </p>
+      
+      <p class="indent">Many unchecked warnings are easy to eliminate. For example, suppose you accidentally
+         write this declaration:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex13a" id="pch5ex13" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Set&lt;Lark&gt; exaltation = new HashSet();</p>
+      
+      <p class="noindent">The compiler will gently remind you what you did wrong:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex14a" id="pch5ex14" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Venery.java:4: warning: [unchecked] unchecked conversion<br class="calibre7"/>
+                 Set&lt;Lark&gt; exaltation = new HashSet();<br class="calibre7"/>
+                                        ^<br class="calibre7"/>
+           required: Set&lt;Lark&gt;<br class="calibre7"/>
+           found:    HashSet
+      </p>
+      
+      <p class="noindent">You can then make the indicated correction, causing the warning to disappear. Note
+         that you don’t actually have to specify the type parameter, merely to indicate that
+         it’s present with the <em class="calibre9">diamond operator</em> (<code class="calibre12">&lt;&gt;</code>), introduced in Java 7. The compiler will then <em class="calibre9">infer</em> the correct actual type parameter (in this case, <code class="calibre12">Lark</code>):
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex15a" id="pch5ex15" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Set&lt;Lark&gt; exaltation = new HashSet<strong class="calibre11">&lt;&gt;</strong>();
+      </p>
+      
+      <p class="indent">Some warnings will be <em class="calibre9">much</em> more difficult to eliminate. This chapter is filled with examples of such warnings.
+         When you get warnings that require some thought, persevere! <strong class="calibre11">Eliminate every unchecked warning that you can.</strong> If you eliminate all warnings, you are assured that your code is typesafe, which
+         is a very good thing. It means that you won’t get a <code class="calibre12">ClassCastException</code> at runtime, and it increases your confidence that your program will behave as you
+         intended.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">If you can’t eliminate a warning, but you can prove that the code that provoked the
+            warning is typesafe, then (and only then) suppress the warning with an</strong> <code class="calibre12"><strong class="calibre11">@SuppressWarnings("unchecked")</strong></code> <strong class="calibre11">annotation.</strong> If you suppress warnings without first proving that the code is typesafe, you are
+         giving yourself a false sense of security. The code may compile without emitting any
+         warnings, but it can still throw a <code class="calibre12">ClassCastException</code> at runtime. If, however, you ignore unchecked warnings that you know to be safe (instead
+         of suppressing them), you won’t notice when a new warning crops up that represents
+         a real problem. The new warning will get lost amidst all the false alarms that you
+         didn’t silence.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_124"></span>The <code class="calibre12">SuppressWarnings</code> annotation can be used on any declaration, from an individual local variable declaration
+         to an entire class. <strong class="calibre11">Always use the</strong> <code class="calibre12"><strong class="calibre11">SuppressWarnings</strong></code> <strong class="calibre11">annotation on the smallest scope possible.</strong> Typically this will be a variable declaration or a very short method or constructor.
+         Never use <code class="calibre12">SuppressWarnings</code> on an entire class. Doing so could mask critical warnings.
+      </p>
+      
+      <p class="indent">If you find yourself using the <code class="calibre12">SuppressWarnings</code> annotation on a method or constructor that’s more than one line long, you may be
+         able to move it onto a local variable declaration. You may have to declare a new local
+         variable, but it’s worth it. For example, consider this <code class="calibre12">toArray</code> method, which comes from <code class="calibre12">ArrayList</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex16a" id="pch5ex16" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public &lt;T&gt; T[] toArray(T[] a) {<br class="calibre7"/>
+             if (a.length &lt; size)<br class="calibre7"/>
+                return (T[]) Arrays.copyOf(elements, size, a.getClass());<br class="calibre7"/>
+             System.arraycopy(elements, 0, a, 0, size);<br class="calibre7"/>
+             if (a.length &gt; size)<br class="calibre7"/>
+                a[size] = null;<br class="calibre7"/>
+             return a;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If you compile <code class="calibre12">ArrayList</code>, the method generates this warning:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex17a" id="pch5ex17" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">ArrayList.java:305: warning: [unchecked] unchecked cast<br class="calibre7"/>
+                return (T[]) Arrays.copyOf(elements, size, a.getClass());<br class="calibre7"/>
+                                          ^<br class="calibre7"/>
+           required: T[]<br class="calibre7"/>
+           found:    Object[]
+      </p>
+      
+      <p class="indent">It is illegal to put a <code class="calibre12">SuppressWarnings</code> annotation on the return statement, because it isn’t a declaration [JLS, 9.7]. You
+         might be tempted to put the annotation on the entire method, but don’t. Instead, declare
+         a local variable to hold the return value and annotate its declaration, like so:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex18a" id="pch5ex18" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Adding local variable to reduce scope of @SuppressWarnings</strong><br class="calibre7"/>
+         public &lt;T&gt; T[] toArray(T[] a) {<br class="calibre7"/>
+             if (a.length &lt; size) {<br class="calibre7"/>
+                 <strong class="calibre11">// This cast is correct because the array we're creating</strong><br class="calibre7"/>
+                 <strong class="calibre11">// is of the same type as the one passed in, which is T[].</strong><br class="calibre7"/>
+                 <strong class="calibre11">@SuppressWarnings("unchecked") T[] result =</strong><br class="calibre7"/>
+                     <strong class="calibre11">(T[]) Arrays.copyOf(elements, size, a.getClass());</strong><br class="calibre7"/>
+                 <strong class="calibre11">return result;</strong><br class="calibre7"/>
+             }<br class="calibre7"/>
+             System.arraycopy(elements, 0, a, 0, size);<br class="calibre7"/>
+             if (a.length &gt; size)<br class="calibre7"/>
+                 a[size] = null;<br class="calibre7"/>
+             return a;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_125"></span>The resulting method compiles cleanly and minimizes the scope in which unchecked warnings
+         are suppressed.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Every time you use a</strong> <code class="calibre12"><strong class="calibre11">@SuppressWarnings("unchecked")</strong></code> <strong class="calibre11">annotation, add a comment saying why it is safe to do so.</strong> This will help others understand the code, and more importantly, it will decrease
+         the odds that someone will modify the code so as to make the computation unsafe. If
+         you find it hard to write such a comment, keep thinking. You may end up figuring out
+         that the unchecked operation isn’t safe after all.
+      </p>
+      
+      <p class="indent">In summary, unchecked warnings are important. Don’t ignore them. Every unchecked warning
+         represents the potential for a <code class="calibre12">ClassCastException</code> at runtime. Do your best to eliminate these warnings. If you can’t eliminate an unchecked
+         warning and you can prove that the code that provoked it is typesafe, suppress the
+         warning with a <code class="calibre12">@SuppressWarnings("unchecked")</code> annotation in the narrowest possible scope. Record the rationale for your decision
+         to suppress the warning in a comment.
+      </p>
+      
+      <h3 class="h2"><a id="lev28" class="calibre4"></a><span epub:type="pagebreak" id="page_126" class="calibre15"></span><strong class="calibre10">Item 28: Prefer lists to arrays</strong></h3>
+      
+      <p class="noindent">Arrays differ from generic types in two important ways. First, arrays are <em class="calibre9">covariant</em>. This scary-sounding word means simply that if <code class="calibre12">Sub</code> is a subtype of <code class="calibre12">Super</code>, then the array type <code class="calibre12">Sub[]</code> is a subtype of the array type <code class="calibre12">Super[]</code>. Generics, by contrast, are <em class="calibre9">invariant</em>: for any two distinct types <code class="calibre12">Type1</code> and <code class="calibre12">Type2</code>, <code class="calibre12">List&lt;Type1&gt;</code> is neither a subtype nor a supertype of <code class="calibre12">List&lt;Type2&gt;</code> [JLS, 4.10; Naftalin07, 2.5]. You might think this means that generics are deficient,
+         but arguably it is arrays that are deficient. This code fragment is legal:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex19a" id="pch5ex19" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Fails at runtime!</strong><br class="calibre7"/>
+         Object[] objectArray = new Long[1];<br class="calibre7"/>
+         objectArray[0] = "I don't fit in"; <strong class="calibre11">// Throws ArrayStoreException</strong></p>
+      
+      <p class="noindent">but this one is not:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex20a" id="pch5ex20" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Won't compile!</strong><br class="calibre7"/>
+         List&lt;Object&gt; ol = new ArrayList&lt;Long&gt;(); <strong class="calibre11">// Incompatible types</strong><br class="calibre7"/>
+         ol.add("I don't fit in");
+      </p>
+      
+      <p class="noindent">Either way you can’t put a <code class="calibre12">String</code> into a <code class="calibre12">Long</code> container, but with an array you find out that you’ve made a mistake at runtime;
+         with a list, you find out at compile time. Of course, you’d rather find out at compile
+         time.
+      </p>
+      
+      <p class="indent">The second major difference between arrays and generics is that arrays are <em class="calibre9">reified</em> [JLS, 4.7]. This means that arrays know and enforce their element type at runtime.
+         As noted earlier, if you try to put a <code class="calibre12">String</code> into an array of <code class="calibre12">Long</code>, you’ll get an <code class="calibre12">ArrayStoreException</code>. Generics, by contrast, are implemented by <em class="calibre9">erasure</em> [JLS, 4.6]. This means that they enforce their type constraints only at compile time
+         and discard (or <em class="calibre9">erase</em>) their element type information at runtime. Erasure is what allowed generic types
+         to interoperate freely with legacy code that didn’t use generics (<a href="ch5.xhtml#lev26" class="calibre8">Item 26</a>), ensuring a smooth transition to generics in Java 5.
+      </p>
+      
+      <p class="indent">Because of these fundamental differences, arrays and generics do not mix well. For
+         example, it is illegal to create an array of a generic type, a parameterized type,
+         or a type parameter. Therefore, none of these array creation expressions are legal:
+         <code class="calibre12">new List&lt;E&gt;[]</code>, <code class="calibre12">new List&lt;String&gt;[]</code>, <code class="calibre12">new E[]</code>. All will result in <em class="calibre9">generic array creation</em> errors at compile time.
+      </p>
+      
+      <p class="indent">Why is it illegal to create a generic array? Because it isn’t typesafe. If it were
+         legal, casts generated by the compiler in an otherwise correct program could fail
+         at runtime with a <code class="calibre12">ClassCastException</code>. This would violate the fundamental guarantee provided by the generic type system.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_127"></span>To make this more concrete, consider the following code fragment:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex21a" id="pch5ex21" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Why generic array creation is illegal - won't compile!</strong><br class="calibre7"/>
+         List&lt;String&gt;[] stringLists = <strong class="calibre11">new List&lt;String&gt;[1]</strong>;  // (1)<br class="calibre7"/>
+         List&lt;Integer&gt; intList = List.of(42);               // (2)<br class="calibre7"/>
+         Object[] objects = stringLists;                    // (3)<br class="calibre7"/>
+         objects[0] = intList;                              // (4)<br class="calibre7"/>
+         String s = stringLists[0].get(0);                  // (5)
+      </p>
+      
+      <p class="noindent">Let’s pretend that line 1, which creates a generic array, is legal. Line 2 creates
+         and initializes a <code class="calibre12">List&lt;Integer&gt;</code> containing a single element. Line 3 stores the <code class="calibre12">List&lt;String&gt;</code> array into an <code class="calibre12">Object</code> array variable, which is legal because arrays are covariant. Line 4 stores the <code class="calibre12">List&lt;Integer&gt;</code> into the sole element of the <code class="calibre12">Object</code> array, which succeeds because generics are implemented by erasure: the runtime type
+         of a <code class="calibre12">List&lt;Integer&gt;</code> instance is simply <code class="calibre12">List</code>, and the runtime type of a <code class="calibre12">List&lt;String&gt;[]</code> instance is <code class="calibre12">List[]</code>, so this assignment doesn’t generate an <code class="calibre12">ArrayStoreException</code>. Now we’re in trouble. We’ve stored a <code class="calibre12">List&lt;Integer&gt;</code> instance into an array that is declared to hold only <code class="calibre12">List&lt;String&gt;</code> instances. In line 5, we retrieve the sole element from the sole list in this array.
+         The compiler automatically casts the retrieved element to <code class="calibre12">String</code>, but it’s an <code class="calibre12">Integer</code>, so we get a <code class="calibre12">ClassCastException</code> at runtime. In order to prevent this from happening, line 1 (which creates a generic
+         array) must generate a compile-time error.
+      </p>
+      
+      <p class="indent">Types such as <code class="calibre12">E</code>, <code class="calibre12">List&lt;E&gt;</code>, and <code class="calibre12">List&lt;String&gt;</code> are technically known as <em class="calibre9">nonreifiable</em> types [JLS, 4.7]. Intuitively speaking, a non-reifiable type is one whose runtime
+         representation contains less information than its compile-time representation. Because
+         of erasure, the only parameterized types that are reifiable are unbounded wildcard
+         types such as <code class="calibre12">List&lt;?&gt;</code> and <code class="calibre12">Map&lt;?,?&gt;</code> (<a href="ch5.xhtml#lev26" class="calibre8">Item 26</a>). It is legal, though rarely useful, to create arrays of unbounded wildcard types.
+      </p>
+      
+      <p class="indent">The prohibition on generic array creation can be annoying. It means, for example,
+         that it’s not generally possible for a generic collection to return an array of its
+         element type (but see <a href="ch5.xhtml#lev33" class="calibre8">Item 33</a> for a partial solution). It also means that you get confusing warnings when using
+         varargs methods (<a href="ch8.xhtml#lev53" class="calibre8">Item 53</a>) in combination with generic types. This is because every time you invoke a varargs
+         method, an array is created to hold the varargs parameters. If the element type of
+         this array is not reifiable, you get a warning. The <code class="calibre12">SafeVarargs</code> annotation can be used to address this issue (<a href="ch5.xhtml#lev32" class="calibre8">Item 32</a>).
+      </p>
+      
+      <p class="indent">When you get a generic array creation error or an unchecked cast warning on a cast
+         to an array type, the best solution is often to use the collection type <code class="calibre12">List&lt;E&gt;</code> in preference to the array type <code class="calibre12">E[]</code>. You might sacrifice some conciseness or performance, but in exchange you get better
+         type safety and interoperability.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_128"></span>For example, suppose you want to write a <code class="calibre12">Chooser</code> class with a constructor that takes a collection, and a single method that returns
+         an element of the collection chosen at random. Depending on what collection you pass
+         to the constructor, you could use a chooser as a game die, a magic 8-ball, or a data
+         source for a Monte Carlo simulation. Here’s a simplistic implementation without generics:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex22a" id="pch5ex22" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Chooser - a class badly in need of generics!</strong><br class="calibre7"/>
+         public class Chooser {<br class="calibre7"/>
+             private final Object[] choiceArray;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Chooser(Collection choices) {<br class="calibre7"/>
+                 choiceArray = choices.toArray();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Object choose() {<br class="calibre7"/>
+                 Random rnd = ThreadLocalRandom.current();<br class="calibre7"/>
+                 return choiceArray[rnd.nextInt(choiceArray.length)];<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">To use this class, you have to cast the <code class="calibre12">choose</code> method’s return value from <code class="calibre12">Object</code> to the desired type every time you use invoke the method, and the cast will fail
+         at runtime if you get the type wrong. Taking the advice of <a href="ch5.xhtml#lev29" class="calibre8">Item 29</a> to heart, we attempt to modify <code class="calibre12">Chooser</code> to make it generic. Changes are shown in boldface:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex23a" id="pch5ex23" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// A first cut at making Chooser generic - won't compile</strong><br class="calibre7"/>
+         public class Chooser<strong class="calibre11">&lt;T&gt;</strong> {<br class="calibre7"/>
+             private final <strong class="calibre11">T</strong>[] choiceArray;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Chooser(Collection<strong class="calibre11">&lt;T&gt;</strong> choices) {<br class="calibre7"/>
+                 choiceArray = choices.toArray();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             // choose method unchanged<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If you try to compile this class, you’ll get this error message:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex24a" id="pch5ex24" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Chooser.java:9: error: incompatible types: Object[] cannot be<br class="calibre7"/>
+         converted to T[]<br class="calibre7"/>
+                 choiceArray = choices.toArray();<br class="calibre7"/>
+                                              ^<br class="calibre7"/>
+           where T is a type-variable:<br class="calibre7"/>
+             T extends Object declared in class Chooser
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_129"></span>No big deal, you say, I’ll cast the <code class="calibre12">Object</code> array to a <code class="calibre12">T</code> array:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex25a" id="pch5ex25" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="prec">
+         choiceArray = (T[]) choices.toArray();
+      </p>
+      
+      <p class="noindent">This gets rid of the error, but instead you get a warning:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex26a" id="pch5ex26" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Chooser.java:9: warning: [unchecked] unchecked cast<br class="calibre7"/>
+                 choiceArray = (T[]) choices.toArray();<br class="calibre7"/>
+                                                    ^<br class="calibre7"/>
+           required: T[], found: Object[]<br class="calibre7"/>
+           where T is a type-variable:<br class="calibre7"/>
+         T extends Object declared in class Chooser
+      </p>
+      
+      <p class="noindent">The compiler is telling you that it can’t vouch for the safety of the cast at runtime
+         because the program won’t know what type <code class="calibre12">T</code> represents—remember, element type information is erased from generics at runtime.
+         Will the program work? Yes, but the compiler can’t prove it. You could prove it to
+         yourself, put the proof in a comment and suppress the warning with an annotation,
+         but you’re better off eliminating the cause of warning (<a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>).
+      </p>
+      
+      <p class="indent">To eliminate the unchecked cast warning, use a list instead of an array. Here is a
+         version of the <code class="calibre12">Chooser</code> class that compiles without error or warning:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex27a" id="pch5ex27" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// List-based Chooser - typesafe</strong><br class="calibre7"/>
+         public class Chooser&lt;T&gt; {<br class="calibre7"/>
+             private final <strong class="calibre11">List&lt;T&gt;</strong> choiceList;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Chooser(Collection&lt;T&gt; choices) {<br class="calibre7"/>
+                 choiceList = <strong class="calibre11">new ArrayList&lt;&gt;(choices)</strong>;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public T choose() {<br class="calibre7"/>
+                 Random rnd = ThreadLocalRandom.current();<br class="calibre7"/>
+                 return <strong class="calibre11">choiceList.get(rnd.nextInt(choiceList.size()))</strong>;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This version is a tad more verbose, and perhaps a tad slower, but it’s worth it for
+         the peace of mind that you won’t get a <code class="calibre12">ClassCastException</code> at runtime.
+      </p>
+      
+      <p class="indent">In summary, arrays and generics have very different type rules. Arrays are covariant
+         and reified; generics are invariant and erased. As a consequence, arrays provide runtime
+         type safety but not compile-time type safety, and vice versa for generics. As a rule,
+         arrays and generics don’t mix well. If you find yourself mixing them and getting compile-time
+         errors or warnings, your first impulse should be to replace the arrays with lists.
+      </p>
+      
+      <h3 class="h2"><a id="lev29" class="calibre4"></a><span epub:type="pagebreak" id="page_130" class="calibre15"></span><strong class="calibre10">Item 29: Favor generic types</strong></h3>
+      
+      <p class="noindent">It is generally not too difficult to parameterize your declarations and make use of
+         the generic types and methods provided by the JDK. Writing your own generic types
+         is a bit more difficult, but it’s worth the effort to learn how.
+      </p>
+      
+      <p class="indent">Consider the simple (toy) stack implementation from <a href="ch2.xhtml#lev7" class="calibre8">Item 7</a>:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex28a" id="pch5ex28" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Object-based collection - a prime candidate for generics</strong><br class="calibre7"/>
+         public class Stack {<br class="calibre7"/>
+             private <strong class="calibre11">Object</strong>[] elements;<br class="calibre7"/>
+             private int size = 0;<br class="calibre7"/>
+             private static final int DEFAULT_INITIAL_CAPACITY = 16;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Stack() {<br class="calibre7"/>
+                 elements = new <strong class="calibre11">Object</strong>[DEFAULT_INITIAL_CAPACITY];<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public void push(<strong class="calibre11">Object</strong> e) {<br class="calibre7"/>
+                 ensureCapacity();<br class="calibre7"/>
+                 elements[size++] = e;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public <strong class="calibre11">Object</strong> pop() {<br class="calibre7"/>
+                 if (size == 0)<br class="calibre7"/>
+                     throw new EmptyStackException();<br class="calibre7"/>
+                 <strong class="calibre11">Object</strong> result = elements[--size];<br class="calibre7"/>
+                 elements[size] = null; // Eliminate obsolete reference<br class="calibre7"/>
+                 return result;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public boolean isEmpty() {<br class="calibre7"/>
+                 return size == 0;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             private void ensureCapacity() {<br class="calibre7"/>
+                 if (elements.length == size)<br class="calibre7"/>
+                     elements = Arrays.copyOf(elements, 2 * size + 1);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This class should have been parameterized to begin with, but since it wasn’t, we can
+         <em class="calibre9">generify</em> it after the fact. In other words, we can parameterize it without harming clients
+         of the original non-parameterized version. As it stands, the client has to cast objects
+         that are popped off the stack, and those casts might fail at runtime. The first step
+         in generifying a class is to add one or more type parameters to its <span epub:type="pagebreak" id="page_131"></span>declaration. In this case there is one type parameter, representing the element type
+         of the stack, and the conventional name for this type parameter is <code class="calibre12">E</code> (<a href="ch9.xhtml#lev68" class="calibre8">Item 68</a>).
+      </p>
+      
+      <p class="indent">The next step is to replace all the uses of the type <code class="calibre12">Object</code> with the appropriate type parameter and then try to compile the resulting program:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex29a" id="pch5ex29" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Initial attempt to generify Stack - won't compile!</strong><br class="calibre7"/>
+         public class Stack<strong class="calibre11">&lt;E&gt;</strong> {<br class="calibre7"/>
+             private <strong class="calibre11">E</strong>[] elements;<br class="calibre7"/>
+             private int size = 0;<br class="calibre7"/>
+             private static final int DEFAULT_INITIAL_CAPACITY = 16;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Stack() {<br class="calibre7"/>
+                 elements = new <strong class="calibre11">E</strong>[DEFAULT_INITIAL_CAPACITY];<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public void push(<strong class="calibre11">E</strong> e) {<br class="calibre7"/>
+                 ensureCapacity();<br class="calibre7"/>
+                 elements[size++] = e;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public <strong class="calibre11">E</strong> pop() {<br class="calibre7"/>
+                 if (size == 0)<br class="calibre7"/>
+                     throw new EmptyStackException();<br class="calibre7"/>
+                 <strong class="calibre11">E</strong> result = elements[--size];<br class="calibre7"/>
+                 elements[size] = null; // Eliminate obsolete reference<br class="calibre7"/>
+                 return result;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ... // no changes in isEmpty or ensureCapacity<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">You’ll generally get at least one error or warning, and this class is no exception.
+         Luckily, this class generates only one error:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex30a" id="pch5ex30" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Stack.java:8: generic array creation<br class="calibre7"/>
+                 elements = <strong class="calibre11">new E[DEFAULT_INITIAL_CAPACITY]</strong>;<br class="calibre7"/>
+                            ^
+      </p>
+      
+      <p class="indent">As explained in <a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>, you can’t create an array of a non-reifiable type, such as <code class="calibre12">E</code>. This problem arises every time you write a generic type that is backed by an array.
+         There are two reasonable ways to solve it. The first solution directly circumvents
+         the prohibition on generic array creation: create an array of <code class="calibre12">Object</code> and cast <span epub:type="pagebreak" id="page_132"></span>it to the generic array type. Now in place of an error, the compiler will emit a warning.
+         This usage is legal, but it’s not (in general) typesafe:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex31a" id="pch5ex31" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Stack.java:8: warning: [unchecked] unchecked cast<br class="calibre7"/>
+         found: Object[], required: E[]<br class="calibre7"/>
+                 elements = <strong class="calibre11">(E[]) new Object[DEFAULT_INITIAL_CAPACITY]</strong>;<br class="calibre7"/>
+                                ^
+      </p>
+      
+      <p class="indent">The compiler may not be able to prove that your program is typesafe, but you can.
+         You must convince yourself that the unchecked cast will not compromise the type safety
+         of the program. The array in question (<code class="calibre12">elements</code>) is stored in a private field and never returned to the client or passed to any other
+         method. The only elements stored in the array are those passed to the <code class="calibre12">push</code> method, which are of type <code class="calibre12">E</code>, so the unchecked cast can do no harm.
+      </p>
+      
+      <p class="indent">Once you’ve proved that an unchecked cast is safe, suppress the warning in as narrow
+         a scope as possible (<a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>). In this case, the constructor contains only the unchecked array creation, so it’s
+         appropriate to suppress the warning in the entire constructor. With the addition of
+         an annotation to do this, <code class="calibre12">Stack</code> compiles cleanly, and you can use it without explicit casts or fear of a <code class="calibre12">ClassCastException</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex32a" id="pch5ex32" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// The elements array will contain only E instances from push(E).</strong><br class="calibre7"/>
+         <strong class="calibre11">// This is sufficient to ensure type safety, but the runtime</strong><br class="calibre7"/>
+         <strong class="calibre11">// type of the array won't be E[]; it will always be Object[]!</strong><br class="calibre7"/>
+         <strong class="calibre11">@SuppressWarnings("unchecked")</strong><br class="calibre7"/>
+         public Stack() {<br class="calibre7"/>
+             elements = (E[]) new Object[DEFAULT_INITIAL_CAPACITY];<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The second way to eliminate the generic array creation error in <code class="calibre12">Stack</code> is to change the type of the field <code class="calibre12">elements</code> from <code class="calibre12">E[]</code> to <code class="calibre12">Object[]</code>. If you do this, you’ll get a different error:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex33a" id="pch5ex33" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Stack.java:19: incompatible types<br class="calibre7"/>
+         found: Object, required: E<br class="calibre7"/>
+                 <strong class="calibre11">E result = elements[--size];</strong><br class="calibre7"/>
+                                    ^
+      </p>
+      
+      <p class="noindent">You can change this error into a warning by casting the element retrieved from the
+         array to <code class="calibre12">E</code>, but you will get a warning:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex34a" id="pch5ex34" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Stack.java:19: warning: [unchecked] unchecked cast<br class="calibre7"/>
+         found: Object, required: E<br class="calibre7"/>
+                 E result = <strong class="calibre11">(E)</strong> elements[--size];<br class="calibre7"/>
+                                        ^
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_133"></span>Because <code class="calibre12">E</code> is a non-reifiable type, there’s no way the compiler can check the cast at runtime.
+         Again, you can easily prove to yourself that the unchecked cast is safe, so it’s appropriate
+         to suppress the warning. In line with the advice of <a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>, we suppress the warning only on the assignment that contains the unchecked cast,
+         not on the entire <code class="calibre12">pop</code> method:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex35a" id="pch5ex35" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Appropriate suppression of unchecked warning</strong><br class="calibre7"/>
+         public E pop() {<br class="calibre7"/>
+             if (size == 0)<br class="calibre7"/>
+                 throw new EmptyStackException();<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">// push requires elements to be of type E, so cast is correct</strong><br class="calibre7"/>
+             <strong class="calibre11">@SuppressWarnings("unchecked")</strong> E result =<br class="calibre7"/>
+                 (E) elements[--size];<br class="calibre7"/>
+         <br class="calibre7"/>
+             elements[size] = null; // Eliminate obsolete reference<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Both techniques for eliminating the generic array creation have their adherents. The
+         first is more readable: the array is declared to be of type <code class="calibre12">E[]</code>, clearly indicating that it contains only <code class="calibre12">E</code> instances. It is also more concise: in a typical generic class, you read from the
+         array at many points in the code; the first technique requires only a single cast
+         (where the array is created), while the second requires a separate cast each time
+         an array element is read. Thus, the first technique is preferable and more commonly
+         used in practice. It does, however, cause <em class="calibre9">heap pollution</em> (<a href="ch5.xhtml#lev32" class="calibre8">Item 32</a>): the runtime type of the array does not match its compile-time type (unless <code class="calibre12">E</code> happens to be <code class="calibre12">Object</code>). This makes some programmers sufficiently queasy that they opt for the second technique,
+         though the heap pollution is harmless in this situation.
+      </p>
+      
+      <p class="indent">The following program demonstrates the use of our generic <code class="calibre12">Stack</code> class. The program prints its command line arguments in reverse order and converted
+         to uppercase. No explicit cast is necessary to invoke <code class="calibre12">String</code>’s <code class="calibre12">toUpperCase</code> method on the elements popped from the stack, and the automatically generated cast
+         is guaranteed to succeed:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex36a" id="pch5ex36" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Little program to exercise our generic Stack</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             Stack&lt;String&gt; stack = new Stack&lt;&gt;();<br class="calibre7"/>
+             for (String arg : args)<br class="calibre7"/>
+                 stack.push(arg);<br class="calibre7"/>
+             while (!stack.isEmpty())<br class="calibre7"/>
+                 System.out.println(<strong class="calibre11">stack.pop().toUpperCase()</strong>);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_134"></span>The foregoing example may appear to contradict <a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>, which encourages the use of lists in preference to arrays. It is not always possible
+         or desirable to use lists inside your generic types. Java doesn’t support lists natively,
+         so some generic types, such as <code class="calibre12">ArrayList</code>, <em class="calibre9">must</em> be implemented atop arrays. Other generic types, such as <code class="calibre12">HashMap</code>, are implemented atop arrays for performance.
+      </p>
+      
+      <p class="indent">The great majority of generic types are like our <code class="calibre12">Stack</code> example in that their type parameters have no restrictions: you can create a <code class="calibre12">Stack&lt;Object&gt;</code>, <code class="calibre12">Stack&lt;int[]&gt;</code>, <code class="calibre12">Stack&lt;List&lt;String&gt;&gt;</code>, or <code class="calibre12">Stack</code> of any other object reference type. Note that you can’t create a <code class="calibre12">Stack</code> of a primitive type: trying to create a <code class="calibre12">Stack&lt;int&gt;</code> or <code class="calibre12">Stack&lt;double&gt;</code> will result in a compile-time error. This is a fundamental limitation of Java’s generic
+         type system. You can work around this restriction by using boxed primitive types (<a href="ch9.xhtml#lev61" class="calibre8">Item 61</a>).
+      </p>
+      
+      <p class="indent">There are some generic types that restrict the permissible values of their type parameters.
+         For example, consider <code class="calibre12">java.util.concurrent.DelayQueue</code>, whose declaration looks like this:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex37a" id="pch5ex37" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">class DelayQueue<strong class="calibre11">&lt;E extends Delayed&gt;</strong> implements BlockingQueue&lt;E&gt;
+      </p>
+      
+      <p class="noindent">The type parameter list (<code class="calibre12">&lt;E extends Delayed&gt;</code>) requires that the actual type parameter <code class="calibre12">E</code> be a subtype of <code class="calibre12">java.util.concurrent.Delayed</code>. This allows the <code class="calibre12">DelayQueue</code> implementation and its clients to take advantage of <code class="calibre12">Delayed</code> methods on the elements of a <code class="calibre12">DelayQueue</code>, without the need for explicit casting or the risk of a <code class="calibre12">ClassCastException</code>. The type parameter <code class="calibre12">E</code> is known as a <em class="calibre9">bounded type parameter</em>. Note that the subtype relation is defined so that every type is a subtype of itself
+         [JLS, 4.10], so it is legal to create a <code class="calibre12">DelayQueue&lt;Delayed&gt;</code>.
+      </p>
+      
+      <p class="indent">In summary, generic types are safer and easier to use than types that require casts
+         in client code. When you design new types, make sure that they can be used without
+         such casts. This will often mean making the types generic. If you have any existing
+         types that should be generic but aren’t, generify them. This will make life easier
+         for new users of these types without breaking existing clients (<a href="ch5.xhtml#lev26" class="calibre8">Item 26</a>).
+      </p>
+      
+      <h3 class="h2"><a id="lev30" class="calibre4"></a><span epub:type="pagebreak" id="page_135" class="calibre15"></span><strong class="calibre10">Item 30: Favor generic methods</strong></h3>
+      
+      <p class="noindent">Just as classes can be generic, so can methods. Static utility methods that operate
+         on parameterized types are usually generic. All of the “algorithm” methods in <code class="calibre12">Collections</code> (such as <code class="calibre12">binarySearch</code> and <code class="calibre12">sort</code>) are generic.
+      </p>
+      
+      <p class="indent">Writing generic methods is similar to writing generic types. Consider this deficient
+         method, which returns the union of two sets:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex38a" id="pch5ex38" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Uses raw types - unacceptable! (<a href="ch5.xhtml#lev26" class="calibre8">Item 26</a>)</strong><br class="calibre7"/>
+         public static Set union(Set s1, Set s2) {<br class="calibre7"/>
+             Set result = new HashSet(s1);<br class="calibre7"/>
+             result.addAll(s2);<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This method compiles but with two warnings:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex39a" id="pch5ex39" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Union.java:5: warning: [unchecked] unchecked call to<br class="calibre7"/>
+         HashSet(Collection&lt;? extends E&gt;) as a member of raw type HashSet<br class="calibre7"/>
+                 Set result = new HashSet(s1);<br class="calibre7"/>
+                              ^<br class="calibre7"/>
+         Union.java:6: warning: [unchecked] unchecked call to<br class="calibre7"/>
+         addAll(Collection&lt;? extends E&gt;) as a member of raw type Set<br class="calibre7"/>
+                 result.addAll(s2);<br class="calibre7"/>
+                              ^
+      </p>
+      
+      <p class="indent">To fix these warnings and make the method typesafe, modify its declaration to declare
+         a <em class="calibre9">type parameter</em> representing the element type for the three sets (the two arguments and the return
+         value) and use this type parameter throughout the method. <strong class="calibre11">The type parameter list, which declares the type parameters, goes between a method’s
+            modifiers and its return type.</strong> In this example, the type parameter list is <code class="calibre12">&lt;E&gt;</code>, and the return type is <code class="calibre12">Set&lt;E&gt;</code>. The naming conventions for type parameters are the same for generic methods and
+         generic types (<a href="ch5.xhtml#lev29" class="calibre8">Items 29</a>, <a href="ch9.xhtml#lev68" class="calibre8">68</a>):
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex40a" id="pch5ex40" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Generic method</strong><br class="calibre7"/>
+         public static <strong class="calibre11">&lt;E&gt;</strong> Set<strong class="calibre11">&lt;E&gt;</strong> union(Set<strong class="calibre11">&lt;E&gt;</strong> s1, Set<strong class="calibre11">&lt;E&gt;</strong> s2) {<br class="calibre7"/>
+             Set<strong class="calibre11">&lt;E&gt;</strong> result = new HashSet<strong class="calibre11">&lt;&gt;</strong>(s1);<br class="calibre7"/>
+             result.addAll(s2);<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">At least for simple generic methods, that’s all there is to it. This method compiles
+         without generating any warnings and provides type safety as well as ease of <span epub:type="pagebreak" id="page_136"></span>use. Here’s a simple program to exercise the method. This program contains no casts
+         and compiles without errors or warnings:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex41a" id="pch5ex41" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Simple program to exercise generic method</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             Set&lt;String&gt; guys = Set.of("Tom", "Dick", "Harry");<br class="calibre7"/>
+             Set&lt;String&gt; stooges = Set.of("Larry", "Moe", "Curly");<br class="calibre7"/>
+             Set&lt;String&gt; aflCio = union(guys, stooges);<br class="calibre7"/>
+             System.out.println(aflCio);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">When you run the program, it prints <code class="calibre12">[Moe, Tom, Harry, Larry, Curly, Dick]</code>. (The order of the elements in the output is implementation-dependent.)
+      </p>
+      
+      <p class="indent">A limitation of the <code class="calibre12">union</code> method is that the types of all three sets (both input parameters and the return
+         value) have to be exactly the same. You can make the method more flexible by using
+         <em class="calibre9">bounded wildcard types</em> (<a href="ch5.xhtml#lev31" class="calibre8">Item 31</a>).
+      </p>
+      
+      <p class="indent">On occasion, you will need to create an object that is immutable but applicable to
+         many different types. Because generics are implemented by erasure (<a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>), you can use a single object for all required type parameterizations, but you need
+         to write a static factory method to repeatedly dole out the object for each requested
+         type parameterization. This pattern, called the <em class="calibre9">generic singleton factory</em>, is used for function objects (<a href="ch7.xhtml#lev42" class="calibre8">Item 42</a>) such as <code class="calibre12">Collections.reverseOrder</code>, and occasionally for collections such as <code class="calibre12">Collections.emptySet</code>.
+      </p>
+      
+      <p class="indent">Suppose that you want to write an identity function dispenser. The libraries provide
+         <code class="calibre12">Function.identity</code>, so there’s no reason to write your own (<a href="ch9.xhtml#lev59" class="calibre8">Item 59</a>), but it is instructive. It would be wasteful to create a new identity function object
+         time one is requested, because it’s stateless. If Java’s generics were reified, you
+         would need one identity function per type, but since they’re erased a generic singleton
+         will suffice. Here’s how it looks:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex42a" id="pch5ex42" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Generic singleton factory pattern</strong><br class="calibre7"/>
+         private static UnaryOperator&lt;Object&gt; IDENTITY_FN = (t) -&gt; t;<br class="calibre7"/>
+         <br class="calibre7"/>
+         <strong class="calibre11">@SuppressWarnings("unchecked")</strong><br class="calibre7"/>
+         public static &lt;T&gt; UnaryOperator&lt;T&gt; identityFunction() {<br class="calibre7"/>
+             return <strong class="calibre11">(UnaryOperator&lt;T&gt;)</strong> IDENTITY_FN;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The cast of <code class="calibre12">IDENTITY_FN</code> to <code class="calibre12">(UnaryFunction&lt;T&gt;)</code> generates an unchecked cast warning, as <code class="calibre12">UnaryOperator&lt;Object&gt;</code> is not a <code class="calibre12">UnaryOperator&lt;T&gt;</code> for every <code class="calibre12">T</code>. But the identity function is special: it returns its argument unmodified, so we
+         know that it is typesafe to use it as a <code class="calibre12">UnaryFunction&lt;T&gt;</code>, whatever the value of <code class="calibre12">T</code>. <span epub:type="pagebreak" id="page_137"></span>Therefore, we can confidently suppress the unchecked cast warning generated by this
+         cast. Once we’ve done this, the code compiles without error or warning.
+      </p>
+      
+      <p class="indent">Here is a sample program that uses our generic singleton as a <code class="calibre12">UnaryOperator&lt;String&gt;</code> and a <code class="calibre12">UnaryOperator&lt;Number&gt;</code>. As usual, it contains no casts and compiles without errors or warnings:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex43a" id="pch5ex43" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Sample program to exercise generic singleton</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             String[] strings = { "jute", "hemp", "nylon" };<br class="calibre7"/>
+             UnaryOperator&lt;String&gt; sameString = identityFunction();<br class="calibre7"/>
+             for (String s : strings)<br class="calibre7"/>
+                 System.out.println(sameString.apply(s));<br class="calibre7"/>
+         <br class="calibre7"/>
+             Number[] numbers = { 1, 2.0, 3L };<br class="calibre7"/>
+             UnaryOperator&lt;Number&gt; sameNumber = identityFunction();<br class="calibre7"/>
+             for (Number n : numbers)<br class="calibre7"/>
+                 System.out.println(sameNumber.apply(n));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">It is permissible, though relatively rare, for a type parameter to be bounded by some
+         expression involving that type parameter itself. This is what’s known as a <em class="calibre9">recursive type bound</em>. A common use of recursive type bounds is in connection with the <code class="calibre12">Comparable</code> interface, which defines a type’s natural ordering (<a href="ch3.xhtml#lev14" class="calibre8">Item 14</a>). This interface is shown here:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex44a" id="pch5ex44" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public interface Comparable&lt;T&gt; {<br class="calibre7"/>
+             int compareTo(T o);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The type parameter <code class="calibre12">T</code> defines the type to which elements of the type implementing <code class="calibre12">Comparable&lt;T&gt;</code> can be compared. In practice, nearly all types can be compared only to elements of
+         their own type. So, for example, <code class="calibre12">String</code> implements <code class="calibre12">Comparable&lt;String&gt;</code>, <code class="calibre12">Integer</code> implements <code class="calibre12">Comparable&lt;Integer&gt;</code>, and so on.
+      </p>
+      
+      <p class="indent">Many methods take a collection of elements implementing <code class="calibre12">Comparable</code> to sort it, search within it, calculate its minimum or maximum, and the like. To
+         do these things, it is required that every element in the collection be comparable
+         to every other element in it, in other words, that the elements of the list be <em class="calibre9">mutually comparable</em>. Here is how to express that constraint:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex45a" id="pch5ex45" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using a recursive type bound to express mutual comparability</strong><br class="calibre7"/>
+         public static <strong class="calibre11">&lt;E extends Comparable&lt;E&gt;&gt;</strong> E max(Collection&lt;E&gt; c);
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_138"></span>The type bound <code class="calibre12">&lt;E extends Comparable&lt;E&gt;&gt;</code> may be read as “any type <code class="calibre12">E</code> that can be compared to itself,” which corresponds more or less precisely to the
+         notion of mutual comparability.
+      </p>
+      
+      <p class="indent">Here is a method to go with the previous declaration. It calculates the maximum value
+         in a collection according to its elements’ natural order, and it compiles without
+         errors or warnings:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex46a" id="pch5ex46" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Returns max value in a collection - uses recursive type bound</strong><br class="calibre7"/>
+         public static &lt;E extends Comparable&lt;E&gt;&gt; E max(Collection&lt;E&gt; c) {<br class="calibre7"/>
+             if (c.isEmpty())<br class="calibre7"/>
+                 throw new IllegalArgumentException("Empty collection");<br class="calibre7"/>
+         <br class="calibre7"/>
+             E result = null;<br class="calibre7"/>
+             for (E e : c)<br class="calibre7"/>
+                 if (result == null || e.compareTo(result) &gt; 0)<br class="calibre7"/>
+                     result = Objects.requireNonNull(e);<br class="calibre7"/>
+         <br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Note that this method throws <code class="calibre12">IllegalArgumentException</code> if the list is empty. A better alternative would be to return an <code class="calibre12">Optional&lt;E&gt;</code> (<a href="ch8.xhtml#lev55" class="calibre8">Item 55</a>).
+      </p>
+      
+      <p class="indent">Recursive type bounds can get much more complex, but luckily they rarely do. If you
+         understand this idiom, its wildcard variant (<a href="ch5.xhtml#lev31" class="calibre8">Item 31</a>), and the <em class="calibre9">simulated self-type</em> idiom (<a href="ch2.xhtml#lev2" class="calibre8">Item 2</a>), you’ll be able to deal with most of the recursive type bounds you encounter in
+         practice.
+      </p>
+      
+      <p class="indent">In summary, generic methods, like generic types, are safer and easier to use than
+         methods requiring their clients to put explicit casts on input parameters and return
+         values. Like types, you should make sure that your methods can be used without casts,
+         which often means making them generic. And like types, you should generify existing
+         methods whose use requires casts. This makes life easier for new users without breaking
+         existing clients (<a href="ch5.xhtml#lev26" class="calibre8">Item 26</a>).
+      </p>
+      
+      <h3 class="h2"><a id="lev31" class="calibre4"></a><span epub:type="pagebreak" id="page_139" class="calibre15"></span><strong class="calibre10">Item 31: Use bounded wildcards to increase API flexibility</strong></h3>
+      
+      <p class="noindent">As noted in <a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>, parameterized types are <em class="calibre9">invariant</em>. In other words, for any two distinct types <code class="calibre12">Type1</code> and <code class="calibre12">Type2</code>, <code class="calibre12">List&lt;Type1&gt;</code> is neither a subtype nor a supertype of <code class="calibre12">List&lt;Type2&gt;</code>. Although it is counterintuitive that <code class="calibre12">List&lt;String&gt;</code> is not a subtype of <code class="calibre12">List&lt;Object&gt;</code>, it really does make sense. You can put any object into a <code class="calibre12">List&lt;Object&gt;</code>, but you can put only strings into a <code class="calibre12">List&lt;String&gt;</code>. Since a <code class="calibre12">List&lt;String&gt;</code> can’t do everything a <code class="calibre12">List&lt;Object&gt;</code> can, it isn’t a subtype (by the Liskov substitution principal, <a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>).
+      </p>
+      
+      <p class="indent">Sometimes you need more flexibility than invariant typing can provide. Consider the
+         <code class="calibre12">Stack</code> class from <a href="ch5.xhtml#lev29" class="calibre8">Item 29</a>. To refresh your memory, here is its public API:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex47a" id="pch5ex47" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Stack&lt;E&gt; {<br class="calibre7"/>
+             public Stack();<br class="calibre7"/>
+             public void push(E e);<br class="calibre7"/>
+             public E pop();<br class="calibre7"/>
+             public boolean isEmpty();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Suppose we want to add a method that takes a sequence of elements and pushes them
+         all onto the stack. Here’s a first attempt:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex48a" id="pch5ex48" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// pushAll method without wildcard type - deficient!</strong><br class="calibre7"/>
+         public void pushAll(Iterable&lt;E&gt; src) {<br class="calibre7"/>
+             for (E e : src)<br class="calibre7"/>
+                 push(e);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This method compiles cleanly, but it isn’t entirely satisfactory. If the element type
+         of the <code class="calibre12">Iterable src</code> exactly matches that of the stack, it works fine. But suppose you have a <code class="calibre12">Stack&lt;Number&gt;</code> and you invoke <code class="calibre12">push(intVal)</code>, where <code class="calibre12">intVal</code> is of type <code class="calibre12">Integer</code>. This works because <code class="calibre12">Integer</code> is a subtype of <code class="calibre12">Number</code>. So logically, it seems that this should work, too:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex49a" id="pch5ex49" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Stack&lt;Number&gt; numberStack = new Stack&lt;&gt;();<br class="calibre7"/>
+         Iterable&lt;Integer&gt; integers = ... ;<br class="calibre7"/>
+         numberStack.pushAll(integers);
+      </p>
+      
+      <p class="noindent">If you try it, however, you’ll get this error message because parameterized types
+         are invariant:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex50a" id="pch5ex50" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">StackTest.java:7: error: incompatible types: Iterable&lt;Integer&gt;<br class="calibre7"/>
+         cannot be converted to Iterable&lt;Number&gt;<br class="calibre7"/>
+                 numberStack.pushAll(integers);<br class="calibre7"/>
+                                     ^
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_140"></span>Luckily, there’s a way out. The language provides a special kind of parameterized
+         type call a <em class="calibre9">bounded wildcard type</em> to deal with situations like this. The type of the input parameter to <code class="calibre12">pushAll</code> should not be “<code class="calibre12">Iterable</code> of <code class="calibre12">E</code>” but “<code class="calibre12">Iterable</code> of some subtype of <code class="calibre12">E</code>,” and there is a wildcard type that means precisely that: <code class="calibre12">Iterable&lt;? extends E&gt;</code>. (The use of the keyword <code class="calibre12">extends</code> is slightly misleading: recall from <a href="ch5.xhtml#lev29" class="calibre8">Item 29</a> that <em class="calibre9">subtype</em> is defined so that every type is a subtype of itself, even though it does not extend
+         itself.) Let’s modify <code class="calibre12">pushAll</code> to use this type:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex51a" id="pch5ex51" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Wildcard type for a parameter that serves as an E producer</strong><br class="calibre7"/>
+         public void pushAll(<strong class="calibre11">Iterable&lt;? extends E&gt;</strong> src) {<br class="calibre7"/>
+             for (E e : src)<br class="calibre7"/>
+                 push(e);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">With this change, not only does <code class="calibre12">Stack</code> compile cleanly, but so does the client code that wouldn’t compile with the original
+         <code class="calibre12">pushAll</code> declaration. Because <code class="calibre12">Stack</code> and its client compile cleanly, you know that everything is typesafe.
+      </p>
+      
+      <p class="indent">Now suppose you want to write a <code class="calibre12">popAll</code> method to go with <code class="calibre12">pushAll</code>. The <code class="calibre12">popAll</code> method pops each element off the stack and adds the elements to the given collection.
+         Here’s how a first attempt at writing the <code class="calibre12">popAll</code> method might look:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex52a" id="pch5ex52" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// popAll method without wildcard type - deficient!</strong><br class="calibre7"/>
+         public void popAll(Collection&lt;E&gt; dst) {<br class="calibre7"/>
+             while (!isEmpty())<br class="calibre7"/>
+                 dst.add(pop());<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Again, this compiles cleanly and works fine if the element type of the destination
+         collection exactly matches that of the stack. But again, it isn’t entirely satisfactory.
+         Suppose you have a <code class="calibre12">Stack&lt;Number&gt;</code> and variable of type <code class="calibre12">Object</code>. If you pop an element from the stack and store it in the variable, it compiles and
+         runs without error. So shouldn’t you be able to do this, too?
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex53a" id="pch5ex53" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Stack&lt;Number&gt; numberStack = new Stack&lt;Number&gt;();<br class="calibre7"/>
+         Collection&lt;Object&gt; objects = ... ;<br class="calibre7"/>
+         numberStack.popAll(objects);
+      </p>
+      
+      <p class="noindent">If you try to compile this client code against the version of <code class="calibre12">popAll</code> shown earlier, you’ll get an error very similar to the one that we got with our first
+         version of <code class="calibre12">pushAll</code>: <code class="calibre12">Collection&lt;Object&gt;</code> is not a subtype of <code class="calibre12">Collection&lt;Number&gt;</code>. Once again, wildcard types provide a way out. The type of the input parameter to
+         <span epub:type="pagebreak" id="page_141"></span><code class="calibre12">popAll</code> should not be “collection of <code class="calibre12">E</code>” but “collection of some supertype of <code class="calibre12">E</code>” (where supertype is defined such that <code class="calibre12">E</code> is a supertype of itself [JLS, 4.10]). Again, there is a wildcard type that means
+         precisely that: <code class="calibre12">Collection&lt;? super E&gt;</code>. Let’s modify <code class="calibre12">popAll</code> to use it:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex54a" id="pch5ex54" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Wildcard type for parameter that serves as an E consumer</strong><br class="calibre7"/>
+         public void popAll(<strong class="calibre11">Collection&lt;? super E&gt;</strong> dst) {<br class="calibre7"/>
+             while (!isEmpty())<br class="calibre7"/>
+                 dst.add(pop());<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">With this change, both <code class="calibre12">Stack</code> and the client code compile cleanly.
+      </p>
+      
+      <p class="indent">The lesson is clear. <strong class="calibre11">For maximum flexibility, use wildcard types on input parameters that represent producers
+            or consumers.</strong> If an input parameter is both a producer and a consumer, then wildcard types will
+         do you no good: you need an exact type match, which is what you get without any wildcards.
+      </p>
+      
+      <p class="indent">Here is a mnemonic to help you remember which wildcard type to use:</p>
+      
+      <p class="center"><strong class="calibre11">PECS stands for producer-</strong><code class="calibre12"><strong class="calibre11">extends</strong></code><strong class="calibre11">, consumer-</strong><code class="calibre12"><strong class="calibre11">super</strong></code><strong class="calibre11">.</strong></p>
+      
+      <p class="noindent">In other words, if a parameterized type represents a <code class="calibre12">T</code> producer, use <code class="calibre12">&lt;? extends T&gt;</code>; if it represents a <code class="calibre12">T</code> consumer, use <code class="calibre12">&lt;? super T&gt;</code>. In our <code class="calibre12">Stack</code> example, <code class="calibre12">pushAll</code>’s <code class="calibre12">src</code> parameter produces <code class="calibre12">E</code> instances for use by the <code class="calibre12">Stack</code>, so the appropriate type for <code class="calibre12">src</code> is <code class="calibre12">Iterable&lt;? extends E&gt;</code>; <code class="calibre12">popAll</code>’s <code class="calibre12">dst</code> parameter consumes <code class="calibre12">E</code> instances from the <code class="calibre12">Stack</code>, so the appropriate type for <code class="calibre12">dst</code> is <code class="calibre12">Collection&lt;? super E&gt;</code>. The PECS mnemonic captures the fundamental principle that guides the use of wild-card
+         types. Naftalin and Wadler call it the <em class="calibre9">Get and Put Principle</em> [Naftalin07, 2.4].
+      </p>
+      
+      <p class="indent">With this mnemonic in mind, let’s take a look at some method and constructor declarations
+         from previous items in this chapter. The <code class="calibre12">Chooser</code> constructor in <a href="ch5.xhtml#lev28" class="calibre8">Item 28</a> has this declaration:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex55a" id="pch5ex55" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public Chooser(Collection&lt;T&gt; choices)</p>
+      
+      <p class="noindent">This constructor uses the collection <code class="calibre12">choices</code> only to <strong class="calibre11">produce</strong> values of type <code class="calibre12">T</code> (and stores them for later use), so its declaration should use a wildcard type that
+         <code class="calibre12"><strong class="calibre11">extends</strong> T</code>. Here’s the resulting constructor declaration:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex56a" id="pch5ex56" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Wildcard type for parameter that serves as an T producer</strong><br class="calibre7"/>
+         public Chooser(Collection&lt;<strong class="calibre11">? extends T</strong>&gt; choices)
+      </p>
+      
+      <p class="indent">And would this change make any difference in practice? Yes, it would. Suppose you
+         have a <code class="calibre12">List&lt;Integer&gt;</code>, and you want to pass it in to the constructor <span epub:type="pagebreak" id="page_142"></span>for a <code class="calibre12">Chooser&lt;Number&gt;</code>. This would not compile with the original declaration, but it does once you add the
+         bounded wildcard type to the declaration.
+      </p>
+      
+      <p class="indent">Now let’s look at the <code class="calibre12">union</code> method from <a href="ch5.xhtml#lev30" class="calibre8">Item 30</a>. Here is the declaration:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex57a" id="pch5ex57" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static &lt;E&gt; Set&lt;E&gt; union(Set&lt;E&gt; s1, Set&lt;E&gt; s2)</p>
+      
+      <p class="noindent">Both parameters, <code class="calibre12">s1</code> and <code class="calibre12">s2</code>, are <code class="calibre12">E</code> producers, so the PECS mnemonic tells us that the declaration should be as follows:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex58a" id="pch5ex58" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static &lt;E&gt; Set&lt;E&gt; union(Set&lt;? extends E&gt; s1,<br class="calibre7"/>
+                                        Set&lt;? extends E&gt; s2)
+      </p>
+      
+      <p class="noindent">Note that the return type is still <code class="calibre12">Set&lt;E&gt;</code>. <strong class="calibre11">Do not use bounded wildcard types as return types.</strong> Rather than providing additional flexibility for your users, it would force them
+         to use wildcard types in client code. With the revised declaration, this code will
+         compile cleanly:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex59a" id="pch5ex59" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Set&lt;Integer&gt;  integers =  Set.of(1, 3, 5);<br class="calibre7"/>
+         Set&lt;Double&gt;   doubles  =  Set.of(2.0, 4.0, 6.0);<br class="calibre7"/>
+         Set&lt;Number&gt;   numbers  =  union(integers, doubles);
+      </p>
+      
+      <p class="indent">Properly used, wildcard types are nearly invisible to the users of a class. They cause
+         methods to accept the parameters they should accept and reject those they should reject.
+         <strong class="calibre11">If the user of a class has to think about wildcard types, there is probably something
+            wrong with its API.</strong></p>
+      
+      <p class="indent">Prior to Java 8, the type inference rules were not clever enough to handle the previous
+         code fragment, which requires the compiler to use the contextually specified return
+         type (or <em class="calibre9">target type</em>) to infer the type of <code class="calibre12">E</code>. The target type of the <code class="calibre12">union</code> invocation shown earlier is <code class="calibre12">Set&lt;Number&gt;</code>. If you try to compile the fragment in an earlier version of Java (with an appropriate
+         replacement for the <code class="calibre12">Set.of</code> factory), you’ll get a long, convoluted error message like this:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex60a" id="pch5ex60" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Union.java:14: error: incompatible types<br class="calibre7"/>
+                 Set&lt;Number&gt; numbers = union(integers, doubles);<br class="calibre7"/>
+                                            ^<br class="calibre7"/>
+           required: Set&lt;Number&gt;<br class="calibre7"/>
+           found:    Set&lt;INT#1&gt;<br class="calibre7"/>
+           where INT#1,INT#2 are intersection types:<br class="calibre7"/>
+             INT#1 extends Number,Comparable&lt;? extends INT#2&gt;<br class="calibre7"/>
+             INT#2 extends Number,Comparable&lt;?&gt;
+      </p>
+      
+      <p class="indent">Luckily there is a way to deal with this sort of error. If the compiler doesn’t infer
+         the correct type, you can always tell it what type to use with an <em class="calibre9">explicit type <span epub:type="pagebreak" id="page_143"></span>argument</em> [JLS, 15.12]. Even prior to the introduction of target typing in Java 8, this isn’t
+         something that you had to do often, which is good because explicit type arguments
+         aren’t very pretty. With the addition of an explicit type argument, as shown here,
+         the code fragment compiles cleanly in versions prior to Java 8:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex61a" id="pch5ex61" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Explicit type parameter - required prior to Java 8</strong><br class="calibre7"/>
+         Set&lt;Number&gt; numbers = Union<strong class="calibre11">.&lt;Number&gt;</strong>union(integers, doubles);
+      </p>
+      
+      <p class="indent">Next let’s turn our attention to the <code class="calibre12">max</code> method in <a href="ch5.xhtml#lev30" class="calibre8">Item 30</a>. Here is the original declaration:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex62a" id="pch5ex62" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static &lt;T extends Comparable&lt;T&gt;&gt; T max(List&lt;T&gt; list)</p>
+      
+      <p class="noindent">Here is a revised declaration that uses wildcard types:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex63a" id="pch5ex63" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static &lt;T extends <strong class="calibre11">Comparable&lt;? super T&gt;</strong>&gt; T max(<br class="calibre7"/>
+                 <strong class="calibre11">List&lt;? extends T&gt;</strong> list)
+      </p>
+      
+      <p class="indent">To get the revised declaration from the original, we applied the PECS heuristic twice.
+         The straightforward application is to the parameter <code class="calibre12">list</code>. It produces <code class="calibre12">T</code> instances, so we change the type from <code class="calibre12">List&lt;T&gt;</code> to <code class="calibre12">List&lt;? extends T&gt;</code>. The tricky application is to the type parameter <code class="calibre12">T</code>. This is the first time we’ve seen a wildcard applied to a type parameter. Originally,
+         <code class="calibre12">T</code> was specified to extend <code class="calibre12">Comparable&lt;T&gt;</code>, but a comparable of <code class="calibre12">T</code> consumes <code class="calibre12">T</code> instances (and produces integers indicating order relations). Therefore, the parameterized
+         type <code class="calibre12">Comparable&lt;T&gt;</code> is replaced by the bounded wildcard type <code class="calibre12">Comparable&lt;? super T&gt;</code>. Comparables are always consumers, so you should generally <strong class="calibre11">use</strong> <code class="calibre12"><strong class="calibre11">Comparable&lt;? super T&gt;</strong></code> <strong class="calibre11">in preference to</strong> <code class="calibre12"><strong class="calibre11">Comparable&lt;T&gt;</strong></code><strong class="calibre11">.</strong> The same is true of comparators; therefore, you should generally <strong class="calibre11">use</strong> <code class="calibre12"><strong class="calibre11">Comparator&lt;? super T&gt;</strong></code> <strong class="calibre11">in preference to</strong> <code class="calibre12"><strong class="calibre11">Comparator&lt;T&gt;</strong></code><strong class="calibre11">.</strong></p>
+      
+      <p class="indent">The revised <code class="calibre12">max</code> declaration is probably the most complex method declaration in this book. Does the
+         added complexity really buy you anything? Again, it does. Here is a simple example
+         of a list that would be excluded by the original declaration but is permitted by the
+         revised one:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex64a" id="pch5ex64" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">List&lt;ScheduledFuture&lt;?&gt;&gt; scheduledFutures = ... ;</p>
+      
+      <p class="indent">The reason that you can’t apply the original method declaration to this list is that
+         <code class="calibre12">ScheduledFuture</code> does not implement <code class="calibre12">Comparable&lt;ScheduledFuture&gt;</code>. Instead, it is a subinterface of <code class="calibre12">Delayed</code>, which extends <code class="calibre12">Comparable&lt;Delayed&gt;</code>. In other words, a <code class="calibre12">ScheduledFuture</code> instance isn’t merely comparable to other <span epub:type="pagebreak" id="page_144"></span><code class="calibre12">ScheduledFuture</code> instances; it is comparable to any <code class="calibre12">Delayed</code> instance, and that’s enough to cause the original declaration to reject it. More
+         generally, the wildcard is required to support types that do not implement <code class="calibre12">Comparable</code> (or <code class="calibre12">Comparator</code>) directly but extend a type that does.
+      </p>
+      
+      <p class="indent">There is one more wildcard-related topic that bears discussing. There is a duality
+         between type parameters and wildcards, and many methods can be declared using one
+         or the other. For example, here are two possible declarations for a static method
+         to swap two indexed items in a list. The first uses an unbounded type parameter (<a href="ch5.xhtml#lev30" class="calibre8">Item 30</a>) and the second an unbounded wildcard:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex65a" id="pch5ex65" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Two possible declarations for the swap method</strong><br class="calibre7"/>
+         public static <strong class="calibre11">&lt;E&gt;</strong> void swap(<strong class="calibre11">List&lt;E&gt; list</strong>, int i, int j);<br class="calibre7"/>
+         public static void swap(<strong class="calibre11">List&lt;?&gt; list</strong>, int i, int j);
+      </p>
+      
+      <p class="indent">Which of these two declarations is preferable, and why? In a public API, the second
+         is better because it’s simpler. You pass in a list—any list—and the method swaps the
+         indexed elements. There is no type parameter to worry about. As a rule, <strong class="calibre11">if a type parameter appears only once in a method declaration, replace it with a wildcard.</strong> If it’s an unbounded type parameter, replace it with an unbounded wildcard; if it’s
+         a bounded type parameter, replace it with a bounded wildcard.
+      </p>
+      
+      <p class="indent">There’s one problem with the second declaration for <code class="calibre12">swap</code>. The straightforward implementation won’t compile:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex66a" id="pch5ex66" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void swap(List&lt;?&gt; list, int i, int j) {<br class="calibre7"/>
+             list.set(i, list.set(j, list.get(i)));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Trying to compile it produces this less-than-helpful error message:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex67a" id="pch5ex67" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Swap.java:5: error: incompatible types: Object cannot be<br class="calibre7"/>
+         converted to CAP#1<br class="calibre7"/>
+                 list.set(i, list.set(j, list.get(i)));<br class="calibre7"/>
+                                                 ^<br class="calibre7"/>
+           where CAP#1 is a fresh type-variable:<br class="calibre7"/>
+             CAP#1 extends Object from capture of ?
+      </p>
+      
+      <p class="indent">It doesn’t seem right that we can’t put an element back into the list that we just
+         took it out of. The problem is that the type of <code class="calibre12">list</code> is <code class="calibre12">List&lt;?&gt;</code>, and you can’t put any value except <code class="calibre12">null</code> into a <code class="calibre12">List&lt;?&gt;</code>. Fortunately, there is a way to implement this method without resorting to an unsafe
+         cast or a raw type. The idea is to write a <span epub:type="pagebreak" id="page_145"></span>private helper method to <em class="calibre9">capture</em> the wildcard type. The helper method must be a generic method in order to capture
+         the type. Here’s how it looks:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex68a" id="pch5ex68" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void swap(List&lt;?&gt; list, int i, int j) {<br class="calibre7"/>
+             swapHelper(list, i, j);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         <strong class="calibre11">// Private helper method for wildcard capture</strong><br class="calibre7"/>
+         private static &lt;E&gt; void swapHelper(List&lt;E&gt; list, int i, int j) {<br class="calibre7"/>
+             list.set(i, list.set(j, list.get(i)));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The <code class="calibre12">swapHelper</code> method knows that <code class="calibre12">list</code> is a <code class="calibre12">List&lt;E&gt;</code>. Therefore, it knows that any value it gets out of this list is of type <code class="calibre12">E</code> and that it’s safe to put any value of type <code class="calibre12">E</code> into the list. This slightly convoluted implementation of <code class="calibre12">swap</code> compiles cleanly. It allows us to export the nice wildcard-based declaration, while
+         taking advantage of the more complex generic method internally. Clients of the <code class="calibre12">swap</code> method don’t have to confront the more complex <code class="calibre12">swapHelper</code> declaration, but they do benefit from it. It is worth noting that the helper method
+         has precisely the signature that we dismissed as too complex for the public method.
+      </p>
+      
+      <p class="indent">In summary, using wildcard types in your APIs, while tricky, makes the APIs far more
+         flexible. If you write a library that will be widely used, the proper use of wildcard
+         types should be considered mandatory. Remember the basic rule: producer-<code class="calibre12">extends</code>, consumer-<code class="calibre12">super</code> (PECS). Also remember that all comparables and comparators are consumers.
+      </p>
+      
+      <h3 class="h2"><a id="lev32" class="calibre4"></a><span epub:type="pagebreak" id="page_146" class="calibre15"></span><strong class="calibre10">Item 32: Combine generics and varargs judiciously</strong></h3>
+      
+      <p class="noindent">Varargs methods (<a href="ch8.xhtml#lev53" class="calibre8">Item 53</a>) and generics were both added to the platform in Java 5, so you might expect them
+         to interact gracefully; sadly, they do not. The purpose of varargs is to allow clients
+         to pass a variable number of arguments to a method, but it is a <em class="calibre9">leaky abstraction</em>: when you invoke a varargs method, an array is created to hold the varargs parameters;
+         that array, which should be an implementation detail, is visible. As a consequence,
+         you get confusing compiler warnings when varargs parameters have generic or parameterized
+         types.
+      </p>
+      
+      <p class="indent">Recall from <a href="ch5.xhtml#lev28" class="calibre8">Item 28</a> that a non-reifiable type is one whose runtime representation has less information
+         than its compile-time representation, and that nearly all generic and parameterized
+         types are non-reifiable. If a method declares its varargs parameter to be of a non-reifiable
+         type, the compiler generates a warning on the declaration. If the method is invoked
+         on varargs parameters whose inferred type is non-reifiable, the compiler generates
+         a warning on the invocation too. The warnings look something like this:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex69a" id="pch5ex69" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">warning: [unchecked] Possible heap pollution from<br class="calibre7"/>
+             parameterized vararg type List&lt;String&gt;
+      </p>
+      
+      <p class="noindent"><em class="calibre9">Heap pollution</em> occurs when a variable of a parameterized type refers to an object that is not of
+         that type [JLS, 4.12.2]. It can cause the compiler’s automatically generated casts
+         to fail, violating the fundamental guarantee of the generic type system.
+      </p>
+      
+      <p class="indent">For example, consider this method, which is a thinly disguised variant of the code
+         fragment on page 127:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex70a" id="pch5ex70" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Mixing generics and varargs can violate type safety!</strong><br class="calibre7"/>
+         static void dangerous(<strong class="calibre11">List&lt;String&gt;... stringLists</strong>) {<br class="calibre7"/>
+             List&lt;Integer&gt; intList = List.of(42);<br class="calibre7"/>
+             Object[] objects = stringLists;<br class="calibre7"/>
+             objects[0] = intList;             <strong class="calibre11">// Heap pollution</strong><br class="calibre7"/>
+             String s = stringLists[0].get(0); <strong class="calibre11">// ClassCastException</strong><br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This method has no visible casts yet throws a <code class="calibre12">ClassCastException</code> when invoked with one or more arguments. Its last line has an invisible cast that
+         is generated by the compiler. This cast fails, demonstrating that type safety has
+         been compromised, and <strong class="calibre11">it is unsafe to store a value in a generic varargs array parameter.</strong></p>
+      
+      <p class="indent">This example raises an interesting question: Why is it even legal to declare a method
+         with a generic varargs parameter, when it is illegal to create a generic array explicitly?
+         In other words, why does the method shown previously generate only a warning, while
+         the code fragment on page 127 generates an error? The <span epub:type="pagebreak" id="page_147"></span>answer is that methods with varargs parameters of generic or parameterized types can
+         be very useful in practice, so the language designers opted to live with this inconsistency.
+         In fact, the Java libraries export several such methods, including <code class="calibre12">Arrays.asList(T... a)</code>, <code class="calibre12">Collections.addAll(Collection&lt;? super T&gt; c, T... elements)</code>, and <code class="calibre12">EnumSet.of(E first, E... rest)</code>. Unlike the <code class="calibre12">dangerous</code> method shown earlier, these library methods are typesafe.
+      </p>
+      
+      <p class="indent">Prior to Java 7, there was nothing the author of a method with a generic varargs parameter
+         could do about the warnings at the call sites. This made these APIs unpleasant to
+         use. Users had to put up with the warnings or, preferably, to eliminate them with
+         <code class="calibre12">@SuppressWarnings("unchecked")</code> annotations at every call site (<a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>). This was tedious, harmed readability, and hid warnings that flagged real issues.
+      </p>
+      
+      <p class="indent">In Java 7, the <code class="calibre12">SafeVarargs</code> annotation was added to the platform, to allow the author of a method with a generic
+         varargs parameter to suppress client warnings automatically. In essence, <strong class="calibre11">the</strong> <code class="calibre12"><strong class="calibre11">SafeVarargs</strong></code> <strong class="calibre11">annotation constitutes a promise by the author of a method that it is typesafe.</strong> In exchange for this promise, the compiler agrees not to warn the users of the method
+         that calls may be unsafe.
+      </p>
+      
+      <p class="indent">It is critical that you do not annotate a method with <code class="calibre12">@SafeVarargs</code> unless it actually <em class="calibre9">is</em> safe. So what does it take to ensure this? Recall that a generic array is created
+         when the method is invoked, to hold the varargs parameters. If the method doesn’t
+         store anything into the array (which would overwrite the parameters) and doesn’t allow
+         a reference to the array to escape (which would enable untrusted code to access the
+         array), then it’s safe. In other words, if the varargs parameter array is used only
+         to transmit a variable number of arguments from the caller to the method—which is,
+         after all, the purpose of varargs—then the method is safe.
+      </p>
+      
+      <p class="indent">It is worth noting that you can violate type safety without ever storing anything
+         in the varargs parameter array. Consider the following generic varargs method, which
+         returns an array containing its parameters. At first glance, it may look like a handy
+         little utility:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex71a" id="pch5ex71" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// UNSAFE - Exposes a reference to its generic parameter array!</strong><br class="calibre7"/>
+         static &lt;T&gt; T[] toArray(T... args) {<br class="calibre7"/>
+             return args;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This method simply returns its varargs parameter array. The method may not look dangerous,
+         but it is! The type of this array is determined by the compile-time types of the arguments
+         passed in to the method, and the compiler may not have enough information to make
+         an accurate determination. Because this method returns its varargs parameter array,
+         it can propagate heap pollution up the call stack.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_148"></span>To make this concrete, consider the following generic method, which takes three arguments
+         of type <code class="calibre12">T</code> and returns an array containing two of the arguments, chosen at random:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex72a" id="pch5ex72" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">static &lt;T&gt; T[] pickTwo(T a, T b, T c) {<br class="calibre7"/>
+             switch(ThreadLocalRandom.current().nextInt(3)) {<br class="calibre7"/>
+               case 0: return toArray(a, b);<br class="calibre7"/>
+               case 1: return toArray(a, c);<br class="calibre7"/>
+               case 2: return toArray(b, c);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             throw new AssertionError(); // Can't get here<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This method is not, in and of itself, dangerous and would not generate a warning except
+         that it invokes the <code class="calibre12">toArray</code> method, which has a generic varargs parameter.
+      </p>
+      
+      <p class="indent">When compiling this method, the compiler generates code to create a varargs parameter
+         array in which to pass two <code class="calibre12">T</code> instances to <code class="calibre12">toArray</code>. This code allocates an array of type <code class="calibre12">Object[]</code>, which is the most specific type that is guaranteed to hold these instances, no matter
+         what types of objects are passed to <code class="calibre12">pickTwo</code> at the call site. The <code class="calibre12">toArray</code> method simply returns this array to <code class="calibre12">pickTwo</code>, which in turn returns it to its caller, so <code class="calibre12">pickTwo</code> will always return an array of type <code class="calibre12">Object[]</code>.
+      </p>
+      
+      <p class="indent">Now consider this main method, which exercises <code class="calibre12">pickTwo</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex73a" id="pch5ex73" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             String[] attributes = pickTwo("Good", "Fast", "Cheap");<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">There is nothing at all wrong with this method, so it compiles without generating
+         any warnings. But when you run it, it throws a <code class="calibre12">ClassCastException</code>, though it contains no visible casts. What you don’t see is that the compiler has
+         generated a hidden cast to <code class="calibre12">String[]</code> on the value returned by <code class="calibre12">pickTwo</code> so that it can be stored in <code class="calibre12">attributes</code>. The cast fails, because <code class="calibre12">Object[]</code> is not a subtype of <code class="calibre12">String[]</code>. This failure is quite disconcerting because it is two levels removed from the method
+         that actually causes the heap pollution (<code class="calibre12">toArray</code>), and the varargs parameter array is not modified after the actual parameters are
+         stored in it.
+      </p>
+      
+      <p class="indent">This example is meant to drive home the point that <strong class="calibre11">it is unsafe to give another method access to a generic varargs parameter array,</strong> with two exceptions: it is safe to pass the array to another varargs method that
+         is correctly annotated with <code class="calibre12">@SafeVarargs</code>, and it is safe to pass the array to a non-varargs method that merely computes some
+         function of the contents of the array.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_149"></span>Here is a typical example of a safe use of a generic varargs parameter. This method
+         takes an arbitrary number of lists as arguments and returns a single list containing
+         the elements of all of the input lists in sequence. Because the method is annotated
+         with <code class="calibre12">@SafeVarargs</code>, it doesn’t generate any warnings, on the declaration or at its call sites:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex74a" id="pch5ex74" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Safe method with a generic varargs parameter</strong><br class="calibre7"/>
+         @SafeVarargs<br class="calibre7"/>
+         static &lt;T&gt; List&lt;T&gt; flatten(List&lt;? extends T&gt;... lists) {<br class="calibre7"/>
+             List&lt;T&gt; result = new ArrayList&lt;&gt;();<br class="calibre7"/>
+             for (List&lt;? extends T&gt; list : lists)<br class="calibre7"/>
+                 result.addAll(list);<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The rule for deciding when to use the <code class="calibre12">SafeVarargs</code> annotation is simple: <strong class="calibre11">Use</strong> <code class="calibre12"><strong class="calibre11">@SafeVarargs</strong></code> <strong class="calibre11">on every method with a varargs parameter of a generic or parameterized type,</strong> so its users won’t be burdened by needless and confusing compiler warnings. This
+         implies that you should <em class="calibre9">never</em> write unsafe varargs methods like <code class="calibre12">dangerous</code> or <code class="calibre12">toArray</code>. Every time the compiler warns you of possible heap pollution from a generic varargs
+         parameter in a method you control, check that the method is safe. As a reminder, a
+         generic varargs methods is safe if:
+      </p>
+      
+      <p class="number1">1. it doesn’t store anything in the varargs parameter array, and</p>
+      
+      <p class="number1">2. it doesn’t make the array (or a clone) visible to untrusted code. If either of
+         these prohibitions is violated, fix it.
+      </p>
+      
+      <p class="indent">Note that the <code class="calibre12">SafeVarargs</code> annotation is legal only on methods that can’t be overridden, because it is impossible
+         to guarantee that every possible overriding method will be safe. In Java 8, the annotation
+         was legal only on static methods and final instance methods; in Java 9, it became
+         legal on private instance methods as well.
+      </p>
+      
+      <p class="indent">An alternative to using the <code class="calibre12">SafeVarargs</code> annotation is to take the advice of <a href="ch5.xhtml#lev28" class="calibre8">Item 28</a> and replace the varargs parameter (which is an array in disguise) with a <code class="calibre12">List</code> parameter. Here’s how this approach looks when applied to our <code class="calibre12">flatten</code> method. Note that only the parameter declaration has changed:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex75a" id="pch5ex75" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// List as a typesafe alternative to a generic varargs parameter</strong><br class="calibre7"/>
+         static &lt;T&gt; List&lt;T&gt; flatten(<strong class="calibre11">List&lt;List&lt;? extends T&gt;&gt; lists</strong>) {<br class="calibre7"/>
+             List&lt;T&gt; result = new ArrayList&lt;&gt;();<br class="calibre7"/>
+             for (List&lt;? extends T&gt; list : lists)<br class="calibre7"/>
+                 result.addAll(list);<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_150"></span>This method can then be used in conjunction with the static factory method <code class="calibre12">List.of</code> to allow for a variable number of arguments. Note that this approach relies on the
+         fact that the <code class="calibre12">List.of</code> declaration is annotated with <code class="calibre12">@SafeVarargs</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex76a" id="pch5ex76" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">audience = flatten(List.of(friends, romans, countrymen));</p>
+      
+      <p class="indent">The advantage of this approach is that the compiler can <em class="calibre9">prove</em> that the method is typesafe. You don’t have to vouch for its safety with a <code class="calibre12">SafeVarargs</code> annotation, and you don’t have worry that you might have erred in determining that
+         it was safe. The main disadvantage is that the client code is a bit more verbose and
+         may be a bit slower.
+      </p>
+      
+      <p class="indent">This trick can also be used in situations where it is impossible to write a safe varargs
+         method, as is the case with the <code class="calibre12">toArray</code> method on page 147. Its <code class="calibre12">List</code> analogue <em class="calibre9">is</em> the <code class="calibre12">List.of</code> method, so we don’t even have to write it; the Java libraries authors have done the
+         work for us. The <code class="calibre12">pickTwo</code> method then becomes this:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex77a" id="pch5ex77" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">static &lt;T&gt; <strong class="calibre11">List&lt;T&gt;</strong> pickTwo(T a, T b, T c) {<br class="calibre7"/>
+             switch(rnd.nextInt(3)) {<br class="calibre7"/>
+               case 0: return <strong class="calibre11">List.of(a, b)</strong>;<br class="calibre7"/>
+               case 1: return <strong class="calibre11">List.of(a, c)</strong>;<br class="calibre7"/>
+               case 2: return <strong class="calibre11">List.of(b, c)</strong>;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             throw new AssertionError();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">and the main method becomes this:</p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex78a" id="pch5ex78" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             <strong class="calibre11">List&lt;String&gt;</strong> attributes = pickTwo("Good", "Fast", "Cheap");<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The resulting code is typesafe because it uses only generics, and not arrays.</p>
+      
+      <p class="indent">In summary, varargs and generics do not interact well because the varargs facility
+         is a leaky abstraction built atop arrays, and arrays have different type rules from
+         generics. Though generic varargs parameters are not typesafe, they are legal. If you
+         choose to write a method with a generic (or parameterized) varargs parameter, first
+         ensure that the method is typesafe, and then annotate it with <code class="calibre12">@SafeVarargs</code> so it is not unpleasant to use.
+      </p>
+      
+      <h3 class="h2"><a id="lev33" class="calibre4"></a><span epub:type="pagebreak" id="page_151" class="calibre15"></span><strong class="calibre10">Item 33: Consider typesafe heterogeneous containers</strong></h3>
+      
+      <p class="noindent">Common uses of generics include collections, such as <code class="calibre12">Set&lt;E&gt;</code> and <code class="calibre12">Map&lt;K,V&gt;</code>, and single-element containers, such as <code class="calibre12">ThreadLocal&lt;T&gt;</code> and <code class="calibre12">AtomicReference&lt;T&gt;</code>. In all of these uses, it is the container that is parameterized. This limits you
+         to a fixed number of type parameters per container. Normally that is exactly what
+         you want. A <code class="calibre12">Set</code> has a single type parameter, representing its element type; a <code class="calibre12">Map</code> has two, representing its key and value types; and so forth.
+      </p>
+      
+      <p class="indent">Sometimes, however, you need more flexibility. For example, a database row can have
+         arbitrarily many columns, and it would be nice to be able to access all of them in
+         a typesafe manner. Luckily, there is an easy way to achieve this effect. The idea
+         is to parameterize the <em class="calibre9">key</em> instead of the <em class="calibre9">container</em>. Then present the parameterized key to the container to insert or retrieve a value.
+         The generic type system is used to guarantee that the type of the value agrees with
+         its key.
+      </p>
+      
+      <p class="indent">As a simple example of this approach, consider a <code class="calibre12">Favorites</code> class that allows its clients to store and retrieve a favorite instance of arbitrarily
+         many types. The <code class="calibre12">Class</code> object for the type will play the part of the parameterized key. The reason this
+         works is that class <code class="calibre12">Class</code> is generic. The type of a class literal is not simply <code class="calibre12">Class</code>, but <code class="calibre12">Class&lt;T&gt;</code>. For example, <code class="calibre12">String.class</code> is of type <code class="calibre12">Class&lt;String&gt;</code>, and <code class="calibre12">Integer.class</code> is of type <code class="calibre12">Class&lt;Integer&gt;</code>. When a class literal is passed among methods to communicate both compile-time and
+         runtime type information, it is called a <em class="calibre9">type token</em> [<a href="ref.xhtml#rBracha04" class="calibre8">Bracha04</a>].
+      </p>
+      
+      <p class="indent">The API for the <code class="calibre12">Favorites</code> class is simple. It looks just like a simple map, except that the key is parameterized
+         instead of the map. The client presents a <code class="calibre12">Class</code> object when setting and getting favorites. Here is the API:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex79a" id="pch5ex79" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Typesafe heterogeneous container pattern - API</strong><br class="calibre7"/>
+         public class Favorites {<br class="calibre7"/>
+             public &lt;T&gt; void putFavorite(Class&lt;T&gt; type, T instance);<br class="calibre7"/>
+             public &lt;T&gt; T getFavorite(Class&lt;T&gt; type);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Here is a sample program that exercises the <code class="calibre12">Favorites</code> class, storing, retrieving, and printing a favorite <code class="calibre12">String</code>, <code class="calibre12">Integer</code>, and <code class="calibre12">Class</code> instance:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex80a" id="pch5ex80" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Typesafe heterogeneous container pattern - client</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             Favorites f = new Favorites();<br class="calibre7"/>
+             f.putFavorite(String.class, "Java");<br class="calibre7"/>
+             f.putFavorite(Integer.class, 0xcafebabe);<br class="calibre7"/>
+             f.putFavorite(Class.class, Favorites.class);<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_152"></span>
+             String favoriteString = f.getFavorite(String.class);<br class="calibre7"/>
+             int favoriteInteger = f.getFavorite(Integer.class);<br class="calibre7"/>
+             Class&lt;?&gt; favoriteClass = f.getFavorite(Class.class);<br class="calibre7"/>
+             System.out.printf("%s %x %s%n", favoriteString,<br class="calibre7"/>
+                 favoriteInteger, favoriteClass.getName());<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">As you would expect, this program prints <code class="calibre12">Java cafebabe Favorites</code>. Note, incidentally, that Java’s <code class="calibre12">printf</code> method differs from C’s in that you should use <code class="calibre12">%n</code> where you’d use <code class="calibre12">\n</code> in C. The <code class="calibre12">%n</code> generates the applicable platform-specific line separator, which is <code class="calibre12">\n</code> on many but not all platforms.
+      </p>
+      
+      <p class="indent">A <code class="calibre12">Favorites</code> instance is <em class="calibre9">typesafe</em>: it will never return an <code class="calibre12">Integer</code> when you ask it for a <code class="calibre12">String</code>. It is also <em class="calibre9">heterogeneous</em>: unlike an ordinary map, all the keys are of different types. Therefore, we call
+         <code class="calibre12">Favorites</code> a <em class="calibre9">typesafe heterogeneous container</em>.
+      </p>
+      
+      <p class="indent">The implementation of <code class="calibre12">Favorites</code> is surprisingly tiny. Here it is, in its entirety:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex81a" id="pch5ex81" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Typesafe heterogeneous container pattern - implementation</strong><br class="calibre7"/>
+         public class Favorites {<br class="calibre7"/>
+             private <strong class="calibre11">Map&lt;Class&lt;?&gt;, Object&gt; favorites</strong> = new HashMap&lt;&gt;();<br class="calibre7"/>
+         <br class="calibre7"/>
+             public &lt;T&gt; void putFavorite(Class&lt;T&gt; type, T instance) {<br class="calibre7"/>
+                 favorites.put(Objects.requireNonNull(type), instance);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public &lt;T&gt; T getFavorite(Class&lt;T&gt; type) {<br class="calibre7"/>
+                 return <strong class="calibre11">type.cast(favorites.get(type))</strong>;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">There are a few subtle things going on here. Each <code class="calibre12">Favorites</code> instance is backed by a private <code class="calibre12">Map&lt;Class&lt;?&gt;, Object&gt;</code> called <code class="calibre12">favorites</code>. You might think that you couldn’t put anything into this <code class="calibre12">Map</code> because of the unbounded wildcard type, but the truth is quite the opposite. The
+         thing to notice is that the wildcard type is nested: it’s not the type of the map
+         that’s a wildcard type but the type of its key. This means that every key can have
+         a <em class="calibre9">different</em> parameterized type: one can be <code class="calibre12">Class&lt;String&gt;</code>, the next <code class="calibre12">Class&lt;Integer&gt;</code>, and so on. That’s where the heterogeneity comes from.
+      </p>
+      
+      <p class="indent">The next thing to notice is that the value type of the <code class="calibre12">favorites Map</code> is simply <code class="calibre12">Object</code>. In other words, the <code class="calibre12">Map</code> does not guarantee the type relationship between keys and values, which is that every
+         value is of the type represented by its key. In <span epub:type="pagebreak" id="page_153"></span>fact, Java’s type system is not powerful enough to express this. But we know that
+         it’s true, and we take advantage of it when the time comes to retrieve a favorite.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">putFavorite</code> implementation is trivial: it simply puts into <code class="calibre12">favorites</code> a mapping from the given <code class="calibre12">Class</code> object to the given favorite instance. As noted, this discards the “type linkage”
+         between the key and the value; it loses the knowledge that the value is an instance
+         of the key. But that’s OK, because the <code class="calibre12">getFavorites</code> method can and does reestablish this linkage.
+      </p>
+      
+      <p class="indent">The implementation of <code class="calibre12">getFavorite</code> is trickier than that of <code class="calibre12">putFavorite</code>. First, it gets from the <code class="calibre12">favorites</code> map the value corresponding to the given <code class="calibre12">Class</code> object. This is the correct object reference to return, but it has the wrong compile-time
+         type: it is <code class="calibre12">Object</code> (the value type of the <code class="calibre12">favorites</code> map) and we need to return a <code class="calibre12">T</code>. So, the <code class="calibre12">getFavorite</code> implementation <em class="calibre9">dynamically casts</em> the object reference to the type represented by the <code class="calibre12">Class</code> object, using <code class="calibre12">Class</code>’s <code class="calibre12">cast</code> method.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">cast</code> method is the dynamic analogue of Java’s cast operator. It simply checks that its
+         argument is an instance of the type represented by the <code class="calibre12">Class</code> object. If so, it returns the argument; otherwise it throws a <code class="calibre12">ClassCastException</code>. We know that the cast invocation in <code class="calibre12">getFavorite</code> won’t throw <code class="calibre12">ClassCastException</code>, assuming the client code compiled cleanly. That is to say, we know that the values
+         in the <code class="calibre12">favorites</code> map always match the types of their keys.
+      </p>
+      
+      <p class="indent">So what does the <code class="calibre12">cast</code> method do for us, given that it simply returns its argument? The signature of the
+         <code class="calibre12">cast</code> method takes full advantage of the fact that class <code class="calibre12">Class</code> is generic. Its return type is the type parameter of the <code class="calibre12">Class</code> object:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex82a" id="pch5ex82" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Class&lt;T&gt; {<br class="calibre7"/>
+             T cast(Object obj);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This is precisely what’s needed by the <code class="calibre12">getFavorite</code> method. It is what allows us to make <code class="calibre12">Favorites</code> typesafe without resorting to an unchecked cast to <code class="calibre12">T</code>.
+      </p>
+      
+      <p class="indent">There are two limitations to the <code class="calibre12">Favorites</code> class that are worth noting. First, a malicious client could easily corrupt the type
+         safety of a <code class="calibre12">Favorites</code> instance, by using a <code class="calibre12">Class</code> object in its raw form. But the resulting client code would generate an unchecked
+         warning when it was compiled. This is no different from a normal collection implementations
+         such as <code class="calibre12">HashSet</code> and <code class="calibre12">HashMap</code>. You can easily put a <code class="calibre12">String</code> into a <code class="calibre12">HashSet&lt;Integer&gt;</code> by using the raw type <code class="calibre12">HashSet</code> (<a href="ch5.xhtml#lev26" class="calibre8">Item 26</a>). That said, you can have runtime type safety if you’re willing to pay for it. The
+         way to ensure that <code class="calibre12">Favorites</code> never violates its type invariant is to have the <code class="calibre12">putFavorite</code> <span epub:type="pagebreak" id="page_154"></span>method check that <code class="calibre12">instance</code> is actually an instance of the type represented by <code class="calibre12">type</code>, and we already know how to do this. Just use a dynamic cast:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex83a" id="pch5ex83" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Achieving runtime type safety with a dynamic cast</strong><br class="calibre7"/>
+         public &lt;T&gt; void putFavorite(Class&lt;T&gt; type, T instance) {<br class="calibre7"/>
+             favorites.put(type, type.cast(instance));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">There are collection wrappers in <code class="calibre12">java.util.Collections</code> that play the same trick. They are called <code class="calibre12">checkedSet</code>, <code class="calibre12">checkedList</code>, <code class="calibre12">checkedMap</code>, and so forth. Their static factories take a <code class="calibre12">Class</code> object (or two) in addition to a collection (or map). The static factories are generic
+         methods, ensuring that the compile-time types of the <code class="calibre12">Class</code> object and the collection match. The wrappers add reification to the collections
+         they wrap. For example, the wrapper throws a <code class="calibre12">ClassCastException</code> at runtime if someone tries to put a <code class="calibre12">Coin</code> into your <code class="calibre12">Collection&lt;Stamp&gt;</code>. These wrappers are useful for tracking down client code that adds an incorrectly
+         typed element to a collection, in an application that mixes generic and raw types.
+      </p>
+      
+      <p class="indent">The second limitation of the <code class="calibre12">Favorites</code> class is that it cannot be used on a non-reifiable type (<a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>). In other words, you can store your favorite <code class="calibre12">String</code> or <code class="calibre12">String[]</code>, but not your favorite <code class="calibre12">List&lt;String&gt;</code>. If you try to store your favorite <code class="calibre12">List&lt;String&gt;</code>, your program won’t compile. The reason is that you can’t get a <code class="calibre12">Class</code> object for <code class="calibre12">List&lt;String&gt;</code>. The class literal <code class="calibre12">List&lt;String&gt;.class</code> is a syntax error, and it’s a good thing, too. <code class="calibre12">List&lt;String&gt;</code> and <code class="calibre12">List&lt;Integer&gt;</code> share a single <code class="calibre12">Class</code> object, which is <code class="calibre12">List.class</code>. It would wreak havoc with the internals of a <code class="calibre12">Favorites</code> object if the “type literals” <code class="calibre12">List&lt;String&gt;.class</code> and <code class="calibre12">List&lt;Integer&gt;.class</code> were legal and returned the same object reference. There is no entirely satisfactory
+         workaround for this limitation.
+      </p>
+      
+      <p class="indent">The type tokens used by <code class="calibre12">Favorites</code> are unbounded: <code class="calibre12">getFavorite</code> and <code class="calibre12">put-Favorite</code> accept any <code class="calibre12">Class</code> object. Sometimes you may need to limit the types that can be passed to a method.
+         This can be achieved with a <em class="calibre9">bounded type token</em>, which is simply a type token that places a bound on what type can be represented,
+         using a bounded type parameter (<a href="ch5.xhtml#lev30" class="calibre8">Item 30</a>) or a bounded wildcard (<a href="ch5.xhtml#lev31" class="calibre8">Item 31</a>).
+      </p>
+      
+      <p class="indent">The annotations API (<a href="ch6.xhtml#lev39" class="calibre8">Item 39</a>) makes extensive use of bounded type tokens. For example, here is the method to read
+         an annotation at runtime. This method comes from the <code class="calibre12">AnnotatedElement</code> interface, which is implemented by the reflective types that represent classes, methods,
+         fields, and other program elements:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex84a" id="pch5ex84" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public &lt;T extends Annotation&gt;<br class="calibre7"/>
+             T getAnnotation(Class&lt;T&gt; annotationType);
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_155"></span>The argument, <code class="calibre12">annotationType</code>, is a bounded type token representing an annotation type. The method returns the
+         element’s annotation of that type, if it has one, or <code class="calibre12">null</code>, if it doesn’t. In essence, an annotated element is a typesafe heterogeneous container
+         whose keys are annotation types.
+      </p>
+      
+      <p class="indent">Suppose you have an object of type <code class="calibre12">Class&lt;?&gt;</code> and you want to pass it to a method that requires a bounded type token, such as <code class="calibre12">getAnnotation</code>. You could cast the object to <code class="calibre12">Class&lt;? extends Annotation&gt;</code>, but this cast is unchecked, so it would generate a compile-time warning (<a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>). Luckily, class <code class="calibre12">Class</code> provides an instance method that performs this sort of cast safely (and dynamically).
+         The method is called <code class="calibre12">asSubclass</code>, and it casts the <code class="calibre12">Class</code> object on which it is called to represent a subclass of the class represented by
+         its argument. If the cast succeeds, the method returns its argument; if it fails,
+         it throws a <code class="calibre12">ClassCastException</code>.
+      </p>
+      
+      <p class="indent">Here’s how you use the <code class="calibre12">asSubclass</code> method to read an annotation whose type is unknown at compile time. This method compiles
+         without error or warning:
+      </p>
+      
+      <p class="codelink"><a href="ch5_images.xhtml#pch5ex85a" id="pch5ex85" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Use of asSubclass to safely cast to a bounded type token</strong><br class="calibre7"/>
+         static Annotation getAnnotation(AnnotatedElement element,<br class="calibre7"/>
+                                         String annotationTypeName) {<br class="calibre7"/>
+             <strong class="calibre11">Class&lt;?&gt; annotationType</strong> = null; // Unbounded type token<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 annotationType = Class.forName(annotationTypeName);<br class="calibre7"/>
+             } catch (Exception ex) {<br class="calibre7"/>
+                 throw new IllegalArgumentException(ex);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             return element.getAnnotation(<br class="calibre7"/>
+                 <strong class="calibre11">annotationType.asSubclass(Annotation.class)</strong>);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">In summary, the normal use of generics, exemplified by the collections APIs, restricts
+         you to a fixed number of type parameters per container. You can get around this restriction
+         by placing the type parameter on the key rather than the container. You can use <code class="calibre12">Class</code> objects as keys for such typesafe heterogeneous containers. A <code class="calibre12">Class</code> object used in this fashion is called a type token. You can also use a custom key
+         type. For example, you could have a <code class="calibre12">DatabaseRow</code> type representing a database row (the container), and a generic type <code class="calibre12">Column&lt;T&gt;</code> as its key.<span epub:type="pagebreak" id="page_156"></span></p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="ch4.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch6.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

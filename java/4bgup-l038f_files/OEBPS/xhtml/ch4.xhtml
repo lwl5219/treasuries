@@ -1,0 +1,2321 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 4 Classes and Interfaces</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="ch3.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch5.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch4"><span epub:type="pagebreak" id="page_73" class="calibre15"></span>Chapter 4. Classes and Interfaces
+      </h2>
+      
+      <p class="noindent"><strong class="calibre11">C</strong><small class="calibre13">LASSES</small> and interfaces lie at the heart of the Java programming language. They are its basic
+         units of abstraction. The language provides many powerful elements that you can use
+         to design classes and interfaces. This chapter contains guidelines to help you make
+         the best use of these elements so that your classes and interfaces are usable, robust,
+         and flexible.
+      </p>
+      
+      <h3 class="h2"><a id="lev15" class="calibre4"></a><strong class="calibre10">Item 15: Minimize the accessibility of classes and members</strong></h3>
+      
+      <p class="noindent">The single most important factor that distinguishes a well-designed component from
+         a poorly designed one is the degree to which the component hides its internal data
+         and other implementation details from other components. A well-designed component
+         hides all its implementation details, cleanly separating its API from its implementation.
+         Components then communicate only through their APIs and are oblivious to each others’
+         inner workings. This concept, known as <em class="calibre9">information hiding</em> or <em class="calibre9">encapsulation</em>, is a fundamental tenet of software design [<a href="ref.xhtml#rParnas72" class="calibre8">Parnas72</a>].
+      </p>
+      
+      <p class="indent">Information hiding is important for many reasons, most of which stem from the fact
+         that it <em class="calibre9">decouples</em> the components that comprise a system, allowing them to be developed, tested, optimized,
+         used, understood, and modified in isolation. This speeds up system development because
+         components can be developed in parallel. It eases the burden of maintenance because
+         components can be understood more quickly and debugged or replaced with little fear
+         of harming other components. While information hiding does not, in and of itself,
+         cause good performance, it enables effective performance tuning: once a system is
+         complete and profiling has determined which components are causing performance problems
+         (<a href="ch9.xhtml#lev67" class="calibre8">Item 67</a>), those components can be optimized without affecting the correctness of others.
+         Information hiding increases software reuse because components that aren’t tightly
+         coupled often prove useful in other contexts besides the ones for which they were
+         <span epub:type="pagebreak" id="page_74"></span>developed. Finally, information hiding decreases the risk in building large systems
+         because individual components may prove successful even if the system does not.
+      </p>
+      
+      <p class="indent">Java has many facilities to aid in information hiding. The <em class="calibre9">access control</em> mechanism [JLS, 6.6] specifies the <em class="calibre9">accessibility</em> of classes, interfaces, and members. The accessibility of an entity is determined
+         by the location of its declaration and by which, if any, of the access modifiers (<code class="calibre12">private</code>, <code class="calibre12">protected</code>, and <code class="calibre12">public</code>) is present on the declaration. Proper use of these modifiers is essential to information
+         hiding.
+      </p>
+      
+      <p class="indent">The rule of thumb is simple: <strong class="calibre11">make each class or member as inaccessible as possible.</strong> In other words, use the lowest possible access level consistent with the proper functioning
+         of the software that you are writing.
+      </p>
+      
+      <p class="indent">For top-level (non-nested) classes and interfaces, there are only two possible access
+         levels: <em class="calibre9">package-private</em> and <em class="calibre9">public</em>. If you declare a top-level class or interface with the <code class="calibre12">public</code> modifier, it will be public; otherwise, it will be package-private. If a top-level
+         class or interface can be made package-private, it should be. By making it package-private,
+         you make it part of the implementation rather than the exported API, and you can modify
+         it, replace it, or eliminate it in a subsequent release without fear of harming existing
+         clients. If you make it public, you are obligated to support it forever to maintain
+         compatibility.
+      </p>
+      
+      <p class="indent">If a package-private top-level class or interface is used by only one class, consider
+         making the top-level class a private static nested class of the sole class that uses
+         it (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>). This reduces its accessibility from all the classes in its package to the one class
+         that uses it. But it is far more important to reduce the accessibility of a gratuitously
+         public class than of a package-private top-level class: the public class is part of
+         the package’s API, while the package-private top-level class is already part of its
+         implementation.
+      </p>
+      
+      <p class="indentb">For members (fields, methods, nested classes, and nested interfaces), there are four
+         possible access levels, listed here in order of increasing accessibility:
+      </p>
+      
+      <p class="bullb1">• <strong class="calibre11">private</strong>—The member is accessible only from the top-level class where it is declared.
+      </p>
+      
+      <p class="bullb1">• <strong class="calibre11">package-private</strong>—The member is accessible from any class in the package where it is declared. Technically
+         known as <em class="calibre9">default</em> access, this is the access level you get if no access modifier is specified (except
+         for interface members, which are public by default).
+      </p>
+      
+      <p class="bullb1">• <strong class="calibre11">protected</strong>—The member is accessible from subclasses of the class where it is declared (subject
+         to a few restrictions [JLS, 6.6.2]) and from any class in the package where it is
+         declared.
+      </p>
+      
+      <p class="bullb1">• <strong class="calibre11">public</strong>—The member is accessible from anywhere.
+      </p>
+      
+      <p class="indentt"><span epub:type="pagebreak" id="page_75"></span>After carefully designing your class’s public API, your reflex should be to make all
+         other members private. Only if another class in the same package really needs to access
+         a member should you remove the <code class="calibre12">private</code> modifier, making the member package-private. If you find yourself doing this often,
+         you should reexamine the design of your system to see if another decomposition might
+         yield classes that are better decoupled from one another. That said, both private
+         and package-private members are part of a class’s implementation and do not normally
+         impact its exported API. These fields can, however, “leak” into the exported API if
+         the class implements <code class="calibre12">Serializable</code> (<a href="ch12.xhtml#lev86" class="calibre8">Items 86</a> and <a href="ch12.xhtml#lev87" class="calibre8">87</a>).
+      </p>
+      
+      <p class="indent">For members of public classes, a huge increase in accessibility occurs when the access
+         level goes from package-private to protected. A protected member is part of the class’s
+         exported API and must be supported forever. Also, a protected member of an exported
+         class represents a public commitment to an implementation detail (<a href="ch4.xhtml#lev19" class="calibre8">Item 19</a>). The need for protected members should be relatively rare.
+      </p>
+      
+      <p class="indent">There is a key rule that restricts your ability to reduce the accessibility of methods.
+         If a method overrides a superclass method, it cannot have a more restrictive access
+         level in the subclass than in the superclass [JLS, 8.4.8.3]. This is necessary to
+         ensure that an instance of the subclass is usable anywhere that an instance of the
+         superclass is usable (the <em class="calibre9">Liskov substitution principle</em>, see <a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>). If you violate this rule, the compiler will generate an error message when you
+         try to compile the subclass. A special case of this rule is that if a class implements
+         an interface, all of the class methods that are in the interface must be declared
+         public in the class.
+      </p>
+      
+      <p class="indent">To facilitate testing your code, you may be tempted to make a class, interface, or
+         member more accessible than otherwise necessary. This is fine up to a point. It is
+         acceptable to make a private member of a public class package-private in order to
+         test it, but it is not acceptable to raise the accessibility any higher. In other
+         words, it is not acceptable to make a class, interface, or member a part of a pack-age’s
+         exported API to facilitate testing. Luckily, it isn’t necessary either because tests
+         can be made to run as part of the package being tested, thus gaining access to its
+         package-private elements.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Instance fields of public classes should rarely be public</strong> (<a href="ch4.xhtml#lev16" class="calibre8">Item 16</a>). If an instance field is nonfinal or is a reference to a mutable object, then by
+         making it public, you give up the ability to limit the values that can be stored in
+         the field. This means you give up the ability to enforce invariants involving the
+         field. Also, you give up the ability to take any action when the field is modified,
+         so <strong class="calibre11">classes with public mutable fields are not generally thread-safe.</strong> Even if a field is final and refers to an immutable object, by making it public you
+         give up the flexibility to switch to a new internal data representation in which the
+         field does not exist.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_76"></span>The same advice applies to static fields, with one exception. You can expose constants
+         via public static final fields, assuming the constants form an integral part of the
+         abstraction provided by the class. By convention, such fields have names consisting
+         of capital letters, with words separated by underscores (<a href="ch9.xhtml#lev68" class="calibre8">Item 68</a>). It is critical that these fields contain either primitive values or references
+         to immutable objects (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>). a field containing a reference to a mutable object has all the disadvantages of
+         a nonfinal field. While the reference cannot be modified, the referenced object can
+         be modified—with disastrous results.
+      </p>
+      
+      <p class="indent">Note that a nonzero-length array is always mutable, so <strong class="calibre11">it is wrong for a class to have a public static final array field, or an accessor
+            that returns such a field.</strong> If a class has such a field or accessor, clients will be able to modify the contents
+         of the array. This is a frequent source of security holes:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex1a" id="pch4ex1" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Potential security hole!</strong><br class="calibre7"/>
+         public static final Thing[] VALUES = { ... };
+      </p>
+      
+      <p class="noindent">Beware of the fact that some IDEs generate accessors that return references to private
+         array fields, resulting in exactly this problem. There are two ways to fix the problem.
+         You can make the public array private and add a public immutable list:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex2a" id="pch4ex2" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">private static final Thing[] PRIVATE_VALUES = { ... };<br class="calibre7"/>
+         public static final List&lt;Thing&gt; VALUES =<br class="calibre7"/>
+            Collections.unmodifiableList(Arrays.asList(PRIVATE_VALUES));
+      </p>
+      
+      <p class="indent">Alternatively, you can make the array private and add a public method that returns
+         a copy of a private array:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex3a" id="pch4ex3" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">private static final Thing[] PRIVATE_VALUES = { ... };<br class="calibre7"/>
+         public static final Thing[] values() {<br class="calibre7"/>
+             return PRIVATE_VALUES.clone();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">To choose between these alternatives, think about what the client is likely to do
+         with the result. Which return type will be more convenient? Which will give better
+         performance?
+      </p>
+      
+      <p class="indent">As of Java 9, there are two additional, implicit access levels introduced as part
+         of the <em class="calibre9">module system</em>. A module is a grouping of packages, like a package is a grouping of classes. A module
+         may explicitly export some of its packages via <em class="calibre9">export declarations</em> in its <em class="calibre9">module declaration</em> (which is by convention contained in a source file named <code class="calibre12">module-info.java</code>). Public and protected members of unexported packages in a module are inaccessible
+         outside the module; within the <span epub:type="pagebreak" id="page_77"></span>module, accessibility is unaffected by export declarations. Using the module system
+         allows you to share classes among packages within a module without making them visible
+         to the entire world. Public and protected members of public classes in unexported
+         packages give rise to the two implicit access levels, which are intramodular analogues
+         of the normal public and protected levels. The need for this kind of sharing is relatively
+         rare and can often be eliminated by rearranging the classes within your packages.
+      </p>
+      
+      <p class="indent">Unlike the four main access levels, the two module-based levels are largely advisory.
+         If you place a module’s JAR file on your application’s class path instead of its module
+         path, the packages in the module revert to their non-modular behavior: all of the
+         public and protected members of the packages’ public classes have their normal accessibility,
+         regardless of whether the packages are exported by the module [Reinhold, 1.2]. The
+         one place where the newly introduced access levels are strictly enforced is the JDK
+         itself: the unexported packages in the Java libraries are truly inaccessible outside
+         of their modules.
+      </p>
+      
+      <p class="indent">Not only is the access protection afforded by modules of limited utility to the typical
+         Java programmer, and largely advisory in nature; in order to take advantage of it,
+         you must group your packages into modules, make all of their dependencies explicit
+         in module declarations, rearrange your source tree, and take special actions to accommodate
+         any access to non-modularized packages from within your modules [Reinhold, 3]. It
+         is too early to say whether modules will achieve widespread use outside of the JDK
+         itself. In the meantime, it seems best to avoid them unless you have a compelling
+         need.
+      </p>
+      
+      <p class="indent">To summarize, you should reduce accessibility of program elements as much as possible
+         (within reason). After carefully designing a minimal public API, you should prevent
+         any stray classes, interfaces, or members from becoming part of the API. With the
+         exception of public static final fields, which serve as constants, public classes
+         should have no public fields. Ensure that objects referenced by public static final
+         fields are immutable.
+      </p>
+      
+      <h3 class="h2"><a id="lev16" class="calibre4"></a><span epub:type="pagebreak" id="page_78" class="calibre15"></span><strong class="calibre10">Item 16: In public classes, use accessor methods, not public fields</strong></h3>
+      
+      <p class="noindent">Occasionally, you may be tempted to write degenerate classes that serve no purpose
+         other than to group instance fields:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex4a" id="pch4ex4" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Degenerate classes like this should not be public!</strong><br class="calibre7"/>
+         class Point {<br class="calibre7"/>
+             public double x;<br class="calibre7"/>
+             public double y;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Because the data fields of such classes are accessed directly, these classes do not
+         offer the benefits of <em class="calibre9">encapsulation</em> (<a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>). You can’t change the representation without changing the API, you can’t enforce
+         invariants, and you can’t take auxiliary action when a field is accessed. Hard-line
+         object-oriented programmers feel that such classes are anathema and should always
+         be replaced by classes with private fields and public <em class="calibre9">accessor methods</em> (getters) and, for mutable classes, <em class="calibre9">mutators</em> (setters):
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex5a" id="pch4ex5" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Encapsulation of data by accessor methods and mutators</strong><br class="calibre7"/>
+         class Point {<br class="calibre7"/>
+             private double x;<br class="calibre7"/>
+             private double y;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Point(double x, double y) {<br class="calibre7"/>
+                 this.x = x;<br class="calibre7"/>
+                 this.y = y;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">public double getX() { return x; }</strong><br class="calibre7"/>
+             <strong class="calibre11">public double getY() { return y; }</strong><br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">public void setX(double x) { this.x = x; }</strong><br class="calibre7"/>
+             <strong class="calibre11">public void setY(double y) { this.y = y; }</strong><br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Certainly, the hard-liners are correct when it comes to public classes: <strong class="calibre11">if a class is accessible outside its package, provide accessor methods</strong> to preserve the flexibility to change the class’s internal representation. If a public
+         class exposes its data fields, all hope of changing its representation is lost because
+         client code can be distributed far and wide.
+      </p>
+      
+      <p class="indent">However, <strong class="calibre11">if a class is package-private or is a private nested class, there is nothing inherently
+            wrong with exposing its data fields</strong>—assuming they do an <span epub:type="pagebreak" id="page_79"></span>adequate job of describing the abstraction provided by the class. This approach generates
+         less visual clutter than the accessor-method approach, both in the class definition
+         and in the client code that uses it. While the client code is tied to the class’s
+         internal representation, this code is confined to the package containing the class.
+         If a change in representation becomes desirable, you can make the change without touching
+         any code outside the package. In the case of a private nested class, the scope of
+         the change is further restricted to the enclosing class.
+      </p>
+      
+      <p class="indent">Several classes in the Java platform libraries violate the advice that public classes
+         should not expose fields directly. Prominent examples include the <code class="calibre12">Point</code> and <code class="calibre12">Dimension</code> classes in the <code class="calibre12">java.awt</code> package. Rather than examples to be emulated, these classes should be regarded as
+         cautionary tales. As described in <a href="ch9.xhtml#lev67" class="calibre8">Item 67</a>, the decision to expose the internals of the <code class="calibre12">Dimension</code> class resulted in a serious performance problem that is still with us today.
+      </p>
+      
+      <p class="indent">While it’s never a good idea for a public class to expose fields directly, it is less
+         harmful if the fields are immutable. You can’t change the representation of such a
+         class without changing its API, and you can’t take auxiliary actions when a field
+         is read, but you can enforce invariants. For example, this class guarantees that each
+         instance represents a valid time:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex6a" id="pch4ex6" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Public class with exposed immutable fields - questionable</strong><br class="calibre7"/>
+         public final class Time {<br class="calibre7"/>
+             private static final int HOURS_PER_DAY    = 24;<br class="calibre7"/>
+             private static final int MINUTES_PER_HOUR = 60;<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">public final int hour;</strong><br class="calibre7"/>
+             <strong class="calibre11">public final int minute;</strong><br class="calibre7"/>
+         <br class="calibre7"/>
+             public Time(int hour, int minute) {<br class="calibre7"/>
+                 if (hour &lt; 0 || hour &gt;= HOURS_PER_DAY)<br class="calibre7"/>
+                    throw new IllegalArgumentException("Hour: " + hour);<br class="calibre7"/>
+                 if (minute &lt; 0 || minute &gt;= MINUTES_PER_HOUR)<br class="calibre7"/>
+                    throw new IllegalArgumentException("Min: " + minute);<br class="calibre7"/>
+                 this.hour = hour;<br class="calibre7"/>
+                 this.minute = minute;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ... // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">In summary, public classes should never expose mutable fields. It is less harmful,
+         though still questionable, for public classes to expose immutable fields. It is, however,
+         sometimes desirable for package-private or private nested classes to expose fields,
+         whether mutable or immutable.
+      </p>
+      
+      <h3 class="h2"><a id="lev17" class="calibre4"></a><span epub:type="pagebreak" id="page_80" class="calibre15"></span><strong class="calibre10">Item 17: Minimize mutability</strong></h3>
+      
+      <p class="noindent">An immutable class is simply a class whose instances cannot be modified. All of the
+         information contained in each instance is fixed for the lifetime of the object, so
+         no changes can ever be observed. The Java platform libraries contain many immutable
+         classes, including <code class="calibre12">String</code>, the boxed primitive classes, and <code class="calibre12">BigInteger</code> and <code class="calibre12">BigDecimal</code>. There are many good reasons for this: Immutable classes are easier to design, implement,
+         and use than mutable classes. They are less prone to error and are more secure.
+      </p>
+      
+      <p class="indentb">To make a class immutable, follow these five rules:</p>
+      
+      <p class="numberb">1. <strong class="calibre11">Don’t provide methods that modify the object’s state</strong> (known as <em class="calibre9">mutators</em>).
+      </p>
+      
+      <p class="numberb">2. <strong class="calibre11">Ensure that the class can’t be extended.</strong> This prevents careless or malicious subclasses from compromising the immutable behavior
+         of the class by behaving as if the object’s state has changed. Preventing subclassing
+         is generally accomplished by making the class final, but there is an alternative that
+         we’ll discuss later.
+      </p>
+      
+      <p class="numberb">3. <strong class="calibre11">Make all fields final.</strong> This clearly expresses your intent in a manner that is enforced by the system. Also,
+         it is necessary to ensure correct behavior if a reference to a newly created instance
+         is passed from one thread to another without synchronization, as spelled out in the
+         <em class="calibre9">memory model</em> [JLS, 17.5; Goetz06, 16].
+      </p>
+      
+      <p class="numberb">4. <strong class="calibre11">Make all fields private.</strong> This prevents clients from obtaining access to mutable objects referred to by fields
+         and modifying these objects directly. While it is technically permissible for immutable
+         classes to have public final fields containing primitive values or references to immutable
+         objects, it is not recommended because it precludes changing the internal representation
+         in a later release (<a href="ch4.xhtml#lev15" class="calibre8">Items 15</a> and <a href="ch4.xhtml#lev16" class="calibre8">16</a>).
+      </p>
+      
+      <p class="numberb">5. <strong class="calibre11">Ensure exclusive access to any mutable components.</strong> If your class has any fields that refer to mutable objects, ensure that clients of
+         the class cannot obtain references to these objects. Never initialize such a field
+         to a client-provided object reference or return the field from an accessor. Make <em class="calibre9">defensive copies</em> (<a href="ch8.xhtml#lev50" class="calibre8">Item 50</a>) in constructors, accessors, and <code class="calibre12">readObject</code> methods (<a href="ch12.xhtml#lev88" class="calibre8">Item 88</a>).
+      </p>
+      
+      <p class="indent">Many of the example classes in previous items are immutable. One such class is <code class="calibre12">PhoneNumber</code> in <a href="ch3.xhtml#lev11" class="calibre8">Item 11</a>, which has accessors for each attribute but no corresponding mutators. Here is a
+         slightly more complex example:
+      </p>
+      <span epub:type="pagebreak" id="page_81"></span>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex7a" id="pch4ex7" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Immutable complex number class</strong><br class="calibre7"/>
+         public <strong class="calibre11">final</strong>  class Complex {<br class="calibre7"/>
+             <strong class="calibre11">private final</strong>  double re;<br class="calibre7"/>
+             <strong class="calibre11">private final</strong>  double im;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Complex(double re, double im) {<br class="calibre7"/>
+                 this.re = re;<br class="calibre7"/>
+                 this.im = im;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public double realPart()      { return re; }<br class="calibre7"/>
+             public double imaginaryPart() { return im; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Complex plus(Complex c) {<br class="calibre7"/>
+                 return new Complex(re + c.re, im + c.im);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Complex minus(Complex c) {<br class="calibre7"/>
+                 return new Complex(re - c.re, im - c.im);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Complex times(Complex c) {<br class="calibre7"/>
+                 return new Complex(re * c.re - im * c.im,<br class="calibre7"/>
+                                    re * c.im + im * c.re);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Complex dividedBy(Complex c) {<br class="calibre7"/>
+                 double tmp = c.re * c.re + c.im * c.im;<br class="calibre7"/>
+                 return new Complex((re * c.re + im * c.im) / tmp,<br class="calibre7"/>
+                                    (im * c.re - re * c.im) / tmp);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public boolean equals(Object o) {<br class="calibre7"/>
+                if (o == this)<br class="calibre7"/>
+                    return true;<br class="calibre7"/>
+                if (!(o instanceof Complex))<br class="calibre7"/>
+                    return false;<br class="calibre7"/>
+                Complex c = (Complex) o;<br class="calibre7"/>
+         <br class="calibre7"/>
+                // See page 47 to find out why we use compare instead of ==<br class="calibre7"/>
+                return Double.compare(c.re, re) == 0<br class="calibre7"/>
+                    &amp;&amp; Double.compare(c.im, im) == 0;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             @Override public int hashCode() {<br class="calibre7"/>
+                 return 31 * Double.hashCode(re) + Double.hashCode(im);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() {<br class="calibre7"/>
+                 return "(" + re + " + " + im + "i)";<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_82"></span>This class represents a <em class="calibre9">complex number</em> (a number with both real and imaginary parts). In addition to the standard <code class="calibre12">Object</code> methods, it provides accessors for the real and imaginary parts and provides the
+         four basic arithmetic operations: addition, subtraction, multiplication, and division.
+         Notice how the arithmetic operations create and return a new <code class="calibre12">Complex</code> instance rather than modifying this instance. This pattern is known as the <em class="calibre9">functional</em> approach because methods return the result of applying a function to their operand,
+         without modifying it. Contrast it to the <em class="calibre9">procedural</em> or <em class="calibre9">imperative</em> approach in which methods apply a procedure to their operand, causing its state to
+         change. Note that the method names are prepositions (such as <code class="calibre12">plus</code>) rather than verbs (such as <code class="calibre12">add</code>). This emphasizes the fact that methods don’t change the values of the objects. The
+         <code class="calibre12">BigInteger</code> and <code class="calibre12">BigDecimal</code> classes did <em class="calibre9">not</em> obey this naming convention, and it led to many usage errors.
+      </p>
+      
+      <p class="indent">The functional approach may appear unnatural if you’re not familiar with it, but it
+         enables immutability, which has many advantages. <strong class="calibre11">Immutable objects are simple.</strong> An immutable object can be in exactly one state, the state in which it was created.
+         If you make sure that all constructors establish class invariants, then it is guaranteed
+         that these invariants will remain true for all time, with no further effort on your
+         part or on the part of the programmer who uses the class. Mutable objects, on the
+         other hand, can have arbitrarily complex state spaces. If the documentation does not
+         provide a precise description of the state transitions performed by mutator methods,
+         it can be difficult or impossible to use a mutable class reliably.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Immutable objects are inherently thread-safe; they require no synchronization.</strong> They cannot be corrupted by multiple threads accessing them concurrently. This is
+         far and away the easiest approach to achieve thread safety. Since no thread can ever
+         observe any effect of another thread on an immutable object, <strong class="calibre11">immutable objects can be shared freely.</strong> Immutable classes should therefore encourage clients to reuse existing instances
+         wherever possible. One easy way to do this is to provide public static final constants
+         for commonly used values. For example, the <code class="calibre12">Complex</code> class might provide these constants:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex8a" id="pch4ex8" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static final Complex ZERO = new Complex(0, 0);<br class="calibre7"/>
+         public static final Complex ONE  = new Complex(1, 0);<br class="calibre7"/>
+         public static final Complex I    = new Complex(0, 1);
+      </p>
+      
+      <p class="indent">This approach can be taken one step further. An immutable class can provide static
+         factories (<a href="ch2.xhtml#lev1" class="calibre8">Item 1</a>) that cache frequently requested instances to avoid creating new instances when existing
+         ones would do. All the boxed primitive classes and <code class="calibre12">BigInteger</code> do this. Using such static factories causes clients to share instances instead of
+         creating new ones, reducing memory footprint and garbage collection <span epub:type="pagebreak" id="page_83"></span>costs. Opting for static factories in place of public constructors when designing
+         a new class gives you the flexibility to add caching later, without modifying clients.
+      </p>
+      
+      <p class="indent">A consequence of the fact that immutable objects can be shared freely is that you
+         never have to make <em class="calibre9">defensive copies</em> of them (<a href="ch8.xhtml#lev50" class="calibre8">Item 50</a>). In fact, you never have to make any copies at all because the copies would be forever
+         equivalent to the originals. Therefore, you need not and should not provide a <code class="calibre12">clone</code> method or <em class="calibre9">copy constructor</em> (<a href="ch3.xhtml#lev13" class="calibre8">Item 13</a>) on an immutable class. This was not well understood in the early days of the Java
+         platform, so the <code class="calibre12">String</code> class does have a copy constructor, but it should rarely, if ever, be used (<a href="ch2.xhtml#lev6" class="calibre8">Item 6</a>).
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Not only can you share immutable objects, but they can share their internals.</strong> For example, the <code class="calibre12">BigInteger</code> class uses a sign-magnitude representation internally. The sign is represented by
+         an <code class="calibre12">int</code>, and the magnitude is represented by an <code class="calibre12">int</code> array. The <code class="calibre12">negate</code> method produces a new <code class="calibre12">BigInteger</code> of like magnitude and opposite sign. It does not need to copy the array even though
+         it is mutable; the newly created <code class="calibre12">BigInteger</code> points to the same internal array as the original.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Immutable objects make great building blocks for other objects,</strong> whether mutable or immutable. It’s much easier to maintain the invariants of a complex
+         object if you know that its component objects will not change underneath it. A special
+         case of this principle is that immutable objects make great map keys and set elements:
+         you don’t have to worry about their values changing once they’re in the map or set,
+         which would destroy the map or set’s invariants.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Immutable objects provide failure atomicity for free</strong> (<a href="ch10.xhtml#lev76" class="calibre8">Item 76</a>). Their state never changes, so there is no possibility of a temporary inconsistency.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The major disadvantage of immutable classes is that they require a separate object
+            for each distinct value.</strong> Creating these objects can be costly, especially if they are large. For example,
+         suppose that you have a million-bit <code class="calibre12">BigInteger</code> and you want to change its low-order bit:
+      </p>
+      
+      <p class="pre">BigInteger moby = ...;<br class="calibre7"/>
+         moby = moby.flipBit(0);
+      </p>
+      
+      <p class="noindent">The <code class="calibre12">flipBit</code> method creates a new <code class="calibre12">BigInteger</code> instance, also a million bits long, that differs from the original in only one bit.
+         The operation requires time and space proportional to the size of the <code class="calibre12">BigInteger</code>. Contrast this to <code class="calibre12">java.util.BitSet</code>. Like <code class="calibre12">BigInteger</code>, <code class="calibre12">BitSet</code> represents an arbitrarily long sequence of bits, but unlike <code class="calibre12">BigInteger</code>, <code class="calibre12">BitSet</code> is mutable. The <code class="calibre12">BitSet</code> class provides a method that allows you to change the state of a single bit of a
+         million-bit instance in constant time:
+      </p>
+      
+      <p class="codep1">BitSet moby = ...;<br class="calibre7"/>
+         moby.flip(0);
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_84"></span>The performance problem is magnified if you perform a multistep operation that generates
+         a new object at every step, eventually discarding all objects except the final result.
+         There are two approaches to coping with this problem. The first is to guess which
+         multistep operations will be commonly required and to provide them as primitives.
+         If a multistep operation is provided as a primitive, the immutable class does not
+         have to create a separate object at each step. Internally, the immutable class can
+         be arbitrarily clever. For example, <code class="calibre12">BigInteger</code> has a package-private mutable “companion class” that it uses to speed up multistep
+         operations such as modular exponentiation. It is much harder to use the mutable companion
+         class than to use <code class="calibre12">BigInteger</code>, for all of the reasons outlined earlier. Luckily, you don’t have to use it: the
+         implementors of <code class="calibre12">BigInteger</code> did the hard work for you.
+      </p>
+      
+      <p class="indent">The package-private mutable companion class approach works fine if you can accurately
+         predict which complex operations clients will want to perform on your immutable class.
+         If not, then your best bet is to provide a <em class="calibre9">public</em> mutable companion class. The main example of this approach in the Java platform libraries
+         is the <code class="calibre12">String</code> class, whose mutable companion is <code class="calibre12">StringBuilder</code> (and its obsolete predecessor, <code class="calibre12">StringBuffer</code>).
+      </p>
+      
+      <p class="indent">Now that you know how to make an immutable class and you understand the pros and cons
+         of immutability, let’s discuss a few design alternatives. Recall that to guarantee
+         immutability, a class must not permit itself to be subclassed. This can be done by
+         making the class final, but there is another, more flexible alternative. Instead of
+         making an immutable class final, you can make all of its constructors private or package-private
+         and add public static factories in place of the public constructors (<a href="ch2.xhtml#lev1" class="calibre8">Item 1</a>). To make this concrete, here’s how <code class="calibre12">Complex</code> would look if you took this approach:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex9a" id="pch4ex9" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Immutable class with static factories instead of constructors</strong><br class="calibre7"/>
+         public class Complex {<br class="calibre7"/>
+             private final double re;<br class="calibre7"/>
+             private final double im;<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">private</strong> Complex(double re, double im) {<br class="calibre7"/>
+                 this.re = re;<br class="calibre7"/>
+                 this.im = im;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">public static Complex valueOf(double re, double im)</strong> {<br class="calibre7"/>
+                 return new Complex(re, im);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             ... // Remainder unchanged<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_85"></span>This approach is often the best alternative. It is the most flexible because it allows
+         the use of multiple package-private implementation classes. To its clients that reside
+         outside its package, the immutable class is effectively final because it is impossible
+         to extend a class that comes from another package and that lacks a public or protected
+         constructor. Besides allowing the flexibility of multiple implementation classes,
+         this approach makes it possible to tune the performance of the class in subsequent
+         releases by improving the object-caching capabilities of the static factories.
+      </p>
+      
+      <p class="indent">It was not widely understood that immutable classes had to be effectively final when
+         <code class="calibre12">BigInteger</code> and <code class="calibre12">BigDecimal</code> were written, so all of their methods may be overridden. Unfortunately, this could
+         not be corrected after the fact while preserving backward compatibility. If you write
+         a class whose security depends on the immutability of a <code class="calibre12">BigInteger</code> or <code class="calibre12">BigDecimal</code> argument from an untrusted client, you must check to see that the argument is a “real”
+         <code class="calibre12">BigInteger</code> or <code class="calibre12">BigDecimal</code>, rather than an instance of an untrusted subclass. If it is the latter, you must
+         defensively copy it under the assumption that it might be mutable (<a href="ch8.xhtml#lev50" class="calibre8">Item 50</a>):
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex10a" id="pch4ex10" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static BigInteger safeInstance(BigInteger val) {<br class="calibre7"/>
+             return val.getClass() == BigInteger.class ?<br class="calibre7"/>
+                     val : new BigInteger(val.toByteArray());<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The list of rules for immutable classes at the beginning of this item says that no
+         methods may modify the object and that all its fields must be final. In fact these
+         rules are a bit stronger than necessary and can be relaxed to improve performance.
+         In truth, no method may produce an <em class="calibre9">externally visible</em> change in the object’s state. However, some immutable classes have one or more nonfinal
+         fields in which they cache the results of expensive computations the first time they
+         are needed. If the same value is requested again, the cached value is returned, saving
+         the cost of recalculation. This trick works precisely because the object is immutable,
+         which guarantees that the computation would yield the same result if it were repeated.
+      </p>
+      
+      <p class="indent">For example, <code class="calibre12">PhoneNumber</code>’s <code class="calibre12">hashCode</code> method (<a href="ch3.xhtml#lev11" class="calibre8">Item 11</a>, page 53) computes the hash code the first time it’s invoked and caches it in case
+         it’s invoked again. This technique, an example of <em class="calibre9">lazy initialization</em> (<a href="ch11.xhtml#lev83" class="calibre8">Item 83</a>), is also used by <code class="calibre12">String</code>.
+      </p>
+      
+      <p class="indent">One caveat should be added concerning serializability. If you choose to have your
+         immutable class implement <code class="calibre12">Serializable</code> and it contains one or more fields that refer to mutable objects, you must provide
+         an explicit <code class="calibre12">readObject</code> or <code class="calibre12">readResolve</code> method, or use the <code class="calibre12">ObjectOutputStream.writeUnshared</code> and <span epub:type="pagebreak" id="page_86"></span><code class="calibre12">ObjectInputStream.readUnshared</code> methods, even if the default serialized form is acceptable. Otherwise an attacker
+         could create a mutable instance of your class. This topic is covered in detail in
+         <a href="ch12.xhtml#lev88" class="calibre8">Item 88</a>.
+      </p>
+      
+      <p class="indent">To summarize, resist the urge to write a setter for every getter. <strong class="calibre11">Classes should be immutable unless there’s a very good reason to make them mutable.</strong> Immutable classes provide many advantages, and their only disadvantage is the potential
+         for performance problems under certain circumstances. You should always make small
+         value objects, such as <code class="calibre12">PhoneNumber</code> and <code class="calibre12">Complex</code>, immutable. (There are several classes in the Java platform libraries, such as <code class="calibre12">java.util.Date</code> and <code class="calibre12">java.awt.Point</code>, that should have been immutable but aren’t.) You should seriously consider making
+         larger value objects, such as <code class="calibre12">String</code> and <code class="calibre12">BigInteger</code>, immutable as well. You should provide a public mutable companion class for your
+         immutable class <em class="calibre9">only</em> once you’ve confirmed that it’s necessary to achieve satisfactory performance (<a href="ch9.xhtml#lev67" class="calibre8">Item 67</a>).
+      </p>
+      
+      <p class="indent">There are some classes for which immutability is impractical. <strong class="calibre11">If a class cannot be made immutable, limit its mutability as much as possible.</strong> Reducing the number of states in which an object can exist makes it easier to reason
+         about the object and reduces the likelihood of errors. Therefore, make every field
+         final unless there is a compelling reason to make it nonfinal. Combining the advice
+         of this item with that of <a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>, your natural inclination should be to <strong class="calibre11">declare every field</strong> <code class="calibre12"><strong class="calibre11">private final</strong></code> <strong class="calibre11">unless there’s a good reason to do otherwise.</strong></p>
+      
+      <p class="indent"><strong class="calibre11">Constructors should create fully initialized objects with all of their invariants
+            established.</strong> Don’t provide a public initialization method separate from the constructor or static
+         factory unless there is a <em class="calibre9">compelling</em> reason to do so. Similarly, don’t provide a “reinitialize” method that enables an
+         object to be reused as if it had been constructed with a different initial state.
+         Such methods generally provide little if any performance benefit at the expense of
+         increased complexity.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">CountDownLatch</code> class exemplifies these principles. It is mutable, but its state space is kept intentionally
+         small. You create an instance, use it once, and it’s done: once the countdown latch’s
+         count has reached zero, you may not reuse it.
+      </p>
+      
+      <p class="indent">A final note should be added concerning the <code class="calibre12">Complex</code> class in this item. This example was meant only to illustrate immutability. It is
+         not an industrial-strength complex number implementation. It uses the standard formulas
+         for complex multiplication and division, which are not correctly rounded and provide
+         poor semantics for complex NaNs and infinities [<a href="ref.xhtml#rKahan91" class="calibre8">Kahan91</a>, <a href="ref.xhtml#rSmith62" class="calibre8">Smith62</a>, <a href="ref.xhtml#rThomas94" class="calibre8">Thomas94</a>].
+      </p>
+      
+      <h3 class="h2"><a id="lev18" class="calibre4"></a><span epub:type="pagebreak" id="page_87" class="calibre15"></span><strong class="calibre10">Item 18: Favor composition over inheritance</strong></h3>
+      
+      <p class="noindent">Inheritance is a powerful way to achieve code reuse, but it is not always the best
+         tool for the job. Used inappropriately, it leads to fragile software. It is safe to
+         use inheritance within a package, where the subclass and the superclass implementations
+         are under the control of the same programmers. It is also safe to use inheritance
+         when extending classes specifically designed and documented for extension (<a href="ch4.xhtml#lev19" class="calibre8">Item 19</a>). Inheriting from ordinary concrete classes across package boundaries, however, is
+         dangerous. As a reminder, this book uses the word “inheritance” to mean <em class="calibre9">implementation inheritance</em> (when one class extends another). The problems discussed in this item do not apply
+         to <em class="calibre9">interface inheritance</em> (when a class implements an interface or when one interface extends another).
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Unlike method invocation, inheritance violates encapsulation</strong> [<a href="ref.xhtml#rSnyder86" class="calibre8">Snyder86</a>]. In other words, a subclass depends on the implementation details of its superclass
+         for its proper function. The superclass’s implementation may change from release to
+         release, and if it does, the subclass may break, even though its code has not been
+         touched. As a consequence, a subclass must evolve in tandem with its superclass, unless
+         the superclass’s authors have designed and documented it specifically for the purpose
+         of being extended.
+      </p>
+      
+      <p class="indent">To make this concrete, let’s suppose we have a program that uses a <code class="calibre12">HashSet</code>. To tune the performance of our program, we need to query the <code class="calibre12">HashSet</code> as to how many elements have been added since it was created (not to be confused
+         with its current size, which goes down when an element is removed). To provide this
+         functionality, we write a <code class="calibre12">HashSet</code> variant that keeps count of the number of attempted element insertions and exports
+         an accessor for this count. The <code class="calibre12">HashSet</code> class contains two methods capable of adding elements, <code class="calibre12">add</code> and <code class="calibre12">addAll</code>, so we override both of these methods:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex11a" id="pch4ex11" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - Inappropriate use of inheritance!</strong><br class="calibre7"/>
+         public class InstrumentedHashSet&lt;E&gt; extends HashSet&lt;E&gt; {<br class="calibre7"/>
+             // The number of attempted element insertions<br class="calibre7"/>
+             private int addCount = 0;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public InstrumentedHashSet() {<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public InstrumentedHashSet(int initCap, float loadFactor) {<br class="calibre7"/>
+                 super(initCap, loadFactor);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             @Override public boolean add(E e) {<br class="calibre7"/>
+                 addCount++;<br class="calibre7"/>
+                 return super.add(e);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             @Override public boolean addAll(Collection&lt;? extends E&gt; c) {<br class="calibre7"/>
+                 addCount += c.size();<br class="calibre7"/>
+                 return super.addAll(c);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public int getAddCount() {<br class="calibre7"/>
+                 return addCount;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This class looks reasonable, but it doesn’t work. Suppose we create an instance and
+         add three elements using the <code class="calibre12">addAll</code> method. Incidentally, note that we create a list using the static factory method
+         <code class="calibre12">List.of</code>, which was added in Java 9; if you’re using an earlier release, use <code class="calibre12">Arrays.asList</code> instead:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex12a" id="pch4ex12" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">InstrumentedHashSet&lt;String&gt; s = new InstrumentedHashSet&lt;&gt;();<br class="calibre7"/>
+         s.addAll(List.of("Snap", "Crackle", "Pop"));
+      </p>
+      
+      <p class="indent">We would expect the <code class="calibre12">getAddCount</code> method to return three at this point, but it returns six. What went wrong? Internally,
+         <code class="calibre12">HashSet</code>’s <code class="calibre12">addAll</code> method is implemented on top of its <code class="calibre12">add</code> method, although <code class="calibre12">HashSet</code>, quite reasonably, does not document this implementation detail. The <code class="calibre12">addAll</code> method in <code class="calibre12">Instrumented-HashSet</code> added three to <code class="calibre12">addCount</code> and then invoked <code class="calibre12">HashSet</code>’s <code class="calibre12">addAll</code> implementation using <code class="calibre12">super.addAll</code>. This in turn invoked the <code class="calibre12">add</code> method, as overridden in <code class="calibre12">InstrumentedHashSet</code>, once for each element. Each of these three invocations added one more to <code class="calibre12">addCount</code>, for a total increase of six: each element added with the <code class="calibre12">addAll</code> method is double-counted.
+      </p>
+      
+      <p class="indent">We could “fix” the subclass by eliminating its override of the <code class="calibre12">addAll</code> method. While the resulting class would work, it would depend for its proper function
+         on the fact that <code class="calibre12">HashSet</code>’s <code class="calibre12">addAll</code> method is implemented on top of its <code class="calibre12">add</code> method. This “self-use” is an implementation detail, not guaranteed to hold in all
+         implementations of the Java platform and subject to change from release to release.
+         Therefore, the resulting <code class="calibre12">InstrumentedHashSet</code> class would be fragile.
+      </p>
+      
+      <p class="indent">It would be slightly better to override the <code class="calibre12">addAll</code> method to iterate over the specified collection, calling the <code class="calibre12">add</code> method once for each element. This would guarantee the correct result whether or
+         not <code class="calibre12">HashSet</code>’s <code class="calibre12">addAll</code> method were implemented atop its <code class="calibre12">add</code> method because <code class="calibre12">HashSet</code>’s <code class="calibre12">addAll</code> implementation would no longer be invoked. This technique, however, does not solve
+         all our problems. It amounts to reimplementing superclass methods that may or may
+         not <span epub:type="pagebreak" id="page_88"></span>result in self-use, which is difficult, time-consuming, error-prone, and may reduce
+         performance. Additionally, it isn’t always possible because some methods cannot be
+         implemented without access to private fields inaccessible to the subclass.
+      </p>
+      
+      <p class="indent">A related cause of fragility in subclasses is that their superclass can acquire new
+         methods in subsequent releases. Suppose a program depends for its security on the
+         fact that all elements inserted into some collection satisfy some predicate. This
+         can be guaranteed by subclassing the collection and overriding each method capable
+         of adding an element to ensure that the predicate is satisfied before adding the element.
+         This works fine until a new method capable of inserting an element is added to the
+         superclass in a subsequent release. Once this happens, it becomes possible to add
+         an “illegal” element merely by invoking the new method, which is not overridden in
+         the subclass. This is not a purely theoretical problem. Several security holes of
+         this nature had to be fixed when <code class="calibre12">Hashtable</code> and <code class="calibre12">Vector</code> were retrofitted to participate in the Collections Framework.
+      </p>
+      
+      <p class="indent">Both of these problems stem from overriding methods. You might think that it is safe
+         to extend a class if you merely add new methods and refrain from overriding existing
+         methods. While this sort of extension is much safer, it is not without risk. If the
+         superclass acquires a new method in a subsequent release and you have the bad luck
+         to have given the subclass a method with the same signature and a different return
+         type, your subclass will no longer compile [JLS, 8.4.8.3]. If you’ve given the subclass
+         a method with the same signature and return type as the new superclass method, then
+         you’re now overriding it, so you’re subject to the problems described earlier. Furthermore,
+         it is doubtful that your method will fulfill the contract of the new superclass method,
+         because that contract had not yet been written when you wrote the subclass method.
+      </p>
+      
+      <p class="indent">Luckily, there is a way to avoid all of the problems described above. Instead of extending
+         an existing class, give your new class a private field that references an instance
+         of the existing class. This design is called <em class="calibre9">composition</em> because the existing class becomes a component of the new one. Each instance method
+         in the new class invokes the corresponding method on the contained instance of the
+         existing class and returns the results. This is known as <em class="calibre9">forwarding</em>, and the methods in the new class are known as <em class="calibre9">forwarding methods</em>. The resulting class will be rock solid, with no dependencies on the implementation
+         details of the existing class. Even adding new methods to the existing class will
+         have no impact on the new class. To make this concrete, here’s a replacement for <code class="calibre12">InstrumentedHashSet</code> that uses the composition-and-forwarding approach. Note that the implementation is
+         broken into two pieces, the class itself and a reusable <em class="calibre9">forwarding class,</em> which contains all of the forwarding methods and nothing else:
+      </p>
+      <span epub:type="pagebreak" id="page_89"></span>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex13a" id="pch4ex13" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Wrapper class - uses composition in place of inheritance</strong><br class="calibre7"/>
+         public class InstrumentedSet&lt;E&gt; extends ForwardingSet&lt;E&gt; {<br class="calibre7"/>
+             private int addCount = 0;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public InstrumentedSet(Set&lt;E&gt; s) {<br class="calibre7"/>
+                 super(s);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public boolean add(E e) {<br class="calibre7"/>
+                 addCount++;<br class="calibre7"/>
+                 return super.add(e);<br class="calibre7"/>
+              }<br class="calibre7"/>
+              @Override public boolean addAll(Collection&lt;? extends E&gt; c) {<br class="calibre7"/>
+                  addCount += c.size();<br class="calibre7"/>
+                  return super.addAll(c);<br class="calibre7"/>
+              }<br class="calibre7"/>
+              public int getAddCount() {<br class="calibre7"/>
+                  return addCount;<br class="calibre7"/>
+              }<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         <strong class="calibre11">// Reusable forwarding class</strong><br class="calibre7"/>
+         public class ForwardingSet&lt;E&gt; implements Set&lt;E&gt; {<br class="calibre7"/>
+             private final Set&lt;E&gt; s;<br class="calibre7"/>
+             public ForwardingSet(Set&lt;E&gt; s) { this.s = s; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public void clear()               { s.clear();            }<br class="calibre7"/>
+             public boolean contains(Object o) { return s.contains(o); }<br class="calibre7"/>
+             public boolean isEmpty()          { return s.isEmpty();   }<br class="calibre7"/>
+             public int size()                 { return s.size();      }<br class="calibre7"/>
+             public Iterator&lt;E&gt; iterator()     { return s.iterator();  }<br class="calibre7"/>
+             public boolean add(E e)           { return s.add(e);      }<br class="calibre7"/>
+             public boolean remove(Object o)   { return s.remove(o);   }<br class="calibre7"/>
+             public boolean containsAll(Collection&lt;?&gt; c)<br class="calibre7"/>
+                                            { return s.containsAll(c); }<br class="calibre7"/>
+             public boolean addAll(Collection&lt;? extends E&gt; c)<br class="calibre7"/>
+                                            { return s.addAll(c);      }<br class="calibre7"/>
+             public boolean removeAll(Collection&lt;?&gt; c)<br class="calibre7"/>
+                                            { return s.removeAll(c);   }<br class="calibre7"/>
+             public boolean retainAll(Collection&lt;?&gt; c)<br class="calibre7"/>
+                                            { return s.retainAll(c);   }<br class="calibre7"/>
+             public Object[] toArray()          { return s.toArray();  }<br class="calibre7"/>
+             public &lt;T&gt; T[] toArray(T[] a)      { return s.toArray(a); }<br class="calibre7"/>
+             @Override public boolean equals(Object o)<br class="calibre7"/>
+                                                { return s.equals(o);  }<br class="calibre7"/>
+             @Override public int hashCode()    { return s.hashCode(); }<br class="calibre7"/>
+             @Override public String toString() { return s.toString(); }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_90"></span>The design of the <code class="calibre12">InstrumentedSet</code> class is enabled by the existence of the <code class="calibre12">Set</code> interface, which captures the functionality of the <code class="calibre12">HashSet</code> class. Besides being robust, this design is extremely flexible. The <code class="calibre12">InstrumentedSet</code> class implements the <code class="calibre12">Set</code> interface and has a single constructor whose argument is also of type <code class="calibre12">Set</code>. In essence, the class transforms one <code class="calibre12">Set</code> into another, adding the instrumentation functionality. Unlike the inheritance-based
+         approach, which works only for a single concrete class and requires a separate constructor
+         for each supported constructor in the superclass, the wrapper class can be used to
+         instrument any <code class="calibre12">Set</code> implementation and will work in conjunction with any preexisting constructor:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex14a" id="pch4ex14" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Set&lt;Instant&gt; times = new InstrumentedSet&lt;&gt;(new TreeSet&lt;&gt;(cmp));<br class="calibre7"/>
+         Set&lt;E&gt; s = new InstrumentedSet&lt;&gt;(new HashSet&lt;&gt;(INIT_CAPACITY));
+      </p>
+      
+      <p class="indent">The <code class="calibre12">InstrumentedSet</code> class can even be used to temporarily instrument a set instance that has already
+         been used without instrumentation:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex15a" id="pch4ex15" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">static void walk(Set&lt;Dog&gt; dogs) {<br class="calibre7"/>
+             InstrumentedSet&lt;Dog&gt; iDogs = new InstrumentedSet&lt;&gt;(dogs);<br class="calibre7"/>
+             ... // Within this method use iDogs instead of dogs<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The <code class="calibre12">InstrumentedSet</code> class is known as a <em class="calibre9">wrapper</em> class because each <code class="calibre12">InstrumentedSet</code> instance contains (“wraps”) another <code class="calibre12">Set</code> instance. This is also known as the <em class="calibre9">Decorator</em> pattern [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>] because the <code class="calibre12">InstrumentedSet</code> class “decorates” a set by adding instrumentation. Sometimes the combination of composition
+         and forwarding is loosely referred to as <em class="calibre9">delegation.</em> Technically it’s not delegation unless the wrapper object passes itself to the wrapped
+         object [Lieberman86; Gamma95].
+      </p>
+      
+      <p class="indent">The disadvantages of wrapper classes are few. One caveat is that wrapper classes are
+         not suited for use in <em class="calibre9">callback frameworks</em>, wherein objects pass self-references to other objects for subsequent invocations
+         (“callbacks”). Because a wrapped object doesn’t know of its wrapper, it passes a reference
+         to itself (<code class="calibre12">this</code>) and callbacks elude the wrapper. This is known as the <em class="calibre9">SELF problem</em> [<a href="ref.xhtml#rLieberman86" class="calibre8">Lieberman86</a>]. Some people worry about the performance impact of forwarding method invocations
+         or the memory footprint impact of wrapper objects. Neither turn out to have much impact
+         in practice. It’s tedious to write forwarding methods, but you have to write the reusable
+         forwarding class for each interface only once, and forwarding classes may be provided
+         for you. For example, Guava provides forwarding classes for all of the collection
+         interfaces [<a href="ref.xhtml#rGuava" class="calibre8">Guava</a>].
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_91"></span>Inheritance is appropriate only in circumstances where the subclass really is a <em class="calibre9">subtype</em> of the superclass. In other words, a class <em class="calibre9">B</em> should extend a class <em class="calibre9">A</em> only if an “is-a” relationship exists between the two classes. If you are tempted
+         to have a class <em class="calibre9">B</em> extend a class <em class="calibre9">A</em>, ask yourself the question: Is every <em class="calibre9">B</em> really an <em class="calibre9">A</em>? If you cannot truthfully answer yes to this question, <em class="calibre9">B</em> should not extend <em class="calibre9">A</em>. If the answer is no, it is often the case that <em class="calibre9">B</em> should contain a private instance of <em class="calibre9">A</em> and expose a different API: <em class="calibre9">A</em> is not an essential part of <em class="calibre9">B</em>, merely a detail of its implementation.
+      </p>
+      
+      <p class="indent">There are a number of obvious violations of this principle in the Java platform libraries.
+         For example, a stack is not a vector, so <code class="calibre12">Stack</code> should not extend <code class="calibre12">Vector</code>. Similarly, a property list is not a hash table, so <code class="calibre12">Properties</code> should not extend <code class="calibre12">Hashtable</code>. In both cases, composition would have been preferable.
+      </p>
+      
+      <p class="indent">If you use inheritance where composition is appropriate, you needlessly expose implementation
+         details. The resulting API ties you to the original implementation, forever limiting
+         the performance of your class. More seriously, by exposing the internals you let clients
+         access them directly. At the very least, it can lead to confusing semantics. For example,
+         if <code class="calibre12">p</code> refers to a <code class="calibre12">Properties</code> instance, then <code class="calibre12">p.getProperty(key)</code> may yield different results from <code class="calibre12">p.get(key)</code>: the former method takes defaults into account, while the latter method, which is
+         inherited from <code class="calibre12">Hashtable</code>, does not. Most seriously, the client may be able to corrupt invariants of the subclass
+         by modifying the superclass directly. In the case of <code class="calibre12">Properties</code>, the designers intended that only strings be allowed as keys and values, but direct
+         access to the underlying <code class="calibre12">Hashtable</code> allows this invariant to be violated. Once violated, it is no longer possible to
+         use other parts of the <code class="calibre12">Properties</code> API (<code class="calibre12">load</code> and <code class="calibre12">store</code>). By the time this problem was discovered, it was too late to correct it because
+         clients depended on the use of non-string keys and values.
+      </p>
+      
+      <p class="indent">There is one last set of questions you should ask yourself before deciding to use
+         inheritance in place of composition. Does the class that you contemplate extending
+         have any flaws in its API? If so, are you comfortable propagating those flaws into
+         your class’s API? Inheritance propagates any flaws in the superclass’s API, while
+         composition lets you design a new API that hides these flaws.
+      </p>
+      
+      <p class="indent">To summarize, inheritance is powerful, but it is problematic because it violates encapsulation.
+         It is appropriate only when a genuine subtype relationship exists between the subclass
+         and the superclass. Even then, inheritance may lead to fragility if the subclass is
+         in a different package from the superclass and the superclass is not designed for
+         inheritance. To avoid this fragility, use composition and forwarding instead of inheritance,
+         especially if an appropriate interface to implement a wrapper class exists. Not only
+         are wrapper classes more robust than subclasses, they are also more powerful.
+      </p>
+      
+      <h3 class="h2"><a id="lev19" class="calibre4"></a><span epub:type="pagebreak" id="page_92" class="calibre15"></span><strong class="calibre10">Item 19: Design and document for inheritance or else prohibit it</strong></h3>
+      
+      <p class="noindent">Item 18 alerted you to the dangers of subclassing a “foreign” class that was not designed
+         and documented for inheritance. So what does it mean for a class to be designed and
+         documented for inheritance?
+      </p>
+      
+      <p class="indent">First, the class must document precisely the effects of overriding any method. In
+         other words, <strong class="calibre11">the class must document its</strong> <em class="calibre9"><strong class="calibre11">self-use</strong></em> <strong class="calibre11">of overridable methods.</strong> For each public or protected method, the documentation must indicate which overridable
+         methods the method invokes, in what sequence, and how the results of each invocation
+         affect subsequent processing. (By <em class="calibre9">overridable</em>, we mean nonfinal and either public or protected.) More generally, a class must document
+         any circumstances under which it might invoke an overridable method. For example,
+         invocations might come from background threads or static initializers.
+      </p>
+      
+      <p class="indent">A method that invokes overridable methods contains a description of these invocations
+         at the end of its documentation comment. The description is in a special section of
+         the specification, labeled “Implementation Requirements,” which is generated by the
+         Javadoc tag <code class="calibre12">@implSpec</code>. This section describes the inner workings of the method. Here’s an example, copied
+         from the specification for <code class="calibre12">java.util.AbstractCollection</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex16a" id="pch4ex16" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="codep1">public boolean remove(Object o)</p>
+      
+      <p class="bqa">Removes a single instance of the specified element from this collection, if it is
+         present (optional operation). More formally, removes an element <code class="calibre12">e</code> such that <code class="calibre12">Objects.equals(o, e)</code>, if this collection contains one or more such elements. Returns <code class="calibre12">true</code> if this collection contained the specified element (or equivalently, if this collection
+         changed as a result of the call).
+      </p>
+      
+      <p class="bqa"><strong class="calibre11">Implementation Requirements:</strong> This implementation iterates over the collection looking for the specified element.
+         If it finds the element, it removes the element from the collection using the iterator’s
+         <code class="calibre12">remove</code> method. Note that this implementation throws an <code class="calibre12">UnsupportedOperationException</code> if the iterator returned by this collection’s <code class="calibre12">iterator</code> method does not implement the <code class="calibre12">remove</code> method and this collection contains the specified object.
+      </p>
+      
+      <p class="indent">This documentation leaves no doubt that overriding the <code class="calibre12">iterator</code> method will affect the behavior of the <code class="calibre12">remove</code> method. It also describes exactly how the behavior of the <code class="calibre12">Iterator</code> returned by the <code class="calibre12">iterator</code> method will affect the behavior of the <code class="calibre12">remove</code> method. Contrast this to the situation in <a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>, where the programmer subclassing <code class="calibre12">HashSet</code> simply could not say whether overriding the <code class="calibre12">add</code> method would affect the behavior of the <code class="calibre12">addAll</code> method.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_93"></span>But doesn’t this violate the dictum that good API documentation should describe <em class="calibre9">what</em> a given method does and not <em class="calibre9">how</em> it does it? Yes, it does! This is an unfortunate consequence of the fact that inheritance
+         violates encapsulation. To document a class so that it can be safely subclassed, you
+         must describe implementation details that should otherwise be left unspecified.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">@implSpec</code> tag was added in Java 8 and used heavily in Java 9. This tag should be enabled by
+         default, but as of Java 9, the Javadoc utility still ignores it unless you pass the
+         command line switch <code class="calibre12">-tag "apiNote:a:API Note:"</code>.
+      </p>
+      
+      <p class="indent">Designing for inheritance involves more than just documenting patterns of self-use.
+         To allow programmers to write efficient subclasses without undue pain, <strong class="calibre11">a class may have to provide hooks into its internal workings in the form of judiciously
+            chosen protected methods</strong> or, in rare instances, protected fields. For example, consider the <code class="calibre12">removeRange</code> method from <code class="calibre12">java.util.AbstractList</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex17a" id="pch4ex17" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">protected void removeRange(int fromIndex, int toIndex)</p>
+      
+      <p class="bq">Removes from this list all of the elements whose index is between <code class="calibre12">fromIndex</code>, inclusive, and <code class="calibre12">toIndex</code>, exclusive. Shifts any succeeding elements to the left (reduces their index). This
+         call shortens the list by <code class="calibre12">(toIndex - fromIndex)</code> elements. (If <code class="calibre12">toIndex == fromIndex</code>, this operation has no effect.)
+      </p>
+      
+      <p class="bq">This method is called by the <code class="calibre12">clear</code> operation on this list and its sublists. Overriding this method to take advantage
+         of the internals of the list implementation can substantially improve the performance
+         of the <code class="calibre12">clear</code> operation on this list and its sublists.
+      </p>
+      
+      <p class="bq"><strong class="calibre11">Implementation Requirements:</strong> This implementation gets a list iterator positioned before <code class="calibre12">fromIndex</code> and repeatedly calls <code class="calibre12">ListIterator.next</code> followed by <code class="calibre12">ListIterator.remove</code>, until the entire range has been removed. <strong class="calibre11">Note: If</strong> <code class="calibre12"><strong class="calibre11">ListIterator.remove</strong></code> <strong class="calibre11">requires linear time, this implementation requires quadratic time.</strong></p>
+      
+      <p class="bq">Parameters:</p>
+      
+      <p class="prem">
+         <code class="calibre12">fromIndex</code>       index of first element to be removed.<br class="calibre7"/>
+         <code class="calibre12">toIndex</code>           index after last element to be removed.
+      </p>
+      
+      <p class="indent">This method is of no interest to end users of a <code class="calibre12">List</code> implementation. It is provided solely to make it easy for subclasses to provide a
+         fast <code class="calibre12">clear</code> method on sublists. In the absence of the <code class="calibre12">removeRange</code> method, subclasses would have to make do with quadratic performance when the <code class="calibre12">clear</code> method was invoked on sublists or rewrite the entire <code class="calibre12">subList</code> mechanism from scratch—not an easy task!
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_94"></span>So how do you decide what protected members to expose when you design a class for
+         inheritance? Unfortunately, there is no magic bullet. The best you can do is to think
+         hard, take your best guess, and then test it by writing subclasses. You should expose
+         as few protected members as possible because each one represents a commitment to an
+         implementation detail. On the other hand, you must not expose too few because a missing
+         protected member can render a class practically unusable for inheritance.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The</strong> <em class="calibre9"><strong class="calibre11">only</strong></em> <strong class="calibre11">way to test a class designed for inheritance is to write subclasses.</strong> If you omit a crucial protected member, trying to write a subclass will make the
+         omission painfully obvious. Conversely, if several subclasses are written and none
+         uses a protected member, you should probably make it private. Experience shows that
+         three subclasses are usually sufficient to test an extendable class. One or more of
+         these subclasses should be written by someone other than the superclass author.
+      </p>
+      
+      <p class="indent">When you design for inheritance a class that is likely to achieve wide use, realize
+         that you are committing <em class="calibre9">forever</em> to the self-use patterns that you document and to the implementation decisions implicit
+         in its protected methods and fields. These commitments can make it difficult or impossible
+         to improve the performance or functionality of the class in a subsequent release.
+         Therefore, <strong class="calibre11">you must test your class by writing subclasses</strong> <em class="calibre9"><strong class="calibre11">before</strong></em> <strong class="calibre11">you release it.</strong></p>
+      
+      <p class="indent">Also, note that the special documentation required for inheritance clutters up normal
+         documentation, which is designed for programmers who create instances of your class
+         and invoke methods on them. As of this writing, there is little in the way of tools
+         to separate ordinary API documentation from information of interest only to programmers
+         implementing subclasses.
+      </p>
+      
+      <p class="indent">There are a few more restrictions that a class must obey to allow inheritance. <strong class="calibre11">Constructors must not invoke overridable methods,</strong> directly or indirectly. If you violate this rule, program failure will result. The
+         superclass constructor runs before the subclass constructor, so the overriding method
+         in the subclass will get invoked before the subclass constructor has run. If the overriding
+         method depends on any initialization performed by the subclass constructor, the method
+         will not behave as expected. To make this concrete, here’s a class that violates this
+         rule:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex18a" id="pch4ex18" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Super {<br class="calibre7"/>
+             <strong class="calibre11">// Broken - constructor invokes an overridable method</strong><br class="calibre7"/>
+             public Super() {<br class="calibre7"/>
+                 overrideMe();<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public void overrideMe() {<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_95"></span>Here’s a subclass that overrides the <code class="calibre12">overrideMe</code> method, which is erroneously invoked by <code class="calibre12">Super</code>’s sole constructor:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex19a" id="pch4ex19" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public final class Sub extends Super {<br class="calibre7"/>
+             // Blank final, set by constructor<br class="calibre7"/>
+             private final Instant instant;<br class="calibre7"/>
+         <br class="calibre7"/>
+             Sub() {<br class="calibre7"/>
+                 instant = Instant.now();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">// Overriding method invoked by superclass constructor</strong><br class="calibre7"/>
+             @Override public void overrideMe() {<br class="calibre7"/>
+                 System.out.println(instant);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public static void main(String[] args) {<br class="calibre7"/>
+                 Sub sub = new Sub();<br class="calibre7"/>
+                 sub.overrideMe();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">You might expect this program to print out the instant twice, but it prints out <code class="calibre12">null</code> the first time because <code class="calibre12">overrideMe</code> is invoked by the <code class="calibre12">Super</code> constructor before the <code class="calibre12">Sub</code> constructor has a chance to initialize the <code class="calibre12">instant</code> field. Note that this program observes a final field in two different states! Note
+         also that if <code class="calibre12">overrideMe</code> had invoked any method on <code class="calibre12">instant</code>, it would have thrown a <code class="calibre12">NullPointerException</code> when the <code class="calibre12">Super</code> constructor invoked <code class="calibre12">overrideMe</code>. The only reason this program doesn’t throw a <code class="calibre12">NullPointerException</code> as it stands is that the <code class="calibre12">println</code> method tolerates null parameters.
+      </p>
+      
+      <p class="indent">Note that it <em class="calibre9">is</em> safe to invoke private methods, final methods, and static methods, none of which
+         are overridable, from a constructor.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">Cloneable</code> and <code class="calibre12">Serializable</code> interfaces present special difficulties when designing for inheritance. It is generally
+         not a good idea for a class designed for inheritance to implement either of these
+         interfaces because they place a substantial burden on programmers who extend the class.
+         There are, however, special actions that you can take to allow subclasses to implement
+         these interfaces without mandating that they do so. These actions are described in
+         <a href="ch3.xhtml#lev13" class="calibre8">Item 13</a> and <a href="ch12.xhtml#lev86" class="calibre8">Item 86</a>.
+      </p>
+      
+      <p class="indent">If you do decide to implement either <code class="calibre12">Cloneable</code> or <code class="calibre12">Serializable</code> in a class that is designed for inheritance, you should be aware that because the
+         <code class="calibre12">clone</code> and <code class="calibre12">readObject</code> methods behave a lot like constructors, a similar restriction applies: <strong class="calibre11">neither</strong> <code class="calibre12"><strong class="calibre11">clone</strong></code> <strong class="calibre11">nor</strong> <code class="calibre12"><strong class="calibre11">readObject</strong></code> <strong class="calibre11">may invoke an overridable method, directly or indirectly.</strong> In the case of <code class="calibre12">readObject</code>, the overriding method will run before the <span epub:type="pagebreak" id="page_96"></span>subclass’s state has been deserialized. In the case of <code class="calibre12">clone</code>, the overriding method will run before the subclass’s <code class="calibre12">clone</code> method has a chance to fix the clone’s state. In either case, a program failure is
+         likely to follow. In the case of <code class="calibre12">clone</code>, the failure can damage the original object as well as the clone. This can happen,
+         for example, if the overriding method assumes it is modifying the clone’s copy of
+         the object’s deep structure, but the copy hasn’t been made yet.
+      </p>
+      
+      <p class="indent">Finally, if you decide to implement <code class="calibre12">Serializable</code> in a class designed for inheritance and the class has a <code class="calibre12">readResolve</code> or <code class="calibre12">writeReplace</code> method, you must make the <code class="calibre12">readResolve</code> or <code class="calibre12">writeReplace</code> method protected rather than private. If these methods are private, they will be
+         silently ignored by subclasses. This is one more case where an implementation detail
+         becomes part of a class’s API to permit inheritance.
+      </p>
+      
+      <p class="indent">By now it should be apparent that <strong class="calibre11">designing a class for inheritance requires great effort and places substantial limitations
+            on the class.</strong> This is not a decision to be undertaken lightly. There are some situations where
+         it is clearly the right thing to do, such as abstract classes, including <em class="calibre9">skeletal implementations</em> of interfaces (<a href="ch4.xhtml#lev20" class="calibre8">Item 20</a>). There are other situations where it is clearly the wrong thing to do, such as immutable
+         classes (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>).
+      </p>
+      
+      <p class="indent">But what about ordinary concrete classes? Traditionally, they are neither final nor
+         designed and documented for subclassing, but this state of affairs is dangerous. Each
+         time a change is made in such a class, there is a chance that subclasses extending
+         the class will break. This is not just a theoretical problem. It is not uncommon to
+         receive subclassing-related bug reports after modifying the internals of a nonfinal
+         concrete class that was not designed and documented for inheritance.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The best solution to this problem is to prohibit subclassing in classes that are not
+            designed and documented to be safely subclassed.</strong> There are two ways to prohibit subclassing. The easier of the two is to declare the
+         class final. The alternative is to make all the constructors private or package-private
+         and to add public static factories in place of the constructors. This alternative,
+         which provides the flexibility to use subclasses internally, is discussed in <a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>. Either approach is acceptable.
+      </p>
+      
+      <p class="indent">This advice may be somewhat controversial because many programmers have grown accustomed
+         to subclassing ordinary concrete classes to add facilities such as instrumentation,
+         notification, and synchronization or to limit functionality. If a class implements
+         some interface that captures its essence, such as <code class="calibre12">Set</code>, <code class="calibre12">List</code>, or <code class="calibre12">Map</code>, then you should feel no compunction about prohibiting subclassing. The <em class="calibre9">wrapper class</em> pattern, described in <a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>, provides a superior alternative to inheritance for augmenting the functionality.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_97"></span>If a concrete class does not implement a standard interface, then you may inconvenience
+         some programmers by prohibiting inheritance. If you feel that you must allow inheritance
+         from such a class, one reasonable approach is to ensure that the class never invokes
+         any of its overridable methods and to document this fact. In other words, eliminate
+         the class’s self-use of overridable methods entirely. In doing so, you’ll create a
+         class that is reasonably safe to subclass. Overriding a method will never affect the
+         behavior of any other method.
+      </p>
+      
+      <p class="indent">You can eliminate a class’s self-use of overridable methods mechanically, without
+         changing its behavior. Move the body of each overridable method to a private “helper
+         method” and have each overridable method invoke its private helper method. Then replace
+         each self-use of an overridable method with a direct invocation of the overridable
+         method’s private helper method.
+      </p>
+      
+      <p class="indent">In summary, designing a class for inheritance is hard work. You must document all
+         of its self-use patterns, and once you’ve documented them, you must commit to them
+         for the life of the class. If you fail to do this, subclasses may become dependent
+         on implementation details of the superclass and may break if the implementation of
+         the superclass changes. To allow others to write <em class="calibre9">efficient</em> subclasses, you may also have to export one or more protected methods. Unless you
+         know there is a real need for subclasses, you are probably better off prohibiting
+         inheritance by declaring your class final or ensuring that there are no accessible
+         constructors.
+      </p>
+      
+      <h3 class="h2"><a id="lev20" class="calibre4"></a><span epub:type="pagebreak" id="page_98" class="calibre15"></span><strong class="calibre10">Item 20: Prefer interfaces to abstract classes</strong></h3>
+      
+      <p class="noindent">Java has two mechanisms to define a type that permits multiple implementations: interfaces
+         and abstract classes. Since the introduction of <em class="calibre9">default methods</em> for interfaces in Java 8 [<a href="ref.xhtml#rJLS" class="calibre8">JLS 9.4.3</a>], both mechanisms allow you to provide implementations for some instance methods.
+         A major difference is that to implement the type defined by an abstract class, a class
+         must be a subclass of the abstract class. Because Java permits only single inheritance,
+         this restriction on abstract classes severely constrains their use as type definitions.
+         Any class that defines all the required methods and obeys the general contract is
+         permitted to implement an interface, regardless of where the class resides in the
+         class hierarchy.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Existing classes can easily be retrofitted to implement a new interface.</strong> All you have to do is to add the required methods, if they don’t yet exist, and to
+         add an <code class="calibre12">implements</code> clause to the class declaration. For example, many existing classes were retrofitted
+         to implement the <code class="calibre12">Comparable</code>, <code class="calibre12">Iterable</code>, and <code class="calibre12">Autocloseable</code> interfaces when they were added to the platform. Existing classes cannot, in general,
+         be retrofitted to extend a new abstract class. If you want to have two classes extend
+         the same abstract class, you have to place it high up in the type hierarchy where
+         it is an ancestor of both classes. Unfortunately, this can cause great collateral
+         damage to the type hierarchy, forcing all descendants of the new abstract class to
+         subclass it, whether or not it is appropriate.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Interfaces are ideal for defining mixins.</strong> Loosely speaking, a <em class="calibre9">mixin</em> is a type that a class can implement in addition to its “primary type,” to declare
+         that it provides some optional behavior. For example, <code class="calibre12">Comparable</code> is a mixin interface that allows a class to declare that its instances are ordered
+         with respect to other mutually comparable objects. Such an interface is called a mixin
+         because it allows the optional functionality to be “mixed in” to the type’s primary
+         functionality. Abstract classes can’t be used to define mixins for the same reason
+         that they can’t be retrofitted onto existing classes: a class cannot have more than
+         one parent, and there is no reasonable place in the class hierarchy to insert a mixin.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Interfaces allow for the construction of nonhierarchical type frameworks.</strong> Type hierarchies are great for organizing some things, but other things don’t fall
+         neatly into a rigid hierarchy. For example, suppose we have an interface representing
+         a singer and another representing a songwriter:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex20a" id="pch4ex20" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public interface Singer {<br class="calibre7"/>
+             AudioClip sing(Song s);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_99"></span>
+         public interface Songwriter {<br class="calibre7"/>
+             Song compose(int chartPosition);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">In real life, some singers are also songwriters. Because we used interfaces rather
+         than abstract classes to define these types, it is perfectly permissible for a single
+         class to implement both <code class="calibre12">Singer</code> and <code class="calibre12">Songwriter</code>. In fact, we can define a third interface that extends both <code class="calibre12">Singer</code> and <code class="calibre12">Songwriter</code> and adds new methods that are appropriate to the combination:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex21a" id="pch4ex21" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public interface SingerSongwriter extends Singer, Songwriter {<br class="calibre7"/>
+             AudioClip strum();<br class="calibre7"/>
+             void actSensitive();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">You don’t always need this level of flexibility, but when you do, interfaces are a
+         lifesaver. The alternative is a bloated class hierarchy containing a separate class
+         for every supported combination of attributes. If there are <em class="calibre9">n</em> attributes in the type system, there are 2<em class="calibre9"><sup class="calibre14">n</sup></em> possible combinations that you might have to support. This is what’s known as a <em class="calibre9">combinatorial explosion</em>. Bloated class hierarchies can lead to bloated classes with many methods that differ
+         only in the type of their arguments because there are no types in the class hierarchy
+         to capture common behaviors.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Interfaces enable safe, powerful functionality enhancements</strong> via the <em class="calibre9">wrapper class</em> idiom (<a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>). If you use abstract classes to define types, you leave the programmer who wants
+         to add functionality with no alternative but inheritance. The resulting classes are
+         less powerful and more fragile than wrapper classes.
+      </p>
+      
+      <p class="indent">When there is an obvious implementation of an interface method in terms of other interface
+         methods, consider providing implementation assistance to programmers in the form of
+         a default method. For an example of this technique, see the <code class="calibre12">removeIf</code> method on page 104. If you provide default methods, be sure to document them for
+         inheritance using the <code class="calibre12">@implSpec</code> Javadoc tag (<a href="ch4.xhtml#lev19" class="calibre8">Item 19</a>).
+      </p>
+      
+      <p class="indent">There are limits on how much implementation assistance you can provide with default
+         methods. Although many interfaces specify the behavior of <code class="calibre12">Object</code> methods such as <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code>, you are not permitted to provide default methods for them. Also, interfaces are
+         not permitted to contain instance fields or nonpublic static members (with the exception
+         of private static methods). Finally, you can’t add default methods to an interface
+         that you don’t control.
+      </p>
+      
+      <p class="indent">You can, however, combine the advantages of interfaces and abstract classes by providing
+         an abstract <em class="calibre9">skeletal implementation class</em> to go with an interface. The interface defines the type, perhaps providing some default
+         methods, while the skeletal implementation class implements the remaining non-primitive
+         interface <span epub:type="pagebreak" id="page_100"></span>methods atop the primitive interface methods. Extending a skeletal implementation
+         takes most of the work out of implementing an interface. This is the <em class="calibre9">Template Method</em> pattern [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>].
+      </p>
+      
+      <p class="indent">By convention, skeletal implementation classes are called <code class="calibre12">Abstract</code><em class="calibre9">Interface</em>, where <em class="calibre9">Interface</em> is the name of the interface they implement. For example, the Collections Framework
+         provides a skeletal implementation to go along with each main collection interface:
+         <code class="calibre12">AbstractCollection</code>, <code class="calibre12">AbstractSet</code>, <code class="calibre12">AbstractList</code>, and <code class="calibre12">AbstractMap</code>. Arguably it would have made sense to call them <code class="calibre12">SkeletalCollection</code>, <code class="calibre12">SkeletalSet</code>, <code class="calibre12">SkeletalList</code>, and <code class="calibre12">SkeletalMap</code>, but the <code class="calibre12">Abstract</code> convention is now firmly established. When properly designed, skeletal implementations
+         (whether a separate abstract class, or consisting solely of default methods on an
+         interface) can make it <em class="calibre9">very</em> easy for programmers to provide their own implementations of an interface. For example,
+         here’s a static factory method containing a complete, fully functional <code class="calibre12">List</code> implementation atop <code class="calibre12">AbstractList</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex22a" id="pch4ex22" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Concrete implementation built atop skeletal implementation</strong><br class="calibre7"/>
+         static List&lt;Integer&gt; intArrayAsList(int[] a) {<br class="calibre7"/>
+             Objects.requireNonNull(a);<br class="calibre7"/>
+         <br class="calibre7"/>
+             // The diamond operator is only legal here in Java 9 and later<br class="calibre7"/>
+             // If you're using an earlier release, specify &lt;Integer&gt;<br class="calibre7"/>
+             return new AbstractList<strong class="calibre11">&lt;&gt;</strong>() {<br class="calibre7"/>
+                 @Override public Integer get(int i) {<br class="calibre7"/>
+                     return a[i];  // Autoboxing (<a href="ch2.xhtml#lev6" class="calibre8">Item 6</a>)<br class="calibre7"/>
+                 }<br class="calibre7"/>
+         <br class="calibre7"/>
+                 @Override public Integer set(int i, Integer val) {<br class="calibre7"/>
+                     int oldVal = a[i];<br class="calibre7"/>
+                     a[i] = val;     // Auto-unboxing<br class="calibre7"/>
+                     return oldVal;  // Autoboxing<br class="calibre7"/>
+                 }<br class="calibre7"/>
+         <br class="calibre7"/>
+                 @Override public int size() {<br class="calibre7"/>
+                     return a.length;<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             };<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">When you consider all that a <code class="calibre12">List</code> implementation does for you, this example is an impressive demonstration of the power
+         of skeletal implementations. Incidentally, this example is an <em class="calibre9">Adapter</em> [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>] that allows an <code class="calibre12">int</code> array to be viewed as a list of <code class="calibre12">Integer</code> instances. Because of all the translation back and forth between <code class="calibre12">int</code> values and <code class="calibre12">Integer</code> instances (boxing and unboxing), its performance is not terribly good. Note that
+         the implementation takes the form of an <em class="calibre9">anonymous class</em> (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>).
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_101"></span>The beauty of skeletal implementation classes is that they provide all of the implementation
+         assistance of abstract classes without imposing the severe constraints that abstract
+         classes impose when they serve as type definitions. For most implementors of an interface
+         with a skeletal implementation class, extending this class is the obvious choice,
+         but it is strictly optional. If a class cannot be made to extend the skeletal implementation,
+         the class can always implement the interface directly. The class still benefits from
+         any default methods present on the interface itself. Furthermore, the skeletal implementation
+         can still aid the implementor’s task. The class implementing the interface can forward
+         invocations of interface methods to a contained instance of a private inner class
+         that extends the skeletal implementation. This technique, known as <em class="calibre9">simulated multiple inheritance</em>, is closely related to the wrapper class idiom discussed in <a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>. It provides many of the benefits of multiple inheritance, while avoiding the pitfalls.
+      </p>
+      
+      <p class="indent">Writing a skeletal implementation is a relatively simple, if somewhat tedious, process.
+         First, study the interface and decide which methods are the primitives in terms of
+         which the others can be implemented. These primitives will be the abstract methods
+         in your skeletal implementation. Next, provide default methods in the interface for
+         all of the methods that can be implemented directly atop the primitives, but recall
+         that you may not provide default methods for <code class="calibre12">Object</code> methods such as <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code>. If the primitives and default methods cover the interface, you’re done, and have
+         no need for a skeletal implementation class. Otherwise, write a class declared to
+         implement the interface, with implementations of all of the remaining interface methods.
+         The class may contain any nonpublic fields ands methods appropriate to the task.
+      </p>
+      
+      <p class="indent">As a simple example, consider the <code class="calibre12">Map.Entry</code> interface. The obvious primitives are <code class="calibre12">getKey</code>, <code class="calibre12">getValue</code>, and (optionally) <code class="calibre12">setValue</code>. The interface specifies the behavior of <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code>, and there is an obvious implementation of <code class="calibre12">toString</code> in terms of the primitives. Since you are not allowed to provide default implementations
+         for the <code class="calibre12">Object</code> methods, all implementations are placed in the skeletal implementation class:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex23a" id="pch4ex23" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Skeletal implementation class</strong><br class="calibre7"/>
+         public abstract class AbstractMapEntry&lt;K,V&gt;<br class="calibre7"/>
+                 implements Map.Entry&lt;K,V&gt; {<br class="calibre7"/>
+             // Entries in a modifiable map must override this method<br class="calibre7"/>
+             @Override public V setValue(V value) {<br class="calibre7"/>
+                 throw new UnsupportedOperationException();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_102"></span>
+             // Implements the general contract of Map.Entry.equals<br class="calibre7"/>
+             @Override public boolean equals(Object o) {<br class="calibre7"/>
+                 if (o == this)<br class="calibre7"/>
+                     return true;<br class="calibre7"/>
+                 if (!(o instanceof Map.Entry))<br class="calibre7"/>
+                     return false;<br class="calibre7"/>
+                 Map.Entry&lt;?,?&gt; e = (Map.Entry) o;<br class="calibre7"/>
+                 return Objects.equals(e.getKey(),  getKey())<br class="calibre7"/>
+                     &amp;&amp; Objects.equals(e.getValue(), getValue());<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Implements the general contract of Map.Entry.hashCode<br class="calibre7"/>
+             @Override public int hashCode() {<br class="calibre7"/>
+                 return Objects.hashCode(getKey())<br class="calibre7"/>
+                      ^ Objects.hashCode(getValue());<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() {<br class="calibre7"/>
+                 return getKey() + "=" + getValue();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that this skeletal implementation could not be implemented in the <code class="calibre12">Map.Entry</code> interface or as a subinterface because default methods are not permitted to override
+         <code class="calibre12">Object</code> methods such as <code class="calibre12">equals</code>, <code class="calibre12">hashCode</code>, and <code class="calibre12">toString</code>.
+      </p>
+      
+      <p class="indent">Because skeletal implementations are designed for inheritance, you should follow all
+         of the design and documentation guidelines in <a href="ch4.xhtml#lev19" class="calibre8">Item 19</a>. For brevity’s sake, the documentation comments were omitted from the previous example,
+         but <strong class="calibre11">good documentation is absolutely essential in a skeletal implementation,</strong> whether it consists of default methods on an interface or a separate abstract class.
+      </p>
+      
+      <p class="indent">A minor variant on the skeletal implementation is the <em class="calibre9">simple implementation,</em> exemplified by <code class="calibre12">AbstractMap.SimpleEntry</code>. A simple implementation is like a skeletal implementation in that it implements
+         an interface and is designed for inheritance, but it differs in that it isn’t abstract:
+         it is the simplest possible working implementation. You can use it as it stands or
+         subclass it as circumstances warrant.
+      </p>
+      
+      <p class="indent">To summarize, an interface is generally the best way to define a type that permits
+         multiple implementations. If you export a nontrivial interface, you should strongly
+         consider providing a skeletal implementation to go with it. To the extent possible,
+         you should provide the skeletal implementation via default methods on the interface
+         so that all implementors of the interface can make use of it. That said, restrictions
+         on interfaces typically mandate that a skeletal implementation take the form of an
+         abstract class.
+      </p>
+      
+      <h3 class="h2"><a id="lev21" class="calibre4"></a><span epub:type="pagebreak" id="page_103" class="calibre15"></span><strong class="calibre10">Item 21: Design interfaces for posterity</strong></h3>
+      
+      <p class="noindent">Prior to Java 8, it was impossible to add methods to interfaces without breaking existing
+         implementations. If you added a new method to an interface, existing implementations
+         would, in general, lack the method, resulting in a compile-time error. In Java 8,
+         the <em class="calibre9">default method</em> construct was added [<a href="ref.xhtml#rJLS" class="calibre8">JLS 9.4</a>], with the intent of allowing the addition of methods to existing interfaces. But
+         adding new methods to existing interfaces is fraught with risk.
+      </p>
+      
+      <p class="indent">The declaration for a default method includes a <em class="calibre9">default implementation</em> that is used by all classes that implement the interface but do not implement the
+         default method. While the addition of default methods to Java makes it possible to
+         add methods to an existing interface, there is no guarantee that these methods will
+         work in all preexisting implementations. Default methods are “injected” into existing
+         implementations without the knowledge or consent of their implementors. Before Java
+         8, these implementations were written with the tacit understanding that their interfaces
+         would <em class="calibre9">never</em> acquire any new methods.
+      </p>
+      
+      <p class="indent">Many new default methods were added to the core collection interfaces in Java 8, primarily
+         to facilitate the use of lambdas (<a href="ch6.xhtml#ch6" class="calibre8">Chapter 6</a>). The Java libraries’ default methods are high-quality general-purpose implementations,
+         and in most cases, they work fine. But <strong class="calibre11">it is not always possible to write a default method that maintains all invariants
+            of every conceivable implementation.</strong></p>
+      
+      <p class="indent">For example, consider the <code class="calibre12">removeIf</code> method, which was added to the <code class="calibre12">Collection</code> interface in Java 8. This method removes all elements for which a given <code class="calibre12">boolean</code> function (or <em class="calibre9">predicate</em>) returns <code class="calibre12">true</code>. The default implementation is specified to traverse the collection using its iterator,
+         invoking the predicate on each element, and using the iterator’s <code class="calibre12">remove</code> method to remove the elements for which the predicate returns <code class="calibre12">true</code>. Presumably the declaration looks something like this:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex24a" id="pch4ex24" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Default method added to the Collection interface in Java 8</strong><br class="calibre7"/>
+         default boolean removeIf(Predicate&lt;? super E&gt; filter) {<br class="calibre7"/>
+             Objects.requireNonNull(filter);<br class="calibre7"/>
+             boolean result = false;<br class="calibre7"/>
+             for (Iterator&lt;E&gt; it = iterator(); it.hasNext(); ) {<br class="calibre7"/>
+                 if (filter.test(it.next())) {<br class="calibre7"/>
+                     it.remove();<br class="calibre7"/>
+                     result = true;<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_104"></span>This is the best general-purpose implementation one could possibly write for the <code class="calibre12">removeIf</code> method, but sadly, it fails on some real-world <code class="calibre12">Collection</code> implementations. For example, consider <code class="calibre12">org.apache.commons.collections4.-collection.SynchronizedCollection</code>. This class, from the Apache Commons library, is similar to the one returned by the
+         static factory <code class="calibre12">Collections.-synchronizedCollection</code> in <code class="calibre12">java.util</code>. The Apache version additionally provides the ability to use a client-supplied object
+         for locking, in place of the collection. In other words, it is a wrapper class (<a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>), all of whose methods synchronize on a locking object before delegating to the wrapped
+         collection.
+      </p>
+      
+      <p class="indent">The Apache <code class="calibre12">SynchronizedCollection</code> class is still being actively maintained, but as of this writing, it does not override
+         the <code class="calibre12">removeIf</code> method. If this class is used in conjunction with Java 8, it will therefore inherit
+         the default implementation of <code class="calibre12">removeIf</code>, which does not, indeed <em class="calibre9">cannot</em>, maintain the class’s fundamental promise: to automatically synchronize around each
+         method invocation. The default implementation knows nothing about synchronization
+         and has no access to the field that contains the locking object. If a client calls
+         the <code class="calibre12">removeIf</code> method on a <code class="calibre12">SynchronizedCollection</code> instance in the presence of concurrent modification of the collection by another
+         thread, a <code class="calibre12">ConcurrentModificationException</code> or other unspecified behavior may result.
+      </p>
+      
+      <p class="indent">In order to prevent this from happening in similar Java platform libraries implementations,
+         such as the package-private class returned by <code class="calibre12">Collections.synchronizedCollection</code>, the JDK maintainers had to override the default <code class="calibre12">removeIf</code> implementation and other methods like it to perform the necessary synchronization
+         before invoking the default implementation. Preexisting collection implementations
+         that were not part of the Java platform did not have the opportunity to make analogous
+         changes in lockstep with the interface change, and some have yet to do so.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">In the presence of default methods, existing implementations of an interface may compile
+            without error or warning but fail at runtime.</strong> While not terribly common, this problem is not an isolated incident either. A handful
+         of the methods added to the collections interfaces in Java 8 are known to be susceptible,
+         and a handful of existing implementations are known to be affected.
+      </p>
+      
+      <p class="indent">Using default methods to add new methods to existing interfaces should be avoided
+         unless the need is critical, in which case you should think long and hard about whether
+         an existing interface implementation might be broken by your default method implementation.
+         Default methods are, however, extremely useful for providing standard method implementations
+         when an interface is created, to ease the task of implementing the interface (<a href="ch4.xhtml#lev20" class="calibre8">Item 20</a>).
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_105"></span>It is also worth noting that default methods were not designed to support removing
+         methods from interfaces or changing the signatures of existing methods. Neither of
+         these interface changes is possible without breaking existing clients.
+      </p>
+      
+      <p class="indent">The moral is clear. Even though default methods are now a part of the Java platform,
+         <strong class="calibre11">it is still of the utmost importance to design interfaces with great care.</strong> While default methods make it <em class="calibre9">possible</em> to add methods to existing interfaces, there is great risk in doing so. If an interface
+         contains a minor flaw, it may irritate its users forever; if an interface is severely
+         deficient, it may doom the API that contains it.
+      </p>
+      
+      <p class="indent">Therefore, it is critically important to test each new interface before you release
+         it. Multiple programmers should implement each interface in different ways. At a minimum,
+         you should aim for three diverse implementations. Equally important is to write multiple
+         client programs that use instances of each new interface to perform various tasks.
+         This will go a long way toward ensuring that each interface satisfies all of its intended
+         uses. These steps will allow you to discover flaws in interfaces before they are released,
+         when you can still correct them easily. <strong class="calibre11">While it may be possible to correct some interface flaws after an interface is released,
+            you cannot count on it</strong>.
+      </p>
+      
+      <h3 class="h2"><a id="lev22" class="calibre4"></a><span epub:type="pagebreak" id="page_106" class="calibre15"></span><strong class="calibre10">Item 22: Use interfaces only to define types</strong></h3>
+      
+      <p class="noindent">When a class implements an interface, the interface serves as a <em class="calibre9">type</em> that can be used to refer to instances of the class. That a class implements an interface
+         should therefore say something about what a client can do with instances of the class.
+         It is inappropriate to define an interface for any other purpose.
+      </p>
+      
+      <p class="indent">One kind of interface that fails this test is the so-called <em class="calibre9">constant interface</em>. Such an interface contains no methods; it consists solely of static final fields,
+         each exporting a constant. Classes using these constants implement the interface to
+         avoid the need to qualify constant names with a class name. Here is an example:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex25a" id="pch4ex25" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Constant interface antipattern - do not use!</strong><br class="calibre7"/>
+         public interface PhysicalConstants {<br class="calibre7"/>
+             // Avogadro's number (1/mol)<br class="calibre7"/>
+             static final double AVOGADROS_NUMBER   = 6.022_140_857e23;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Boltzmann constant (J/K)<br class="calibre7"/>
+             static final double BOLTZMANN_CONSTANT = 1.380_648_52e-23;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Mass of the electron (kg)<br class="calibre7"/>
+             static final double ELECTRON_MASS      = 9.109_383_56e-31;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The constant interface pattern is a poor use of interfaces.</strong> That a class uses some constants internally is an implementation detail. Implementing
+         a constant interface causes this implementation detail to leak into the class’s exported
+         API. It is of no consequence to the users of a class that the class implements a constant
+         interface. In fact, it may even confuse them. Worse, it represents a commitment: if
+         in a future release the class is modified so that it no longer needs to use the constants,
+         it still must implement the interface to ensure binary compatibility. If a nonfinal
+         class implements a constant interface, all of its subclasses will have their namespaces
+         polluted by the constants in the interface.
+      </p>
+      
+      <p class="indent">There are several constant interfaces in the Java platform libraries, such as <code class="calibre12">java.io.ObjectStreamConstants</code>. These interfaces should be regarded as anomalies and should not be emulated.
+      </p>
+      
+      <p class="indent">If you want to export constants, there are several reasonable choices. If the constants
+         are strongly tied to an existing class or interface, you should add them to the class
+         or interface. For example, all of the boxed numerical primitive classes, such as <code class="calibre12">Integer</code> and <code class="calibre12">Double,</code> export <code class="calibre12">MIN_VALUE</code> and <code class="calibre12">MAX_VALUE</code> constants. If the constants are best viewed as members of an enumerated type, you
+         should export <span epub:type="pagebreak" id="page_107"></span>them with an <em class="calibre9">enum type</em> (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>). Otherwise, you should export the constants with a noninstantiable <em class="calibre9">utility class</em> (<a href="ch2.xhtml#lev4" class="calibre8">Item 4</a>). Here is a utility class version of the <code class="calibre12">PhysicalConstants</code> example shown earlier:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex26a" id="pch4ex26" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Constant utility class</strong><br class="calibre7"/>
+         package com.effectivejava.science;<br class="calibre7"/>
+         <br class="calibre7"/>
+         public class PhysicalConstants {<br class="calibre7"/>
+           private PhysicalConstants() { }  // Prevents instantiation<br class="calibre7"/>
+         <br class="calibre7"/>
+           public static final double AVOGADROS_NUMBER = 6.022_140_857e23;<br class="calibre7"/>
+           public static final double BOLTZMANN_CONST  = 1.380_648_52e-23;<br class="calibre7"/>
+           public static final double ELECTRON_MASS    = 9.109_383_56e-31;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Incidentally, note the use of the underscore character (<code class="calibre12">_</code>) in the numeric literals. Underscores, which have been legal since Java 7, have no
+         effect on the values of numeric literals, but can make them much easier to read if
+         used with discretion. Consider adding underscores to numeric literals, whether fixed
+         of floating point, if they contain five or more consecutive digits. For base ten literals,
+         whether integral or floating point, you should use underscores to separate literals
+         into groups of three digits indicating positive and negative powers of one thousand.
+      </p>
+      
+      <p class="indent">Normally a utility class requires clients to qualify constant names with a class name,
+         for example, <code class="calibre12">PhysicalConstants.AVOGADROS_NUMBER</code>. If you make heavy use of the constants exported by a utility class, you can avoid
+         the need for qualifying the constants with the class name by making use of the <em class="calibre9">static import</em> facility:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex27a" id="pch4ex27" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Use of static import to avoid qualifying constants</strong><br class="calibre7"/>
+         import static com.effectivejava.science.PhysicalConstants.*;<br class="calibre7"/>
+         <br class="calibre7"/>
+         public class Test {<br class="calibre7"/>
+             double  atoms(double mols) {<br class="calibre7"/>
+                 return AVOGADROS_NUMBER * mols;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ...<br class="calibre7"/>
+             // Many more uses of PhysicalConstants justify static import<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">In summary, interfaces should be used only to define types. They should not be used
+         merely to export constants.
+      </p>
+      
+      <h3 class="h2"><a id="lev23" class="calibre4"></a><span epub:type="pagebreak" id="page_108" class="calibre15"></span><strong class="calibre10">Item 23: Prefer class hierarchies to tagged classes</strong></h3>
+      
+      <p class="noindent">Occasionally you may run across a class whose instances come in two or more flavors
+         and contain a <em class="calibre9">tag</em> field indicating the flavor of the instance. For example, consider this class, which
+         is capable of representing a circle or a rectangle:
+      </p>
+      <span epub:type="pagebreak" id="page_109"></span>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex28a" id="pch4ex28" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Tagged class - vastly inferior to a class hierarchy!</strong><br class="calibre7"/>
+         class Figure {<br class="calibre7"/>
+             enum Shape { RECTANGLE, CIRCLE };<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Tag field - the shape of this figure<br class="calibre7"/>
+             final Shape shape;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // These fields are used only if shape is RECTANGLE<br class="calibre7"/>
+             double length;<br class="calibre7"/>
+             double width;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // This field is used only if shape is CIRCLE<br class="calibre7"/>
+             double radius;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Constructor for circle<br class="calibre7"/>
+             Figure(double radius) {<br class="calibre7"/>
+                 shape = Shape.CIRCLE;<br class="calibre7"/>
+                 this.radius = radius;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Constructor for rectangle<br class="calibre7"/>
+             Figure(double length, double width) {<br class="calibre7"/>
+                 shape = Shape.RECTANGLE;<br class="calibre7"/>
+                 this.length = length;<br class="calibre7"/>
+                 this.width = width;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             double area() {<br class="calibre7"/>
+                 switch(shape) {<br class="calibre7"/>
+                   case RECTANGLE:<br class="calibre7"/>
+                     return length * width;<br class="calibre7"/>
+                   case CIRCLE:<br class="calibre7"/>
+                     return Math.PI * (radius * radius);<br class="calibre7"/>
+                   default:<br class="calibre7"/>
+                     throw new AssertionError(shape);<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_110"></span>Such <em class="calibre9">tagged classes</em> have numerous shortcomings. They are cluttered with boilerplate, including enum declarations,
+         tag fields, and switch statements. Readability is further harmed because multiple
+         implementations are jumbled together in a single class. Memory footprint is increased
+         because instances are burdened with irrelevant fields belonging to other flavors.
+         Fields can’t be made final unless constructors initialize irrelevant fields, resulting
+         in more boilerplate. Constructors must set the tag field and initialize the right
+         data fields with no help from the compiler: if you initialize the wrong fields, the
+         program will fail at runtime. You can’t add a flavor to a tagged class unless you
+         can modify its source file. If you do add a flavor, you must remember to add a case
+         to every switch statement, or the class will fail at runtime. Finally, the data type
+         of an instance gives no clue as to its flavor. In short, <strong class="calibre11">tagged classes are verbose, error-prone, and inefficient.</strong></p>
+      
+      <p class="indent">Luckily, object-oriented languages such as Java offer a far better alternative for
+         defining a single data type capable of representing objects of multiple flavors: subtyping.
+         <strong class="calibre11">A tagged class is just a pallid imitation of a class hierarchy.</strong></p>
+      
+      <p class="indent">To transform a tagged class into a class hierarchy, first define an abstract class
+         containing an abstract method for each method in the tagged class whose behavior depends
+         on the tag value. In the <code class="calibre12">Figure</code> class, there is only one such method, which is <code class="calibre12">area</code>. This abstract class is the root of the class hierarchy. If there are any methods
+         whose behavior does not depend on the value of the tag, put them in this class. Similarly,
+         if there are any data fields used by all the flavors, put them in this class. There
+         are no such flavor-independent methods or fields in the <code class="calibre12">Figure</code> class.
+      </p>
+      
+      <p class="indent">Next, define a concrete subclass of the root class for each flavor of the original
+         tagged class. In our example, there are two: circle and rectangle. Include in each
+         subclass the data fields particular to its flavor. In our example, <code class="calibre12">radius</code> is particular to circle, and <code class="calibre12">length</code> and <code class="calibre12">width</code> are particular to rectangle. Also include in each subclass the appropriate implementation
+         of each abstract method in the root class. Here is the class hierarchy corresponding
+         to the original <code class="calibre12">Figure</code> class:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex29a" id="pch4ex29" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Class hierarchy replacement for a tagged class</strong><br class="calibre7"/>
+         abstract class Figure {<br class="calibre7"/>
+             abstract double area();<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         class Circle extends Figure {<br class="calibre7"/>
+             final double radius;<br class="calibre7"/>
+         <br class="calibre7"/>
+             Circle(double radius) { this.radius = radius; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override double area() { return Math.PI * (radius * radius); }<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_111"></span>
+         class Rectangle extends Figure {<br class="calibre7"/>
+             final double length;<br class="calibre7"/>
+             final double width;<br class="calibre7"/>
+         <br class="calibre7"/>
+             Rectangle(double length, double width) {<br class="calibre7"/>
+                 this.length = length;<br class="calibre7"/>
+                 this.width  = width;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             @Override double area() { return length * width; }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This class hierarchy corrects every shortcoming of tagged classes noted previously.
+         The code is simple and clear, containing none of the boilerplate found in the original.
+         The implementation of each flavor is allotted its own class, and none of these classes
+         is encumbered by irrelevant data fields. All fields are final. The compiler ensures
+         that each class’s constructor initializes its data fields and that each class has
+         an implementation for every abstract method declared in the root class. This eliminates
+         the possibility of a runtime failure due to a missing switch case. Multiple programmers
+         can extend the hierarchy independently and interoperably without access to the source
+         for the root class. There is a separate data type associated with each flavor, allowing
+         programmers to indicate the flavor of a variable and to restrict variables and input
+         parameters to a particular flavor.
+      </p>
+      
+      <p class="indent">Another advantage of class hierarchies is that they can be made to reflect natural
+         hierarchical relationships among types, allowing for increased flexibility and better
+         compile-time type checking. Suppose the tagged class in the original example also
+         allowed for squares. The class hierarchy could be made to reflect the fact that a
+         square is a special kind of rectangle (assuming both are immutable):
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex30a" id="pch4ex30" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">class Square extends Rectangle {<br class="calibre7"/>
+             Square(double side) {<br class="calibre7"/>
+                 super(side, side);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that the fields in the above hierarchy are accessed directly rather than by accessor
+         methods. This was done for brevity and would be a poor design if the hierarchy were
+         public (<a href="ch4.xhtml#lev16" class="calibre8">Item 16</a>).
+      </p>
+      
+      <p class="indent">In summary, tagged classes are seldom appropriate. If you’re tempted to write a class
+         with an explicit tag field, think about whether the tag could be eliminated and the
+         class replaced by a hierarchy. When you encounter an existing class with a tag field,
+         consider refactoring it into a hierarchy.
+      </p>
+      
+      <h3 class="h2"><a id="lev24" class="calibre4"></a><span epub:type="pagebreak" id="page_112" class="calibre15"></span><strong class="calibre10">Item 24: Favor static member classes over nonstatic</strong></h3>
+      
+      <p class="noindent">A <em class="calibre9">nested class</em> is a class defined within another class. A nested class should exist only to serve
+         its enclosing class. If a nested class would be useful in some other context, then
+         it should be a top-level class. There are four kinds of nested classes: <em class="calibre9">static member classes</em>, <em class="calibre9">nonstatic member classes</em>, <em class="calibre9">anonymous classes</em>, and <em class="calibre9">local classes</em>. All but the first kind are known as <em class="calibre9">inner classes</em>. This item tells you when to use which kind of nested class and why.
+      </p>
+      
+      <p class="indent">A static member class is the simplest kind of nested class. It is best thought of
+         as an ordinary class that happens to be declared inside another class and has access
+         to all of the enclosing class’s members, even those declared private. A static member
+         class is a static member of its enclosing class and obeys the same accessibility rules
+         as other static members. If it is declared private, it is accessible only within the
+         enclosing class, and so forth.
+      </p>
+      
+      <p class="indent">One common use of a static member class is as a public helper class, useful only in
+         conjunction with its outer class. For example, consider an enum describing the operations
+         supported by a calculator (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>). The <code class="calibre12">Operation</code> enum should be a public static member class of the <code class="calibre12">Calculator</code> class. Clients of <code class="calibre12">Calculator</code> could then refer to operations using names like <code class="calibre12">Calculator.Operation.PLUS</code> and <code class="calibre12">Calculator.Operation.MINUS</code>.
+      </p>
+      
+      <p class="indent">Syntactically, the only difference between static and nonstatic member classes is
+         that static member classes have the modifier <code class="calibre12">static</code> in their declarations. Despite the syntactic similarity, these two kinds of nested
+         classes are very different. Each instance of a nonstatic member class is implicitly
+         associated with an <em class="calibre9">enclosing instance</em> of its containing class. Within instance methods of a nonstatic member class, you
+         can invoke methods on the enclosing instance or obtain a reference to the enclosing
+         instance using the <em class="calibre9">qualified this</em> construct [JLS, 15.8.4]. If an instance of a nested class can exist in isolation
+         from an instance of its enclosing class, then the nested class <em class="calibre9">must</em> be a static member class: it is impossible to create an instance of a nonstatic member
+         class without an enclosing instance.
+      </p>
+      
+      <p class="indent">The association between a nonstatic member class instance and its enclosing instance
+         is established when the member class instance is created and cannot be modified thereafter.
+         Normally, the association is established automatically by invoking a nonstatic member
+         class constructor from within an instance method of the enclosing class. It is possible,
+         though rare, to establish the association manually using the expression <code class="calibre12">enclosingInstance.new MemberClass(args)</code>. As you would expect, the association takes up space in the nonstatic member class
+         instance and adds time to its construction.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_113"></span>One common use of a nonstatic member class is to define an <em class="calibre9">Adapter</em> [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>] that allows an instance of the outer class to be viewed as an instance of some unrelated
+         class. For example, implementations of the <code class="calibre12">Map</code> interface typically use nonstatic member classes to implement their <em class="calibre9">collection views</em>, which are returned by <code class="calibre12">Map</code>’s <code class="calibre12">keySet</code>, <code class="calibre12">entrySet</code>, and <code class="calibre12">values</code> methods. Similarly, implementations of the collection interfaces, such as <code class="calibre12">Set</code> and <code class="calibre12">List</code>, typically use nonstatic member classes to implement their iterators:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex31a" id="pch4ex31" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Typical use of a nonstatic member class</strong><br class="calibre7"/>
+         public class MySet&lt;E&gt; extends AbstractSet&lt;E&gt; {<br class="calibre7"/>
+             ... // Bulk of the class omitted<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public Iterator&lt;E&gt; iterator() {<br class="calibre7"/>
+                 return new MyIterator();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">private class MyIterator implements Iterator&lt;E&gt;</strong> {<br class="calibre7"/>
+                 ...<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><strong class="calibre11">If you declare a member class that does not require access to an enclosing instance,</strong> <em class="calibre9"><strong class="calibre11">always</strong></em> <strong class="calibre11">put the</strong> <code class="calibre12"><strong class="calibre11">static</strong></code> <strong class="calibre11">modifier in its declaration,</strong> making it a static rather than a nonstatic member class. If you omit this modifier,
+         each instance will have a hidden extraneous reference to its enclosing instance. As
+         previously mentioned, storing this reference takes time and space. More seriously,
+         it can result in the enclosing instance being retained when it would otherwise be
+         eligible for garbage collection (<a href="ch2.xhtml#lev7" class="calibre8">Item 7</a>). The resulting memory leak can be catastrophic. It is often difficult to detect
+         because the reference is invisible.
+      </p>
+      
+      <p class="indent">A common use of private static member classes is to represent components of the object
+         represented by their enclosing class. For example, consider a <code class="calibre12">Map</code> instance, which associates keys with values. Many <code class="calibre12">Map</code> implementations have an internal <code class="calibre12">Entry</code> object for each key-value pair in the map. While each entry is associated with a
+         map, the methods on an entry (<code class="calibre12">getKey</code>, <code class="calibre12">getValue</code>, and <code class="calibre12">setValue</code>) do not need access to the map. Therefore, it would be wasteful to use a nonstatic
+         member class to represent entries: a private static member class is best. If you accidentally
+         omit the <code class="calibre12">static</code> modifier in the entry declaration, the map will still work, but each entry will contain
+         a superfluous reference to the map, which wastes space and time.
+      </p>
+      
+      <p class="indent">It is doubly important to choose correctly between a static and a nonstatic member
+         class if the class in question is a public or protected member of an <span epub:type="pagebreak" id="page_114"></span>exported class. In this case, the member class is an exported API element and cannot
+         be changed from a nonstatic to a static member class in a subsequent release without
+         violating backward compatibility.
+      </p>
+      
+      <p class="indent">As you would expect, an anonymous class has no name. It is not a member of its enclosing
+         class. Rather than being declared along with other members, it is simultaneously declared
+         and instantiated at the point of use. Anonymous classes are permitted at any point
+         in the code where an expression is legal. Anonymous classes have enclosing instances
+         if and only if they occur in a nonstatic context. But even if they occur in a static
+         context, they cannot have any static members other than <em class="calibre9">constant variables</em>, which are final primitive or string fields initialized to constant expressions [JLS,
+         4.12.4].
+      </p>
+      
+      <p class="indent">There are many limitations on the applicability of anonymous classes. You can’t instantiate
+         them except at the point they’re declared. You can’t perform <code class="calibre12">instanceof</code> tests or do anything else that requires you to name the class. You can’t declare
+         an anonymous class to implement multiple interfaces or to extend a class and implement
+         an interface at the same time. Clients of an anonymous class can’t invoke any members
+         except those it inherits from its supertype. Because anonymous classes occur in the
+         midst of expressions, they must be kept short—about ten lines or fewer—or readability
+         will suffer.
+      </p>
+      
+      <p class="indent">Before lambdas were added to Java (<a href="ch6.xhtml#ch6" class="calibre8">Chapter 6</a>), anonymous classes were the preferred means of creating small <em class="calibre9">function objects</em> and <em class="calibre9">process objects</em> on the fly, but lambdas are now preferred (<a href="ch7.xhtml#lev42" class="calibre8">Item 42</a>). Another common use of anonymous classes is in the implementation of static factory
+         methods (see <code class="calibre12">intArrayAsList</code> in <a href="ch4.xhtml#lev20" class="calibre8">Item 20</a>).
+      </p>
+      
+      <p class="indent">Local classes are the least frequently used of the four kinds of nested classes. A
+         local class can be declared practically anywhere a local variable can be declared
+         and obeys the same scoping rules. Local classes have attributes in common with each
+         of the other kinds of nested classes. Like member classes, they have names and can
+         be used repeatedly. Like anonymous classes, they have enclosing instances only if
+         they are defined in a nonstatic context, and they cannot contain static members. And
+         like anonymous classes, they should be kept short so as not to harm readability.
+      </p>
+      
+      <p class="indent">To recap, there are four different kinds of nested classes, and each has its place.
+         If a nested class needs to be visible outside of a single method or is too long to
+         fit comfortably inside a method, use a member class. If each instance of a member
+         class needs a reference to its enclosing instance, make it nonstatic; otherwise, make
+         it static. Assuming the class belongs inside a method, if you need to create instances
+         from only one location and there is a preexisting type that characterizes the class,
+         make it an anonymous class; otherwise, make it a local class.
+      </p>
+      
+      <h3 class="h2"><a id="lev25" class="calibre4"></a><span epub:type="pagebreak" id="page_115" class="calibre15"></span><strong class="calibre10">Item 25: Limit source files to a single top-level class</strong></h3>
+      
+      <p class="noindent">While the Java compiler lets you define multiple top-level classes in a single source
+         file, there are no benefits associated with doing so, and there are significant risks.
+         The risks stem from the fact that defining multiple top-level classes in a source
+         file makes it possible to provide multiple definitions for a class. Which definition
+         gets used is affected by the order in which the source files are passed to the compiler.
+      </p>
+      
+      <p class="indent">To make this concrete, consider this source file, which contains only a <code class="calibre12">Main</code> class that refers to members of two other top-level classes (<code class="calibre12">Utensil</code> and <code class="calibre12">Dessert</code>):
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex32a" id="pch4ex32" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Main {<br class="calibre7"/>
+             public static void main(String[] args) {<br class="calibre7"/>
+                 System.out.println(Utensil.NAME + Dessert.NAME);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Now suppose you define both <code class="calibre12">Utensil</code> and <code class="calibre12">Dessert</code> in a single source file named <code class="calibre12">Utensil.java</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex33a" id="pch4ex33" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Two classes defined in one file. Don't ever do this!</strong><br class="calibre7"/>
+         class Utensil {<br class="calibre7"/>
+             static final String NAME = "pan";<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         class Dessert {<br class="calibre7"/>
+             static final String NAME = "cake";<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Of course the main program prints <code class="calibre12">pancake</code>.
+      </p>
+      
+      <p class="indent">Now suppose you accidentally make <em class="calibre9">another</em> source file named <code class="calibre12">Dessert.java</code> that defines the same two classes:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex34a" id="pch4ex34" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Two classes defined in one file. Don't ever do this!</strong><br class="calibre7"/>
+         class Utensil {<br class="calibre7"/>
+             static final String NAME = "pot";<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         class Dessert {<br class="calibre7"/>
+             static final String NAME = "pie";<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If you’re lucky enough to compile the program with the command <code class="calibre12">javac Main.java Dessert.java</code>, the compilation will fail, and the compiler will <span epub:type="pagebreak" id="page_116"></span>tell you that you’ve multiply defined the classes <code class="calibre12">Utensil</code> and <code class="calibre12">Dessert</code>. This is so because the compiler will first compile <code class="calibre12">Main.java</code>, and when it sees the reference to <code class="calibre12">Utensil</code> (which precedes the reference to <code class="calibre12">Dessert</code>), it will look in <code class="calibre12">Utensil.java</code> for this class and find both <code class="calibre12">Utensil</code> and <code class="calibre12">Dessert</code>. When the compiler encounters <code class="calibre12">Dessert.java</code> on the command line, it will pull in that file too, causing it to encounter both
+         definitions of <code class="calibre12">Utensil</code> and <code class="calibre12">Dessert</code>.
+      </p>
+      
+      <p class="indent">If you compile the program with the command <code class="calibre12">javac Main.java</code> or <code class="calibre12">javac Main.java Utensil.java</code>, it will behave as it did before you wrote the <code class="calibre12">Dessert.java</code> file, printing <code class="calibre12">pancake</code>. But if you compile the program with the command <code class="calibre12">javac Dessert.java Main.java</code>, it will print <code class="calibre12">potpie</code>. The behavior of the program is thus affected by the order in which the source files
+         are passed to the compiler, which is clearly unacceptable.
+      </p>
+      
+      <p class="indent">Fixing the problem is as simple as splitting the top-level classes (<code class="calibre12">Utensil</code> and <code class="calibre12">Dessert</code>, in the case of our example) into separate source files. If you are tempted to put
+         multiple top-level classes into a single source file, consider using static member
+         classes (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>) as an alternative to splitting the classes into separate source files. If the classes
+         are subservient to another class, making them into static member classes is generally
+         the better alternative because it enhances readability and makes it possible to reduce
+         the accessibility of the classes by declaring them private (<a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>). Here is how our example looks with static member classes:
+      </p>
+      
+      <p class="codelink"><a href="ch4_images.xhtml#pch4ex35a" id="pch4ex35" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Static member classes instead of multiple top-level classes</strong><br class="calibre7"/>
+         public class Test {<br class="calibre7"/>
+             public static void main(String[] args) {<br class="calibre7"/>
+                 System.out.println(Utensil.NAME + Dessert.NAME);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             private static class Utensil {<br class="calibre7"/>
+                 static final String NAME = "pan";<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             private static class Dessert {<br class="calibre7"/>
+                 static final String NAME = "cake";<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The lesson is clear: <strong class="calibre11">Never put multiple top-level classes or interfaces in a single source file.</strong> Following this rule guarantees that you can’t have multiple definitions for a single
+         class at compile time. This in turn guarantees that the class files generated by compilation,
+         and the behavior of the resulting program, are independent of the order in which the
+         source files are passed to the compiler.
+      </p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="ch3.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch5.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

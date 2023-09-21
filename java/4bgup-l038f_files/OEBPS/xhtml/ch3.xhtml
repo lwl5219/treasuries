@@ -1,0 +1,1959 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 3 Methods Common to All Objects</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="ch2.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch4.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch3"><span epub:type="pagebreak" id="page_37" class="calibre15"></span>Chapter 3. Methods Common to All Objects
+      </h2>
+      
+      <p class="noindent"><strong class="calibre11">A</strong><small class="calibre13">LTHOUGH</small> <code class="calibre12">Object</code> is a concrete class, it is designed primarily for extension. All of its nonfinal
+         methods (<code class="calibre12">equals</code>, <code class="calibre12">hashCode</code>, <code class="calibre12">toString</code>, <code class="calibre12">clone</code>, and <code class="calibre12">finalize</code>) have explicit <em class="calibre9">general contracts</em> because they are designed to be overridden. It is the responsibility of any class
+         overriding these methods to obey their general contracts; failure to do so will prevent
+         other classes that depend on the contracts (such as <code class="calibre12">HashMap</code> and <code class="calibre12">HashSet</code>) from functioning properly in conjunction with the class.
+      </p>
+      
+      <p class="indent">This chapter tells you when and how to override the nonfinal <code class="calibre12">Object</code> methods. The <code class="calibre12">finalize</code> method is omitted from this chapter because it was discussed in <a href="ch2.xhtml#lev8" class="calibre8">Item 8</a>. While not an <code class="calibre12">Object</code> method, <code class="calibre12">Comparable.compareTo</code> is discussed in this chapter because it has a similar character.
+      </p>
+      
+      <h3 class="h2"><a id="lev10" class="calibre4"></a><strong class="calibre10">Item 10: Obey the general contract when overriding</strong> <code class="calibre19"><strong class="calibre10">equals</strong></code></h3>
+      
+      <p class="noindentb">Overriding the <code class="calibre12">equals</code> method seems simple, but there are many ways to get it wrong, and consequences can
+         be dire. The easiest way to avoid problems is not to override the <code class="calibre12">equals</code> method, in which case each instance of the class is equal only to itself. This is
+         the right thing to do if any of the following conditions apply:
+      </p>
+      
+      <p class="bull1">• <strong class="calibre11">Each instance of the class is inherently unique.</strong> This is true for classes such as <code class="calibre12">Thread</code> that represent active entities rather than values. The <code class="calibre12">equals</code> implementation provided by <code class="calibre12">Object</code> has exactly the right behavior for these classes.
+      </p>
+      
+      <p class="bull1">• <strong class="calibre11">There is no need for the class to provide a “logical equality” test.</strong> For example, <code class="calibre12">java.util.regex.Pattern</code> could have overridden <code class="calibre12">equals</code> to check whether two <code class="calibre12">Pattern</code> instances represented exactly the same regular expression, but the designers didn’t
+         think that clients would need or want this functionality. Under these circumstances,
+         the <code class="calibre12">equals</code> implementation inherited from <code class="calibre12">Object</code> is ideal.
+      </p>
+      
+      <p class="bull1"><span epub:type="pagebreak" id="page_38"></span>• <strong class="calibre11">A superclass has already overridden</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code>, <strong class="calibre11">and the superclass behavior is appropriate for this class.</strong> For example, most <code class="calibre12">Set</code> implementations inherit their <code class="calibre12">equals</code> implementation from <code class="calibre12">AbstractSet</code>, <code class="calibre12">List</code> implementations from <code class="calibre12">AbstractList</code>, and <code class="calibre12">Map</code> implementations from <code class="calibre12">AbstractMap</code>.
+      </p>
+      
+      <p class="bull1">• <strong class="calibre11">The class is private or package-private, and you are certain that its</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> <strong class="calibre11">method will never be invoked.</strong> If you are extremely risk-averse, you can override the <code class="calibre12">equals</code> method to ensure that it isn’t invoked accidentally:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex1a" id="pch3ex1" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="preb">
+         @Override public boolean equals(Object o) {<br class="calibre7"/>
+             throw new AssertionError(); // Method is never called<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">So when is it appropriate to override <code class="calibre12">equals</code>? It is when a class has a notion of <em class="calibre9">logical equality</em> that differs from mere object identity and a superclass has not already overridden
+         <code class="calibre12">equals</code>. This is generally the case for <em class="calibre9">value classes.</em> A value class is simply a class that represents a value, such as <code class="calibre12">Integer</code> or <code class="calibre12">String</code>. A programmer who compares references to value objects using the <code class="calibre12">equals</code> method expects to find out whether they are logically equivalent, not whether they
+         refer to the same object. Not only is overriding the <code class="calibre12">equals</code> method necessary to satisfy programmer expectations, it enables instances to serve
+         as map keys or set elements with predictable, desirable behavior.
+      </p>
+      
+      <p class="indent">One kind of value class that does <em class="calibre9">not</em> require the <code class="calibre12">equals</code> method to be overridden is a class that uses instance control (<a href="ch2.xhtml#lev1" class="calibre8">Item 1</a>) to ensure that at most one object exists with each value. Enum types (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>) fall into this category. For these classes, logical equality is the same as object
+         identity, so <code class="calibre12">Object</code>’s <code class="calibre12">equals</code> method functions as a logical <code class="calibre12">equals</code> method.
+      </p>
+      
+      <p class="indentb">When you override the <code class="calibre12">equals</code> method, you must adhere to its general contract. Here is the contract, from the specification
+         for <code class="calibre12">Object</code> :
+      </p>
+      
+      <p class="indentb">The <code class="calibre12">equals</code> method implements an <em class="calibre9">equivalence relation.</em> It has these properties:
+      </p>
+      
+      <p class="bull1">• <em class="calibre9">Reflexive</em>: For any non-null reference value <code class="calibre12">x</code>, <code class="calibre12">x.equals(x)</code> must return <code class="calibre12">true</code>.
+      </p>
+      
+      <p class="bull1">• <em class="calibre9">Symmetric</em>: For any non-null reference values <code class="calibre12">x</code> and <code class="calibre12">y</code>, <code class="calibre12">x.equals(y)</code> must return <code class="calibre12">true</code> if and only if <code class="calibre12">y.equals(x)</code> returns <code class="calibre12">true</code>.
+      </p>
+      
+      <p class="bull1">• <em class="calibre9">Transitive</em>: For any non-null reference values <code class="calibre12">x</code>, <code class="calibre12">y</code>, <code class="calibre12">z</code>, if <code class="calibre12">x.equals(y)</code> returns <code class="calibre12">true</code> and <code class="calibre12">y.equals(z)</code> returns <code class="calibre12">true</code>, then <code class="calibre12">x.equals(z)</code> must return <code class="calibre12">true</code>.
+      </p>
+      
+      <p class="bull1">• <em class="calibre9">Consistent</em>: For any non-null reference values <code class="calibre12">x</code> and <code class="calibre12">y</code>, multiple invocations of <code class="calibre12">x.equals(y)</code> must consistently return <code class="calibre12">true</code> or consistently return <code class="calibre12">false</code>, provided no information used in <code class="calibre12">equals</code> comparisons is modified.
+      </p>
+      
+      <p class="bull1">• For any non-null reference value <code class="calibre12">x</code>, <code class="calibre12">x.equals(null)</code> must return <code class="calibre12">false</code>.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_39"></span>Unless you are mathematically inclined, this might look a bit scary, but do not ignore
+         it! If you violate it, you may well find that your program behaves erratically or
+         crashes, and it can be very difficult to pin down the source of the failure. To paraphrase
+         John Donne, no class is an island. Instances of one class are frequently passed to
+         another. Many classes, including all collections classes, depend on the objects passed
+         to them obeying the <code class="calibre12">equals</code> contract.
+      </p>
+      
+      <p class="indent">Now that you are aware of the dangers of violating the <code class="calibre12">equals</code> contract, let’s go over the contract in detail. The good news is that, appearances
+         notwithstanding, it really isn’t very complicated. Once you understand it, it’s not
+         hard to adhere to it.
+      </p>
+      
+      <p class="indent">So what is an equivalence relation? Loosely speaking, it’s an operator that partitions
+         a set of elements into subsets whose elements are deemed equal to one another. These
+         subsets are known as <em class="calibre9">equivalence classes</em>. For an <code class="calibre12">equals</code> method to be useful, all of the elements in each equivalence class must be interchangeable
+         from the perspective of the user. Now let’s examine the five requirements in turn:
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Reflexivity</strong>—The first requirement says merely that an object must be equal to itself. It’s hard
+         to imagine violating this one unintentionally. If you were to violate it and then
+         add an instance of your class to a collection, the <code class="calibre12">contains</code> method might well say that the collection didn’t contain the instance that you just
+         added.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Symmetry</strong>—The second requirement says that any two objects must agree on whether they are equal.
+         Unlike the first requirement, it’s not hard to imagine violating this one unintentionally.
+         For example, consider the following class, which implements a case-insensitive string.
+         The case of the string is preserved by <code class="calibre12">toString</code> but ignored in <code class="calibre12">equals</code> comparisons:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex2a" id="pch3ex2" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - violates symmetry!</strong><br class="calibre7"/>
+         public final class CaseInsensitiveString {<br class="calibre7"/>
+             private final String s;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public CaseInsensitiveString(String s) {<br class="calibre7"/>
+                 this.s = Objects.requireNonNull(s);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">// Broken - violates symmetry!</strong><br class="calibre7"/>
+             @Override public boolean equals(Object o) {<br class="calibre7"/>
+                 if (o instanceof CaseInsensitiveString)<br class="calibre7"/>
+                     return s.equalsIgnoreCase(<br class="calibre7"/>
+                         ((CaseInsensitiveString) o).s);<br class="calibre7"/>
+                 <strong class="calibre11">if (o instanceof String)  // One-way interoperability!</strong><br class="calibre7"/>
+                     <strong class="calibre11">return s.equalsIgnoreCase((String) o);</strong><br class="calibre7"/>
+                 return false;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ...  // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_40"></span>The well-intentioned <code class="calibre12">equals</code> method in this class naively attempts to interoperate with ordinary strings. Let’s
+         suppose that we have one case-insensitive string and one ordinary one:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex3a" id="pch3ex3" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">CaseInsensitiveString cis = new CaseInsensitiveString("Polish");<br class="calibre7"/>
+         String s = "polish";
+      </p>
+      
+      <p class="indent">As expected, <code class="calibre12">cis.equals(s)</code> returns <code class="calibre12">true</code>. The problem is that while the <code class="calibre12">equals</code> method in <code class="calibre12">CaseInsensitiveString</code> knows about ordinary strings, the <code class="calibre12">equals</code> method in <code class="calibre12">String</code> is oblivious to case-insensitive strings. Therefore, <code class="calibre12">s.equals(cis)</code> returns <code class="calibre12">false</code>, a clear violation of symmetry. Suppose you put a case-insensitive string into a
+         collection:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex4a" id="pch3ex4" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">List&lt;CaseInsensitiveString&gt; list = new ArrayList&lt;&gt;();<br class="calibre7"/>
+         list.add(cis);
+      </p>
+      
+      <p class="indent">What does <code class="calibre12">list.contains(s)</code> return at this point? Who knows? In the current OpenJDK implementation, it happens
+         to return <code class="calibre12">false</code>, but that’s just an implementation artifact. In another implementation, it could
+         just as easily return <code class="calibre12">true</code> or throw a runtime exception. <strong class="calibre11">Once you’ve violated the</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> <strong class="calibre11">contract, you simply don’t know how other objects will behave when confronted with
+            your object.</strong></p>
+      
+      <p class="indent">To eliminate the problem, merely remove the ill-conceived attempt to interoperate
+         with <code class="calibre12">String</code> from the <code class="calibre12">equals</code> method. Once you do this, you can refactor the method into a single return statement:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex5a" id="pch3ex5" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">@Override public boolean equals(Object o) {<br class="calibre7"/>
+             return o instanceof CaseInsensitiveString &amp;&amp;<br class="calibre7"/>
+                 ((CaseInsensitiveString) o).s.equalsIgnoreCase(s);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Transitivity</strong>—The third requirement of the <code class="calibre12">equals</code> contract says that if one object is equal to a second and the second object is equal
+         to a third, then the first object must be equal to the third. Again, it’s not hard
+         to imagine violating this requirement unintentionally. Consider the case of a subclass
+         that adds a new <em class="calibre9">value component</em> to its superclass. In other words, the subclass adds a piece of <span epub:type="pagebreak" id="page_41"></span>information that affects <code class="calibre12">equals</code> comparisons. Let’s start with a simple immutable two-dimensional integer point class:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex6a" id="pch3ex6" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Point {<br class="calibre7"/>
+             private final int x;<br class="calibre7"/>
+             private final int y;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Point(int x, int y) {<br class="calibre7"/>
+                 this.x = x;<br class="calibre7"/>
+                 this.y = y;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public boolean equals(Object o) {<br class="calibre7"/>
+                 if (!(o instanceof Point))<br class="calibre7"/>
+                     return false;<br class="calibre7"/>
+                 Point p = (Point)o;<br class="calibre7"/>
+                 return p.x == x &amp;&amp; p.y == y;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             ...  // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Suppose you want to extend this class, adding the notion of color to a point:</p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex7a" id="pch3ex7" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class ColorPoint extends Point {<br class="calibre7"/>
+             private final Color color;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public ColorPoint(int x, int y, Color color) {<br class="calibre7"/>
+                 super(x, y);<br class="calibre7"/>
+                 this.color = color;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             ...  // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">How should the <code class="calibre12">equals</code> method look? If you leave it out entirely, the implementation is inherited from <code class="calibre12">Point</code> and color information is ignored in <code class="calibre12">equals</code> comparisons. While this does not violate the <code class="calibre12">equals</code> contract, it is clearly unacceptable. Suppose you write an <code class="calibre12">equals</code> method that returns <code class="calibre12">true</code> only if its argument is another color point with the same position and color:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex8a" id="pch3ex8" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - violates symmetry!</strong><br class="calibre7"/>
+         @Override public boolean equals(Object o) {<br class="calibre7"/>
+             if (!(o instanceof ColorPoint))<br class="calibre7"/>
+                return false;<br class="calibre7"/>
+             <strong class="calibre11">return super.equals(o) &amp;&amp; ((ColorPoint) o).color == color;</strong><br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_42"></span>The problem with this method is that you might get different results when comparing
+         a point to a color point and vice versa. The former comparison ignores color, while
+         the latter comparison always returns <code class="calibre12">false</code> because the type of the argument is incorrect. To make this concrete, let’s create
+         one point and one color point:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex9a" id="pch3ex9" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Point p = new Point(1, 2);<br class="calibre7"/>
+         ColorPoint cp = new ColorPoint(1, 2, Color.RED);
+      </p>
+      
+      <p class="indent">Then <code class="calibre12">p.equals(cp)</code> returns <code class="calibre12">true</code>, while <code class="calibre12">cp.equals(p)</code> returns <code class="calibre12">false</code>. You might try to fix the problem by having <code class="calibre12">ColorPoint.equals</code> ignore color when doing “mixed comparisons”:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex10a" id="pch3ex10" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - violates transitivity!</strong><br class="calibre7"/>
+         @Override public boolean equals(Object o) {<br class="calibre7"/>
+             if (!(o instanceof Point))<br class="calibre7"/>
+                 return false;<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">// If o is a normal Point, do a color-blind comparison</strong><br class="calibre7"/>
+             <strong class="calibre11">if (!(o instanceof ColorPoint))</strong><br class="calibre7"/>
+                 <strong class="calibre11">return o.equals(this);</strong><br class="calibre7"/>
+         <br class="calibre7"/>
+             // o is a ColorPoint; do a full comparison<br class="calibre7"/>
+             return super.equals(o) &amp;&amp; ((ColorPoint) o).color == color;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This approach does provide symmetry, but at the expense of transitivity:</p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex11a" id="pch3ex11" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">ColorPoint p1 = new ColorPoint(1, 2, Color.RED);<br class="calibre7"/>
+         Point p2 = new Point(1, 2);<br class="calibre7"/>
+         ColorPoint p3 = new ColorPoint(1, 2, Color.BLUE);
+      </p>
+      
+      <p class="noindent">Now <code class="calibre12">p1.equals(p2)</code> and <code class="calibre12">p2.equals(p3)</code> return <code class="calibre12">true</code>, while <code class="calibre12">p1.equals(p3)</code> returns <code class="calibre12">false</code>, a clear violation of transitivity. The first two comparisons are “color-blind,”
+         while the third takes color into account.
+      </p>
+      
+      <p class="indent">Also, this approach can cause infinite recursion: Suppose there are two subclasses
+         of <code class="calibre12">Point</code>, say <code class="calibre12">ColorPoint</code> and <code class="calibre12">SmellPoint</code>, each with this sort of <code class="calibre12">equals</code> method. Then a call to <code class="calibre12">myColorPoint.equals(mySmellPoint)</code> will throw a <code class="calibre12">StackOverflowError</code>.
+      </p>
+      
+      <p class="indent">So what’s the solution? It turns out that this is a fundamental problem of equivalence
+         relations in object-oriented languages. <strong class="calibre11">There is no way to extend an instantiable class and add a value component while preserving
+            the</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> <strong class="calibre11">contract</strong>, unless you’re willing to forgo the benefits of object-oriented abstraction.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_43"></span>You may hear it said that you can extend an instantiable class and add a value component
+         while preserving the <code class="calibre12">equals</code> contract by using a <code class="calibre12">getClass</code> test in place of the <code class="calibre12">instanceof</code> test in the <code class="calibre12">equals</code> method:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex12a" id="pch3ex12" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - violates Liskov substitution principle (page 43)</strong><br class="calibre7"/>
+         @Override public boolean equals(Object o) {<br class="calibre7"/>
+             <strong class="calibre11">if (o == null || o.getClass() != getClass())</strong><br class="calibre7"/>
+                 <strong class="calibre11">return false;</strong><br class="calibre7"/>
+             Point p = (Point) o;<br class="calibre7"/>
+             return p.x == x &amp;&amp; p.y == y;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This has the effect of equating objects only if they have the same implementation
+         class. This may not seem so bad, but the consequences are unacceptable: An instance
+         of a subclass of <code class="calibre12">Point</code> is still a <code class="calibre12">Point</code>, and it still needs to function as one, but it fails to do so if you take this approach!
+         Let’s suppose we want to write a method to tell whether a point is on the unit circle.
+         Here is one way we could do it:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex13a" id="pch3ex13" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Initialize unitCircle to contain all Points on the unit circle</strong><br class="calibre7"/>
+         private static final Set&lt;Point&gt; unitCircle = Set.of(<br class="calibre7"/>
+                 new Point( 1,  0), new Point( 0,  1),<br class="calibre7"/>
+                 new Point(-1,  0), new Point( 0, -1));<br class="calibre7"/>
+         <br class="calibre7"/>
+         public static boolean onUnitCircle(Point p) {<br class="calibre7"/>
+             return unitCircle.contains(p);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">While this may not be the fastest way to implement the functionality, it works fine.
+         Suppose you extend <code class="calibre12">Point</code> in some trivial way that doesn’t add a value component, say, by having its constructor
+         keep track of how many instances have been created:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex14a" id="pch3ex14" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class CounterPoint extends Point {<br class="calibre7"/>
+             private static final AtomicInteger counter =<br class="calibre7"/>
+                    new AtomicInteger();<br class="calibre7"/>
+         <br class="calibre7"/>
+             public CounterPoint(int x, int y) {<br class="calibre7"/>
+                 super(x, y);<br class="calibre7"/>
+                 counter.incrementAndGet();<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public static int numberCreated() { return counter.get(); }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The <em class="calibre9">Liskov substitution principle</em> says that any important property of a type should also hold for all its subtypes
+         so that any method written for the type should work equally well on its subtypes [<a href="ref.xhtml#rLiskov87" class="calibre8">Liskov87</a>]. This is the formal statement of our <span epub:type="pagebreak" id="page_44"></span>earlier claim that a subclass of <code class="calibre12">Point</code> (such as <code class="calibre12">CounterPoint</code>) is still a <code class="calibre12">Point</code> and must act as one. But suppose we pass a <code class="calibre12">CounterPoint</code> to the <code class="calibre12">onUnitCircle</code> method. If the <code class="calibre12">Point</code> class uses a <code class="calibre12">getClass</code>-based <code class="calibre12">equals</code> method, the <code class="calibre12">onUnitCircle</code> method will return <code class="calibre12">false</code> regardless of the <code class="calibre12">CounterPoint</code> instance’s <em class="calibre9">x</em> and <em class="calibre9">y</em> coordinates. This is so because most collections, including the <code class="calibre12">HashSet</code> used by the <code class="calibre12">onUnitCircle</code> method, use the <code class="calibre12">equals</code> method to test for containment, and no <code class="calibre12">CounterPoint</code> instance is equal to any <code class="calibre12">Point</code>. If, however, you use a proper <code class="calibre12">instanceof</code>-based <code class="calibre12">equals</code> method on <code class="calibre12">Point</code>, the same <code class="calibre12">onUnitCircle</code> method works fine when presented with a <code class="calibre12">CounterPoint</code> instance.
+      </p>
+      
+      <p class="indent">While there is no satisfactory way to extend an instantiable class and add a value
+         component, there is a fine workaround: Follow the advice of <a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>, “<a href="ch4.xhtml#lev18" class="calibre8">Favor composition over inheritance</a>.” Instead of having <code class="calibre12">ColorPoint</code> extend <code class="calibre12">Point</code>, give <code class="calibre12">ColorPoint</code> a private <code class="calibre12">Point</code> field and a public <em class="calibre9">view</em> method (<a href="ch2.xhtml#lev6" class="calibre8">Item 6</a>) that returns the point at the same position as this color point:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex15a" id="pch3ex15" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Adds a value component without violating the equals contract</strong><br class="calibre7"/>
+         public class ColorPoint {<br class="calibre7"/>
+            private final Point point;<br class="calibre7"/>
+            private final Color color;<br class="calibre7"/>
+         <br class="calibre7"/>
+            public ColorPoint(int x, int y, Color color) {<br class="calibre7"/>
+               point = new Point(x, y);<br class="calibre7"/>
+               this.color = Objects.requireNonNull(color);<br class="calibre7"/>
+            }<br class="calibre7"/>
+         <br class="calibre7"/>
+            /**<br class="calibre7"/>
+             * Returns the point-view of this color point.<br class="calibre7"/>
+             */<br class="calibre7"/>
+            <strong class="calibre11">public Point asPoint()</strong> {<br class="calibre7"/>
+               return point;<br class="calibre7"/>
+            }<br class="calibre7"/>
+         <br class="calibre7"/>
+            @Override public boolean equals(Object o) {<br class="calibre7"/>
+               if (!(o instanceof ColorPoint))<br class="calibre7"/>
+                  return false;<br class="calibre7"/>
+               ColorPoint cp = (ColorPoint) o;<br class="calibre7"/>
+               return cp.point.equals(point) &amp;&amp; cp.color.equals(color);<br class="calibre7"/>
+            }<br class="calibre7"/>
+         <br class="calibre7"/>
+            ...    // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">There are some classes in the Java platform libraries that do extend an instantiable
+         class and add a value component. For example, <code class="calibre12">java.sql.Timestamp</code> <span epub:type="pagebreak" id="page_45"></span>extends <code class="calibre12">java.util.Date</code> and adds a <code class="calibre12">nanoseconds</code> field. The <code class="calibre12">equals</code> implementation for <code class="calibre12">Timestamp</code> does violate symmetry and can cause erratic behavior if <code class="calibre12">Timestamp</code> and <code class="calibre12">Date</code> objects are used in the same collection or are otherwise intermixed. The <code class="calibre12">Timestamp</code> class has a disclaimer cautioning programmers against mixing dates and timestamps.
+         While you won’t get into trouble as long as you keep them separate, there’s nothing
+         to prevent you from mixing them, and the resulting errors can be hard to debug. This
+         behavior of the <code class="calibre12">Timestamp</code> class was a mistake and should not be emulated.
+      </p>
+      
+      <p class="indent">Note that you <em class="calibre9">can</em> add a value component to a subclass of an <em class="calibre9">abstract</em> class without violating the <code class="calibre12">equals</code> contract. This is important for the sort of class hierarchies that you get by following
+         the advice in <a href="ch4.xhtml#lev23" class="calibre8">Item 23</a>, “Prefer class hierarchies to tagged classes.” For example, you could have an abstract
+         class <code class="calibre12">Shape</code> with no value components, a subclass <code class="calibre12">Circle</code> that adds a <code class="calibre12">radius</code> field, and a subclass <code class="calibre12">Rectangle</code> that adds <code class="calibre12">length</code> and <code class="calibre12">width</code> fields. Problems of the sort shown earlier won’t occur so long as it is impossible
+         to create a superclass instance directly.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Consistency</strong>—The fourth requirement of the <code class="calibre12">equals</code> contract says that if two objects are equal, they must remain equal for all time
+         unless one (or both) of them is modified. In other words, mutable objects can be equal
+         to different objects at different times while immutable objects can’t. When you write
+         a class, think hard about whether it should be immutable (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>). If you conclude that it should, make sure that your <code class="calibre12">equals</code> method enforces the restriction that equal objects remain equal and unequal objects
+         remain unequal for all time.
+      </p>
+      
+      <p class="indent">Whether or not a class is immutable, <strong class="calibre11">do not write an</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> <strong class="calibre11">method that depends on unreliable resources.</strong> It’s extremely difficult to satisfy the consistency requirement if you violate this
+         prohibition. For example, <code class="calibre12">java.net.URL</code>’s <code class="calibre12">equals</code> method relies on comparison of the IP addresses of the hosts associated with the
+         URLs. Translating a host name to an IP address can require network access, and it
+         isn’t guaranteed to yield the same results over time. This can cause the <code class="calibre12">URL equals</code> method to violate the <code class="calibre12">equals</code> contract and has caused problems in practice. The behavior of <code class="calibre12">URL</code>’s <code class="calibre12">equals</code> method was a big mistake and should not be emulated. Unfortunately, it cannot be
+         changed due to compatibility requirements. To avoid this sort of problem, <code class="calibre12">equals</code> methods should perform only deterministic computations on memory-resident objects.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Non-nullity—</strong>The final requirement lacks an official name, so I have taken the liberty of calling
+         it “non-nullity.” It says that all objects must be unequal to <code class="calibre12">null</code>. While it is hard to imagine accidentally returning <code class="calibre12">true</code> in response to the invocation <code class="calibre12">o.equals(null)</code>, it isn’t hard to imagine accidentally throwing a <span epub:type="pagebreak" id="page_46"></span><code class="calibre12">NullPointerException</code>. The general contract prohibits this. Many classes have <code class="calibre12">equals</code> methods that guard against it with an explicit test for <code class="calibre12">null</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex16a" id="pch3ex16" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">@Override public boolean equals(Object o) {<br class="calibre7"/>
+             if (o == null)<br class="calibre7"/>
+                 return false;<br class="calibre7"/>
+             ...<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This test is unnecessary. To test its argument for equality, the <code class="calibre12">equals</code> method must first cast its argument to an appropriate type so its accessors can be
+         invoked or its fields accessed. Before doing the cast, the method must use the <code class="calibre12">instanceof</code> operator to check that its argument is of the correct type:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex17a" id="pch3ex17" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">@Override public boolean equals(Object o) {<br class="calibre7"/>
+             if (!(o instanceof MyType))<br class="calibre7"/>
+                 return false;<br class="calibre7"/>
+             MyType mt = (MyType) o;<br class="calibre7"/>
+             ...<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If this type check were missing and the <code class="calibre12">equals</code> method were passed an argument of the wrong type, the <code class="calibre12">equals</code> method would throw a <code class="calibre12">ClassCastException</code>, which violates the <code class="calibre12">equals</code> contract. But the <code class="calibre12">instanceof</code> operator is specified to return <code class="calibre12">false</code> if its first operand is <code class="calibre12">null</code>, regardless of what type appears in the second operand [JLS, 15.20.2]. Therefore,
+         the type check will return <code class="calibre12">false</code> if <code class="calibre12">null</code> is passed in, so you don’t need an explicit <code class="calibre12">null</code> check.
+      </p>
+      
+      <p class="indentb">Putting it all together, here’s a recipe for a high-quality <code class="calibre12">equals</code> method:
+      </p>
+      
+      <p class="numberb">1. <strong class="calibre11">Use the</strong> <code class="calibre12"><strong class="calibre11">==</strong></code> <strong class="calibre11">operator to check if the argument is a reference to this object.</strong> If so, return <code class="calibre12">true</code>. This is just a performance optimization but one that is worth doing if the comparison
+         is potentially expensive.
+      </p>
+      
+      <p class="numberb">2. <strong class="calibre11">Use the</strong> <code class="calibre12"><strong class="calibre11">instanceof</strong></code> <strong class="calibre11">operator to check if the argument has the correct type.</strong> If not, return <code class="calibre12">false</code>. Typically, the correct type is the class in which the method occurs. Occasionally,
+         it is some interface implemented by this class. Use an interface if the class implements
+         an interface that refines the <code class="calibre12">equals</code> contract to permit comparisons across classes that implement the interface. Collection
+         interfaces such as <code class="calibre12">Set</code>, <code class="calibre12">List</code>, <code class="calibre12">Map</code>, and <code class="calibre12">Map.Entry</code> have this property.
+      </p>
+      
+      <p class="numberb">3. <strong class="calibre11">Cast the argument to the correct type.</strong> Because this cast was preceded by an <code class="calibre12">instanceof</code> test, it is guaranteed to succeed.
+      </p>
+      
+      <p class="numberb"><span epub:type="pagebreak" id="page_47"></span>4. <strong class="calibre11">For each “significant” field in the class, check if that field of the argument matches
+            the corresponding field of this object.</strong> If all these tests succeed, return <code class="calibre12">true</code>; otherwise, return <code class="calibre12">false</code>. If the type in Step 2 is an interface, you must access the argument’s fields via
+         interface methods; if the type is a class, you may be able to access the fields directly,
+         depending on their accessibility.
+      </p>
+      
+      <p class="numberp">For primitive fields whose type is not <code class="calibre12">float</code> or <code class="calibre12">double</code>, use the <code class="calibre12">==</code> operator for comparisons; for object reference fields, call the <code class="calibre12">equals</code> method recursively; for <code class="calibre12">float</code> fields, use the static <code class="calibre12">Float.compare(float, float)</code> method; and for <code class="calibre12">double</code> fields, use <code class="calibre12">Double.compare(double, double)</code>. The special treatment of <code class="calibre12">float</code> and <code class="calibre12">double</code> fields is made necessary by the existence of <code class="calibre12">Float.NaN</code>, <code class="calibre12">-0.0f</code> and the analogous <code class="calibre12">double</code> values; see JLS 15.21.1 or the documentation of <code class="calibre12">Float.equals</code> for details. While you could compare <code class="calibre12">float</code> and <code class="calibre12">double</code> fields with the static methods <code class="calibre12">Float.equals</code> and <code class="calibre12">Double.equals</code>, this would entail autoboxing on every comparison, which would have poor performance.
+         For array fields, apply these guidelines to each element. If every element in an array
+         field is significant, use one of the <code class="calibre12">Arrays.equals</code> methods.
+      </p>
+      
+      <p class="numberp">Some object reference fields may legitimately contain <code class="calibre12">null</code>. To avoid the possibility of a <code class="calibre12">NullPointerException</code>, check such fields for equality using the static method <code class="calibre12">Objects.equals(Object, Object)</code>.
+      </p>
+      
+      <p class="numberp">For some classes, such as <code class="calibre12">CaseInsensitiveString</code> above, field comparisons are more complex than simple equality tests. If this is
+         the case, you may want to store a <em class="calibre9">canonical form</em> of the field so the <code class="calibre12">equals</code> method can do a cheap exact comparison on canonical forms rather than a more costly
+         nonstandard comparison. This technique is most appropriate for immutable classes (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>); if the object can change, you must keep the canonical form up to date.
+      </p>
+      
+      <p class="numberp">The performance of the <code class="calibre12">equals</code> method may be affected by the order in which fields are compared. For best performance,
+         you should first compare fields that are more likely to differ, less expensive to
+         compare, or, ideally, both. You must not compare fields that are not part of an object’s
+         logical state, such as lock fields used to synchronize operations. You need not compare
+         <em class="calibre9">derived fields</em>, which can be calculated from “significant fields,” but doing so may improve the
+         performance of the <code class="calibre12">equals</code> method. If a derived field amounts to a summary description of the entire object,
+         comparing this field will save you the expense of comparing the actual data if the
+         comparison fails. For example, suppose you have a <code class="calibre12">Polygon</code> class, and you cache the area. If two polygons have unequal areas, you needn’t bother
+         comparing their edges and vertices.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_48"></span><strong class="calibre11">When you are finished writing your</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> <strong class="calibre11">method, ask yourself three questions: Is it symmetric? Is it transitive? Is it consistent?</strong> And don’t just ask yourself; write unit tests to check, unless you used AutoValue
+         (page 49) to generate your <code class="calibre12">equals</code> method, in which case you can safely omit the tests. If the properties fail to hold,
+         figure out why, and modify the <code class="calibre12">equals</code> method accordingly. Of course your <code class="calibre12">equals</code> method must also satisfy the other two properties (reflexivity and non-nullity),
+         but these two usually take care of themselves.
+      </p>
+      
+      <p class="indent">An <code class="calibre12">equals</code> method constructed according to the previous recipe is shown in this simplistic <code class="calibre12">PhoneNumber</code> class:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex18a" id="pch3ex18" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Class with a typical equals method</strong><br class="calibre7"/>
+         public final class PhoneNumber {<br class="calibre7"/>
+             private final short areaCode, prefix, lineNum;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public PhoneNumber(int areaCode, int prefix, int lineNum) {<br class="calibre7"/>
+                 this.areaCode = rangeCheck(areaCode,  999, "area code");<br class="calibre7"/>
+                 this.prefix   = rangeCheck(prefix,    999, "prefix");<br class="calibre7"/>
+                 this.lineNum  = rangeCheck(lineNum,  9999, "line num");<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             private static short rangeCheck(int val, int max, String arg) {<br class="calibre7"/>
+                 if (val &lt; 0 || val &gt; max)<br class="calibre7"/>
+                    throw new IllegalArgumentException(arg + ": " + val);<br class="calibre7"/>
+                 return (short) val;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">@Override public boolean equals(Object o)</strong> {<br class="calibre7"/>
+                 if (o == this)<br class="calibre7"/>
+                     return true;<br class="calibre7"/>
+                 if (!(o instanceof PhoneNumber))<br class="calibre7"/>
+                     return false;<br class="calibre7"/>
+                 PhoneNumber pn = (PhoneNumber)o;<br class="calibre7"/>
+                 return pn.lineNum == lineNum &amp;&amp; pn.prefix == prefix<br class="calibre7"/>
+                         &amp;&amp; pn.areaCode == areaCode;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ... // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindentb">Here are a few final caveats:</p>
+      
+      <p class="bullb">• <strong class="calibre11">Always override</strong> <code class="calibre12"><strong class="calibre11">hashCode</strong></code> <strong class="calibre11">when you override</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> (<a href="ch3.xhtml#lev11" class="calibre8">Item 11</a>).
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">Don’t try to be too clever.</strong> If you simply test fields for equality, it’s not hard to adhere to the <code class="calibre12">equals</code> contract. If you are overly aggressive in searching for equivalence, it’s easy to
+         get into trouble. It is generally a bad idea to take any form of aliasing into account.
+         For example, the <code class="calibre12">File</code> class shouldn’t attempt to equate symbolic links referring to the same file. Thankfully,
+         it doesn’t.
+      </p>
+      
+      <p class="bullb"><span epub:type="pagebreak" id="page_49"></span>• <strong class="calibre11">Don’t substitute another type for</strong> <code class="calibre12"><strong class="calibre11">Object</strong></code> <strong class="calibre11">in the</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code> <strong class="calibre11">declaration.</strong> It is not uncommon for a programmer to write an <code class="calibre12">equals</code> method that looks like this and then spend hours puzzling over why it doesn’t work
+         properly:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex19a" id="pch3ex19" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="prebb">
+         <strong class="calibre11">// Broken - parameter type must be Object!</strong><br class="calibre7"/>
+         public boolean equals(MyClass o) {<br class="calibre7"/>
+             ...<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="bullp">The problem is that this method does not <em class="calibre9">override</em> <code class="calibre12">Object.equals</code>, whose argument is of type <code class="calibre12">Object</code>, but <em class="calibre9">overloads</em> it instead (<a href="ch8.xhtml#lev52" class="calibre8">Item 52</a>). It is unacceptable to provide such a “strongly typed” <code class="calibre12">equals</code> method even in addition to the normal one, because it can cause <code class="calibre12">Override</code> annotations in subclasses to generate false positives and provide a false sense of
+         security.
+      </p>
+      
+      <p class="bullp">Consistent use of the <code class="calibre12">Override</code> annotation, as illustrated throughout this item, will prevent you from making this
+         mistake (<a href="ch6.xhtml#lev40" class="calibre8">Item 40</a>). This <code class="calibre12">equals</code> method won’t compile, and the error message will tell you exactly what is wrong:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex20a" id="pch3ex20" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="prebb">
+         <strong class="calibre11">// Still broken, but won’t compile</strong><br class="calibre7"/>
+         <strong class="calibre11">@Override</strong> public boolean equals(MyClass o) {<br class="calibre7"/>
+             ...<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Writing and testing <code class="calibre12">equals</code> (and <code class="calibre12">hashCode</code>) methods is tedious, and the resulting code is mundane. An excellent alternative
+         to writing and testing these methods manually is to use Google’s open source AutoValue
+         framework, which automatically generates these methods for you, triggered by a single
+         annotation on the class . In most cases, the methods generated by AutoValue are essentially
+         identical to those you’d write yourself.
+      </p>
+      
+      <p class="indent">IDEs, too, have facilities to generate <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code> methods, but the resulting source code is more verbose and less readable than code
+         that uses AutoValue, does not track changes in the class automatically, and therefore
+         requires testing. That said, having IDEs generate <code class="calibre12">equals</code> (and <code class="calibre12">hashCode</code>) methods is generally preferable to implementing them manually because IDEs do not
+         make careless mistakes, and humans do.
+      </p>
+      
+      <p class="indent">In summary, don’t override the <code class="calibre12">equals</code> method unless you have to: in many cases, the implementation inherited from <code class="calibre12">Object</code> does exactly what you want. If you do override <code class="calibre12">equals</code>, make sure to compare all of the class’s significant fields and to compare them in
+         a manner that preserves all five provisions of the <code class="calibre12">equals</code> contract.
+      </p>
+      
+      <h3 class="h2"><a id="lev11" class="calibre4"></a><span epub:type="pagebreak" id="page_50" class="calibre15"></span><strong class="calibre10">Item 11: Always override</strong> <code class="calibre19"><strong class="calibre10">hashCode</strong></code> <strong class="calibre10">when you override</strong> <code class="calibre19"><strong class="calibre10">equals</strong></code></h3>
+      
+      <p class="noindentb"><strong class="calibre11">You must override</strong> <code class="calibre12"><strong class="calibre11">hashCode</strong></code> <strong class="calibre11">in every class that overrides</strong> <code class="calibre12"><strong class="calibre11">equals</strong></code><strong class="calibre11">.</strong> If you fail to do so, your class will violate the general contract for <code class="calibre12">hashCode</code>, which will prevent it from functioning properly in collections such as <code class="calibre12">HashMap</code> and <code class="calibre12">HashSet</code>. Here is the contract, adapted from the <code class="calibre12">Object</code> specification :
+      </p>
+      
+      <p class="bull1">• When the <code class="calibre12">hashCode</code> method is invoked on an object repeatedly during an execution of an application,
+         it must consistently return the same value, provided no information used in <code class="calibre12">equals</code> comparisons is modified. This value need not remain consistent from one execution
+         of an application to another.
+      </p>
+      
+      <p class="bull1">• If two objects are equal according to the <code class="calibre12">equals(Object)</code> method, then calling <code class="calibre12">hashCode</code> on the two objects must produce the same integer result.
+      </p>
+      
+      <p class="bull1">• If two objects are unequal according to the <code class="calibre12">equals(Object)</code> method, it is <em class="calibre9">not</em> required that calling <code class="calibre12">hashCode</code> on each of the objects must produce distinct results. However, the programmer should
+         be aware that producing distinct results for unequal objects may improve the performance
+         of hash tables.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The key provision that is violated when you fail to override</strong> <code class="calibre12"><strong class="calibre11">hashCode</strong></code> <strong class="calibre11">is the second one: equal objects must have equal hash codes.</strong> Two distinct instances may be logically equal according to a class’s <code class="calibre12">equals</code> method, but to <code class="calibre12">Object</code>’s <code class="calibre12">hashCode</code> method, they’re just two objects with nothing much in common. Therefore, <code class="calibre12">Object</code>’s <code class="calibre12">hashCode</code> method returns two seemingly random numbers instead of two equal numbers as required
+         by the contract.
+      </p>
+      
+      <p class="indent">For example, suppose you attempt to use instances of the <code class="calibre12">PhoneNumber</code> class from <a href="ch3.xhtml#lev10" class="calibre8">Item 10</a> as keys in a <code class="calibre12">HashMap</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex21a" id="pch3ex21" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="preba">
+         Map&lt;PhoneNumber, String&gt; m = new HashMap&lt;&gt;();<br class="calibre7"/>
+         m.put(new PhoneNumber(707, 867, 5309), "Jenny");
+      </p>
+      
+      <p class="indent">At this point, you might expect <code class="calibre12">m.get(new PhoneNumber(707</code>, <code class="calibre12">867</code>, <code class="calibre12">5309))</code> to return <code class="calibre12">"Jenny"</code>, but instead, it returns <code class="calibre12">null</code>. Notice that two <code class="calibre12">PhoneNumber</code> instances are involved: one is used for insertion into the <code class="calibre12">HashMap</code>, and a second, equal instance is used for (attempted) retrieval. The <code class="calibre12">PhoneNumber</code> class’s failure to override <code class="calibre12">hashCode</code> causes the two equal instances to have unequal hash codes, in violation of the <code class="calibre12">hashCode</code> contract. Therefore, the <code class="calibre12">get</code> method is likely to look for the phone number in a different hash bucket from the
+         one in which it was stored by the <code class="calibre12">put</code> method. Even if the two instances happen to hash to the same bucket, the <code class="calibre12">get</code> method will almost certainly return <code class="calibre12">null</code>, because <code class="calibre12">HashMap</code> has an optimization that caches the hash code associated with each entry and doesn’t
+         bother checking for object equality if the hash codes don’t match.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_51"></span>Fixing this problem is as simple as writing a proper <code class="calibre12">hashCode</code> method for <code class="calibre12">PhoneNumber</code>. So what should a <code class="calibre12">hashCode</code> method look like? It’s trivial to write a bad one. This one, for example, is always
+         legal but should never be used:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex22a" id="pch3ex22" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// The worst possible legal hashCode implementation - never use!</strong><br class="calibre7"/>
+         @Override public int hashCode() { return 42; }
+      </p>
+      
+      <p class="indent">It’s legal because it ensures that equal objects have the same hash code. It’s atrocious
+         because it ensures that <em class="calibre9">every</em> object has the same hash code. Therefore, every object hashes to the same bucket,
+         and hash tables degenerate to linked lists. Programs that should run in linear time
+         instead run in quadratic time. For large hash tables, this is the difference between
+         working and not working.
+      </p>
+      
+      <p class="indentb">A good hash function tends to produce unequal hash codes for unequal instances. This
+         is exactly what is meant by the third part of the <code class="calibre12">hashCode</code> contract. Ideally, a hash function should distribute any reasonable collection of
+         unequal instances uniformly across all <code class="calibre12">int</code> values. Achieving this ideal can be difficult. Luckily it’s not too hard to achieve
+         a fair approximation. Here is a simple recipe:
+      </p>
+      
+      <p class="number">1. Declare an <code class="calibre12">int</code> variable named <code class="calibre12">result</code>, and initialize it to the hash code <code class="calibre12">c</code> for the first significant field in your object, as computed in step 2.a. (Recall
+         from <a href="ch3.xhtml#lev10" class="calibre8">Item 10</a> that a significant field is a field that affects equals comparisons.)
+      </p>
+      
+      <p class="number">2. For every remaining significant field <code class="calibre12">f</code> in your object, do the following:
+      </p>
+      
+      <p class="alpha">a. Compute an <code class="calibre12">int</code> hash code <code class="calibre12">c</code> for the field:
+      </p>
+      
+      <p class="roman">i. If the field is of a primitive type, compute <code class="calibre12"><em class="calibre9">Type</em>.hashCode(f)</code>, where <code class="calibre12"><em class="calibre9">Type</em></code> is the boxed primitive class corresponding to <code class="calibre12">f</code>’s type.
+      </p>
+      
+      <p class="roman1">ii. If the field is an object reference and this class’s <code class="calibre12">equals</code> method compares the field by recursively invoking <code class="calibre12">equals</code>, recursively invoke <code class="calibre12">hashCode</code> on the field. If a more complex comparison is required, compute a “canonical representation”
+         for this field and invoke <code class="calibre12">hashCode</code> on the canonical representation. If the value of the field is <code class="calibre12">null</code>, use <code class="calibre12">0</code> (or some other constant, but <code class="calibre12">0</code> is traditional).
+      </p>
+      
+      <p class="roman2">iii. If the field is an array, treat it as if each significant element were a separate
+         field. That is, compute a hash code for each significant element by applying these
+         rules recursively, and combine the values per step 2.b. If the array has no significant
+         elements, use a constant, preferably not <code class="calibre12">0</code>. If all elements are significant, use <code class="calibre12">Arrays.hashCode</code>.
+      </p>
+      
+      <p class="alpha">b. Combine the hash code <code class="calibre12">c</code> computed in step 2.a into <code class="calibre12">result</code> as follows:
+      </p>
+      
+      <p class="codep">result = 31 * result + c;</p>
+      
+      <p class="numberb">3. Return <code class="calibre12">result</code>.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_52"></span>When you are finished writing the <code class="calibre12">hashCode</code> method, ask yourself whether equal instances have equal hash codes. Write unit tests
+         to verify your intuition (unless you used AutoValue to generate your <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code> methods, in which case you can safely omit these tests). If equal instances have
+         unequal hash codes, figure out why and fix the problem.
+      </p>
+      
+      <p class="indent">You may exclude <em class="calibre9">derived fields</em> from the hash code computation. In other words, you may ignore any field whose value
+         can be computed from fields included in the computation. You <em class="calibre9">must</em> exclude any fields that are not used in <code class="calibre12">equals</code> comparisons, or you risk violating the second provision of the <code class="calibre12">hashCode</code> contract.
+      </p>
+      
+      <p class="indent">The multiplication in step 2.b makes the result depend on the order of the fields,
+         yielding a much better hash function if the class has multiple similar fields. For
+         example, if the multiplication were omitted from a <code class="calibre12">String</code> hash function, all anagrams would have identical hash codes. The value 31 was chosen
+         because it is an odd prime. If it were even and the multiplication overflowed, information
+         would be lost, because multiplication by 2 is equivalent to shifting. The advantage
+         of using a prime is less clear, but it is traditional. A nice property of 31 is that
+         the multiplication can be replaced by a shift and a subtraction for better performance
+         on some architectures: <code class="calibre12">31 * i == (i &lt;&lt; 5) - i</code>. Modern VMs do this sort of optimization automatically.
+      </p>
+      
+      <p class="indent">Let’s apply the previous recipe to the <code class="calibre12">PhoneNumber</code> class:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex23a" id="pch3ex23" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Typical hashCode method</strong><br class="calibre7"/>
+         @Override public int hashCode() {<br class="calibre7"/>
+             int result = Short.hashCode(areaCode);<br class="calibre7"/>
+             result = 31 * result + Short.hashCode(prefix);<br class="calibre7"/>
+             result = 31 * result + Short.hashCode(lineNum);<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Because this method returns the result of a simple deterministic computation whose
+         only inputs are the three significant fields in a <code class="calibre12">PhoneNumber</code> instance, it is clear that equal <code class="calibre12">PhoneNumber</code> instances have equal hash codes. This method is, in fact, a perfectly good <code class="calibre12">hashCode</code> implementation for <code class="calibre12">PhoneNumber</code>, on par with those in the Java platform libraries. It is simple, is reasonably fast,
+         and does a reasonable job of dispersing unequal phone numbers into different hash
+         buckets.
+      </p>
+      
+      <p class="indent">While the recipe in this item yields reasonably good hash functions, they are not
+         state-of-the-art. They are comparable in quality to the hash functions found in the
+         Java platform libraries’ value types and are adequate for most uses. If you have a
+         bona fide need for hash functions less likely to produce collisions, see Guava’s <code class="calibre12">com.google.common.hash.Hashing</code> [<a href="ref.xhtml#rGuava" class="calibre8">Guava</a>].
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_53"></span>The <code class="calibre12">Objects</code> class has a static method that takes an arbitrary number of objects and returns a
+         hash code for them. This method, named <code class="calibre12">hash</code>, lets you write one-line <code class="calibre12">hashCode</code> methods whose quality is comparable to those written according to the recipe in this
+         item. Unfortunately, they run more slowly because they entail array creation to pass
+         a variable number of arguments, as well as boxing and unboxing if any of the arguments
+         are of primitive type. This style of hash function is recommended for use only in
+         situations where performance is not critical. Here is a hash function for <code class="calibre12">PhoneNumber</code> written using this technique:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex24a" id="pch3ex24" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// One-line hashCode method - mediocre performance</strong><br class="calibre7"/>
+         @Override public int hashCode() {<br class="calibre7"/>
+            return Objects.hash(lineNum, prefix, areaCode);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">If a class is immutable and the cost of computing the hash code is significant, you
+         might consider caching the hash code in the object rather than recalculating it each
+         time it is requested. If you believe that most objects of this type will be used as
+         hash keys, then you should calculate the hash code when the instance is created. Otherwise,
+         you might choose to <em class="calibre9">lazily initialize</em> the hash code the first time <code class="calibre12">hash-Code</code> is invoked. Some care is required to ensure that the class remains thread-safe in
+         the presence of a lazily initialized field (<a href="ch11.xhtml#lev83" class="calibre8">Item 83</a>). Our <code class="calibre12">PhoneNumber</code> class does not merit this treatment, but just to show you how it’s done, here it
+         is. Note that the initial value for the <code class="calibre12">hashCode</code> field (in this case, 0) should not be the hash code of a commonly created instance:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex25a" id="pch3ex25" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// hashCode method with lazily initialized cached hash code</strong><br class="calibre7"/>
+         private int hashCode; // Automatically initialized to 0<br class="calibre7"/>
+         <br class="calibre7"/>
+         @Override public int hashCode() {<br class="calibre7"/>
+             int result = hashCode;<br class="calibre7"/>
+             if (result == 0) {<br class="calibre7"/>
+                 result = Short.hashCode(areaCode);<br class="calibre7"/>
+                 result = 31 * result + Short.hashCode(prefix);<br class="calibre7"/>
+                 result = 31 * result + Short.hashCode(lineNum);<br class="calibre7"/>
+                 hashCode = result;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Do not be tempted to exclude significant fields from the hash code computation to
+            improve performance.</strong> While the resulting hash function may run faster, its poor quality may degrade hash
+         tables’ performance to the point where they become unusable. In particular, the hash
+         function may be confronted with a <span epub:type="pagebreak" id="page_54"></span>large collection of instances that differ mainly in regions you’ve chosen to ignore.
+         If this happens, the hash function will map all these instances to a few hash codes,
+         and programs that should run in linear time will instead run in quadratic time.
+      </p>
+      
+      <p class="indent">This is not just a theoretical problem. Prior to Java 2, the <code class="calibre12">String</code> hash function used at most sixteen characters evenly spaced throughout the string,
+         starting with the first character. For large collections of hierarchical names, such
+         as URLs, this function displayed exactly the pathological behavior described earlier.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Don’t provide a detailed specification for the value returned by</strong> <code class="calibre12"><strong class="calibre11">hashCode</strong></code><strong class="calibre11">, so clients can’t reasonably depend on it; this gives you the flexibility to change
+            it.</strong> Many classes in the Java libraries, such as <code class="calibre12">String</code> and <code class="calibre12">Integer</code>, specify the exact value returned by their <code class="calibre12">hashCode</code> method as a function of the instance value. This is <em class="calibre9">not</em> a good idea but a mistake that we’re forced to live with: It impedes the ability
+         to improve the hash function in future releases. If you leave the details unspecified
+         and a flaw is found in the hash function or a better hash function is discovered,
+         you can change it in a subsequent release.
+      </p>
+      
+      <p class="indent">In summary, you <em class="calibre9">must</em> override <code class="calibre12">hashCode</code> every time you override <code class="calibre12">equals</code>, or your program will not run correctly. Your <code class="calibre12">hashCode</code> method must obey the general contract specified in <code class="calibre12">Object</code> and must do a reasonable job assigning unequal hash codes to unequal instances. This
+         is easy to achieve, if slightly tedious, using the recipe on page 51. As mentioned
+         in <a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>, the AutoValue framework provides a fine alternative to writing <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code> methods manually, and IDEs also provide some of this functionality.
+      </p>
+      
+      <h3 class="h2"><a id="lev12" class="calibre4"></a><span epub:type="pagebreak" id="page_55" class="calibre15"></span><strong class="calibre10">Item 12: Always override</strong> <code class="calibre19"><strong class="calibre10">toString</strong></code></h3>
+      
+      <p class="noindent">While <code class="calibre12">Object</code> provides an implementation of the <code class="calibre12">toString</code> method, the string that it returns is generally not what the user of your class wants
+         to see. It consists of the class name followed by an “at” sign (<code class="calibre12">@</code>) and the unsigned hexadecimal representation of the hash code, for example, <code class="calibre12">PhoneNumber@163b91</code>. The general contract for <code class="calibre12">toString</code> says that the returned string should be “a concise but informative representation
+         that is easy for a person to read.” While it could be argued that <code class="calibre12">PhoneNumber@163b91</code> is concise and easy to read, it isn’t very informative when compared to <code class="calibre12">707-867-5309</code>. The <code class="calibre12">toString</code> contract goes on to say, “It is recommended that all subclasses override this method.”
+         Good advice, indeed!
+      </p>
+      
+      <p class="indent">While it isn’t as critical as obeying the <code class="calibre12">equals</code> and <code class="calibre12">hashCode</code> contracts (<a href="ch3.xhtml#lev10" class="calibre8">Items 10</a> and <a href="ch3.xhtml#lev11" class="calibre8">11</a>), <strong class="calibre11">providing a good</strong> <code class="calibre12"><strong class="calibre11">toString</strong></code> <strong class="calibre11">implementation makes your class much more pleasant to use and makes systems using
+            the class easier to debug</strong>. The <code class="calibre12">toString</code> method is automatically invoked when an object is passed to <code class="calibre12">println</code>, <code class="calibre12">printf</code>, the string concatenation operator, or <code class="calibre12">assert</code>, or is printed by a debugger. Even if you never call <code class="calibre12">toString</code> on an object, others may. For example, a component that has a reference to your object
+         may include the string representation of the object in a logged error message. If
+         you fail to override <code class="calibre12">toString</code>, the message may be all but useless.
+      </p>
+      
+      <p class="indent">If you’ve provided a good <code class="calibre12">toString</code> method for <code class="calibre12">PhoneNumber</code>, generating a useful diagnostic message is as easy as this:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex26a" id="pch3ex26" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="preba">
+         System.out.println("Failed to connect to " + phoneNumber);
+      </p>
+      
+      <p class="indent">Programmers will generate diagnostic messages in this fashion whether or not you override
+         <code class="calibre12">toString</code>, but the messages won’t be useful unless you do. The benefits of providing a good
+         <code class="calibre12">toString</code> method extend beyond instances of the class to objects containing references to these
+         instances, especially collections. Which would you rather see when printing a map,
+         <code class="calibre12">{Jenny=PhoneNumber@163b91}</code> or <code class="calibre12">{Jenny=707-867-5309}</code>?
+      </p>
+      
+      <p class="indent"><strong class="calibre11">When practical, the</strong> <code class="calibre12"><strong class="calibre11">toString</strong></code> <strong class="calibre11">method should return</strong> <em class="calibre9"><strong class="calibre11">all</strong></em> <strong class="calibre11">of the interesting information contained in the object</strong>, as shown in the phone number example. It is impractical if the object is large or
+         if it contains state that is not conducive to string representation. Under these circumstances,
+         <code class="calibre12">toString</code> should return a summary such as <code class="calibre12">Manhattan residential phone directory (1487536 listings)</code> or <code class="calibre12">Thread[main,5,main]</code>. Ideally, the string should be self-explanatory. (The <code class="calibre12">Thread</code> example flunks this test.) A particularly annoying penalty for failing to <span epub:type="pagebreak" id="page_56"></span>include all of an object’s interesting information in its string representation is
+         test failure reports that look like this:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex27a" id="pch3ex27" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="preb">
+         Assertion failure: expected {abc, 123}, but was {abc, 123}.
+      </p>
+      
+      <p class="indent">One important decision you’ll have to make when implementing a <code class="calibre12">toString</code> method is whether to specify the format of the return value in the documentation.
+         It is recommended that you do this for <em class="calibre9">value classes</em>, such as phone number or matrix. The advantage of specifying the format is that it
+         serves as a standard, unambiguous, human-readable representation of the object. This
+         representation can be used for input and output and in persistent human-readable data
+         objects, such as CSV files. If you specify the format, it’s usually a good idea to
+         provide a matching static factory or constructor so programmers can easily translate
+         back and forth between the object and its string representation. This approach is
+         taken by many value classes in the Java platform libraries, including <code class="calibre12">BigInteger</code>, <code class="calibre12">BigDecimal</code>, and most of the boxed primitive classes.
+      </p>
+      
+      <p class="indent">The disadvantage of specifying the format of the <code class="calibre12">toString</code> return value is that once you’ve specified it, you’re stuck with it for life, assuming
+         your class is widely used. Programmers will write code to parse the representation,
+         to generate it, and to embed it into persistent data. If you change the representation
+         in a future release, you’ll break their code and data, and they will yowl. By choosing
+         not to specify a format, you preserve the flexibility to add information or improve
+         the format in a subsequent release.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Whether or not you decide to specify the format, you should clearly document your
+            intentions.</strong> If you specify the format, you should do so precisely. For example, here’s a <code class="calibre12">toString</code> method to go with the <code class="calibre12">PhoneNumber</code> class in <a href="ch3.xhtml#lev11" class="calibre8">Item 11</a>:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex28a" id="pch3ex28" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">/**<br class="calibre7"/>
+          * Returns the string representation of this phone number.<br class="calibre7"/>
+          * The string consists of twelve characters whose format is<br class="calibre7"/>
+          * "XXX-YYY-ZZZZ", where XXX is the area code, YYY is the<br class="calibre7"/>
+          * prefix, and ZZZZ is the line number. Each of the capital<br class="calibre7"/>
+          * letters represents a single decimal digit.<br class="calibre7"/>
+          *<br class="calibre7"/>
+          * If any of the three parts of this phone number is too small<br class="calibre7"/>
+          * to fill up its field, the field is padded with leading zeros.<br class="calibre7"/>
+          * For example, if the value of the line number is 123, the last<br class="calibre7"/>
+          * four characters of the string representation will be "0123".<br class="calibre7"/>
+          */<br class="calibre7"/>
+         @Override public String toString() {<br class="calibre7"/>
+             return String.format("%03d-%03d-%04d",<br class="calibre7"/>
+                     areaCode, prefix, lineNum);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_57"></span>If you decide not to specify a format, the documentation comment should read something
+         like this:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex29a" id="pch3ex29" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">/**<br class="calibre7"/>
+          * Returns a brief description of this potion. The exact details<br class="calibre7"/>
+          * of the representation are unspecified and subject to change,<br class="calibre7"/>
+          * but the following may be regarded as typical:<br class="calibre7"/>
+          *<br class="calibre7"/>
+          * "[Potion #9: type=love, smell=turpentine, look=india ink]"<br class="calibre7"/>
+          */<br class="calibre7"/>
+         @Override public String toString() { ... }
+      </p>
+      
+      <p class="noindent">After reading this comment, programmers who produce code or persistent data that depends
+         on the details of the format will have no one but themselves to blame when the format
+         is changed.
+      </p>
+      
+      <p class="indent">Whether or not you specify the format, <strong class="calibre11">provide programmatic access to the information contained in the value returned by</strong> <code class="calibre12"><strong class="calibre11">toString</strong></code><strong class="calibre11">.</strong> For example, the <code class="calibre12">PhoneNumber</code> class should contain accessors for the area code, prefix, and line number. If you
+         fail to do this, you <em class="calibre9">force</em> programmers who need this information to parse the string. Besides reducing performance
+         and making unnecessary work for programmers, this process is error-prone and results
+         in fragile systems that break if you change the format. By failing to provide accessors,
+         you turn the string format into a de facto API, even if you’ve specified that it’s
+         subject to change.
+      </p>
+      
+      <p class="indent">It makes no sense to write a <code class="calibre12">toString</code> method in a static utility class (<a href="ch2.xhtml#lev4" class="calibre8">Item 4</a>). Nor should you write a <code class="calibre12">toString</code> method in most enum types (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>) because Java provides a perfectly good one for you. You should, however, write a
+         <code class="calibre12">toString</code> method in any abstract class whose subclasses share a common string representation.
+         For example, the <code class="calibre12">toString</code> methods on most collection implementations are inherited from the abstract collection
+         classes.
+      </p>
+      
+      <p class="indent">Google’s open source AutoValue facility, discussed in <a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>, will generate a <code class="calibre12">toString</code> method for you, as will most IDEs. These methods are great for telling you the contents
+         of each field but aren’t specialized to the <em class="calibre9">meaning</em> of the class. So, for example, it would be inappropriate to use an automatically
+         generated <code class="calibre12">toString</code> method for our <code class="calibre12">PhoneNumber</code> class (as phone numbers have a standard string representation), but it would be perfectly
+         acceptable for our <code class="calibre12">Potion</code> class. That said, an automatically generated <code class="calibre12">toString</code> method is far preferable to the one inherited from <code class="calibre12">Object</code>, which tells you <em class="calibre9">nothing</em> about an object’s value.
+      </p>
+      
+      <p class="indent">To recap, override <code class="calibre12">Object</code>’s <code class="calibre12">toString</code> implementation in every instantiable class you write, unless a superclass has already
+         done so. It makes classes much more pleasant to use and aids in debugging. The <code class="calibre12">toString</code> method should return a concise, useful description of the object, in an aesthetically
+         pleasing format.
+      </p>
+      
+      <h3 class="h2"><a id="lev13" class="calibre4"></a><span epub:type="pagebreak" id="page_58" class="calibre15"></span><strong class="calibre10">Item 13: Override</strong> <code class="calibre19"><strong class="calibre10">clone</strong></code> <strong class="calibre10">judiciously</strong></h3>
+      
+      <p class="noindent">The <code class="calibre12">Cloneable</code> interface was intended as a <em class="calibre9">mixin interface</em> (<a href="ch4.xhtml#lev20" class="calibre8">Item 20</a>) for classes to advertise that they permit cloning. Unfortunately, it fails to serve
+         this purpose. Its primary flaw is that it lacks a <code class="calibre12">clone</code> method, and <code class="calibre12">Object</code>’s <code class="calibre12">clone</code> method is protected. You cannot, without resorting to <em class="calibre9">reflection</em> (<a href="ch9.xhtml#lev65" class="calibre8">Item 65</a>), invoke <code class="calibre12">clone</code> on an object merely because it implements <code class="calibre12">Cloneable</code>. Even a reflective invocation may fail, because there is no guarantee that the object
+         has an accessible <code class="calibre12">clone</code> method. Despite this flaw and many others, the facility is in reasonably wide use,
+         so it pays to understand it. This item tells you how to implement a well-behaved <code class="calibre12">clone</code> method, discusses when it is appropriate to do so, and presents alternatives.
+      </p>
+      
+      <p class="indent">So what <em class="calibre9">does</em> <code class="calibre12">Cloneable</code> do, given that it contains no methods? It determines the behavior of <code class="calibre12">Object</code>’s protected <code class="calibre12">clone</code> implementation: if a class implements <code class="calibre12">Cloneable</code>, <code class="calibre12">Object</code>’s <code class="calibre12">clone</code> method returns a field-by-field copy of the object; otherwise it throws <code class="calibre12">CloneNotSupportedException</code>. This is a highly atypical use of interfaces and not one to be emulated. Normally,
+         implementing an interface says something about what a class can do for its clients.
+         In this case, it modifies the behavior of a protected method on a superclass.
+      </p>
+      
+      <p class="indent">Though the specification doesn’t say it, <strong class="calibre11">in practice, a class implementing</strong> <code class="calibre12"><strong class="calibre11">Cloneable</strong></code> <strong class="calibre11">is expected to provide a properly functioning public</strong> <code class="calibre12"><strong class="calibre11">clone</strong></code> <strong class="calibre11">method.</strong> In order to achieve this, the class and all of its superclasses must obey a complex,
+         unenforceable, thinly documented protocol. The resulting mechanism is fragile, dangerous,
+         and <em class="calibre9">extralinguistic</em>: it creates objects without calling a constructor.
+      </p>
+      
+      <p class="indent">The general contract for the <code class="calibre12">clone</code> method is weak. Here it is, copied from the <code class="calibre12">Object</code> specification :
+      </p>
+      
+      <p class="indenti">Creates and returns a copy of this object. The precise meaning of “copy” may depend
+         on the class of the object. The general intent is that, for any object <code class="calibre12">x</code>, the expression
+      </p>
+      
+      <p class="codepbi">x.clone() != x</p>
+      
+      <p class="indenti">will be <code class="calibre12">true</code>, and the expression
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex30a" id="pch3ex30" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="codep1">x.clone().getClass() == x.getClass()</p>
+      
+      <p class="indenti">will be <code class="calibre12">true</code>, but these are not absolute requirements. While it is typically the case that
+      </p>
+      
+      <p class="codep1">x.clone().equals(x)</p>
+      
+      <p class="indenti">will be <code class="calibre12">true</code>, this is not an absolute requirement.
+      </p>
+      
+      <p class="indenti"><span epub:type="pagebreak" id="page_59"></span>By convention, the object returned by this method should be obtained by calling <code class="calibre12">super.clone</code>. If a class and all of its superclasses (except <code class="calibre12">Object</code>) obey this convention, it will be the case that
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex31a" id="pch3ex31" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="codep2">x.clone().getClass() == x.getClass().</p>
+      
+      <p class="indenti">By convention, the returned object should be independent of the object being cloned.
+         To achieve this independence, it may be necessary to modify one or more fields of
+         the object returned by <code class="calibre12">super.clone</code> before returning it.
+      </p>
+      
+      <p class="indent">This mechanism is vaguely similar to constructor chaining, except that it isn’t enforced:
+         if a class’s <code class="calibre12">clone</code> method returns an instance that is <em class="calibre9">not</em> obtained by calling <code class="calibre12">super.clone</code> but by calling a constructor, the compiler won’t complain, but if a subclass of that
+         class calls <code class="calibre12">super.clone</code>, the resulting object will have the wrong class, preventing the subclass from <code class="calibre12">clone</code> method from working properly. If a class that overrides <code class="calibre12">clone</code> is final, this convention may be safely ignored, as there are no subclasses to worry
+         about. But if a final class has a <code class="calibre12">clone</code> method that does not invoke <code class="calibre12">super.clone</code>, there is no reason for the class to implement <code class="calibre12">Cloneable</code>, as it doesn’t rely on the behavior of <code class="calibre12">Object</code>’s clone implementation.
+      </p>
+      
+      <p class="indent">Suppose you want to implement <code class="calibre12">Cloneable</code> in a class whose superclass provides a well-behaved <code class="calibre12">clone</code> method. First call <code class="calibre12">super.clone</code>. The object you get back will be a fully functional replica of the original. Any
+         fields declared in your class will have values identical to those of the original.
+         If every field contains a primitive value or a reference to an immutable object, the
+         returned object may be exactly what you need, in which case no further processing
+         is necessary. This is the case, for example, for the <code class="calibre12">PhoneNumber</code> class in <a href="ch3.xhtml#lev11" class="calibre8">Item 11</a>, but note that <strong class="calibre11">immutable classes should never provide a</strong> <code class="calibre12"><strong class="calibre11">clone</strong></code> <strong class="calibre11">method</strong> because it would merely encourage wasteful copying. With that caveat, here’s how
+         a <code class="calibre12">clone</code> method for <code class="calibre12">PhoneNumber</code> would look:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex32a" id="pch3ex32" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Clone method for class with no references to mutable state</strong><br class="calibre7"/>
+         @Override public PhoneNumber clone() {<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 return (PhoneNumber) super.clone();<br class="calibre7"/>
+             } catch (CloneNotSupportedException e) {<br class="calibre7"/>
+                 throw new AssertionError();  // Can't happen<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">In order for this method to work, the class declaration for <code class="calibre12">PhoneNumber</code> would have to be modified to indicate that it implements <code class="calibre12">Cloneable</code>. Though <code class="calibre12">Object</code>’s <code class="calibre12">clone</code> method returns <code class="calibre12">Object</code>, this <code class="calibre12">clone</code> method returns <code class="calibre12">PhoneNumber</code>. It is legal <span epub:type="pagebreak" id="page_60"></span>and desirable to do this because Java supports <em class="calibre9">covariant return types</em>. In other words, an overriding method’s return type can be a subclass of the overridden
+         method’s return type. This eliminates the need for casting in the client. We must
+         cast the result of <code class="calibre12">super.clone</code> from <code class="calibre12">Object</code> to <code class="calibre12">PhoneNumber</code> before returning it, but the cast is guaranteed to succeed.
+      </p>
+      
+      <p class="indent">The call to <code class="calibre12">super.clone</code> is contained in a <code class="calibre12">try-catch</code> block. This is because <code class="calibre12">Object</code> declares its <code class="calibre12">clone</code> method to throw <code class="calibre12">CloneNotSupportedException</code>, which is a <em class="calibre9">checked exception</em>. Because <code class="calibre12">PhoneNumber</code> implements <code class="calibre12">Cloneable</code>, we know the call to <code class="calibre12">super.clone</code> will succeed. The need for this boilerplate indicates that <code class="calibre12">CloneNotSupportedException</code> should have been unchecked (<a href="ch10.xhtml#lev71" class="calibre8">Item 71</a>).
+      </p>
+      
+      <p class="indent">If an object contains fields that refer to mutable objects, the simple <code class="calibre12">clone</code> implementation shown earlier can be disastrous. For example, consider the <code class="calibre12">Stack</code> class in <a href="ch2.xhtml#lev7" class="calibre8">Item 7</a>:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex33a" id="pch3ex33" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Stack {<br class="calibre7"/>
+             private Object[] elements;<br class="calibre7"/>
+             private int size = 0;<br class="calibre7"/>
+             private static final int DEFAULT_INITIAL_CAPACITY = 16;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Stack() {<br class="calibre7"/>
+                 this.elements = new Object[DEFAULT_INITIAL_CAPACITY];<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public void push(Object e) {<br class="calibre7"/>
+                 ensureCapacity();<br class="calibre7"/>
+                 elements[size++] = e;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Object pop() {<br class="calibre7"/>
+                 if (size == 0)<br class="calibre7"/>
+                     throw new EmptyStackException();<br class="calibre7"/>
+                 Object result = elements[--size];<br class="calibre7"/>
+                 elements[size] = null; // Eliminate obsolete reference<br class="calibre7"/>
+                 return result;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Ensure space for at least one more element.<br class="calibre7"/>
+             private void ensureCapacity() {<br class="calibre7"/>
+                 if (elements.length == size)<br class="calibre7"/>
+                     elements = Arrays.copyOf(elements, 2 * size + 1);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Suppose you want to make this class cloneable. If the <code class="calibre12">clone</code> method merely returns <code class="calibre12">super.clone()</code>, the resulting <code class="calibre12">Stack</code> instance will have the correct value in <span epub:type="pagebreak" id="page_61"></span>its <code class="calibre12">size</code> field, but its <code class="calibre12">elements</code> field will refer to the same array as the original <code class="calibre12">Stack</code> instance. Modifying the original will destroy the invariants in the clone and vice
+         versa. You will quickly find that your program produces nonsensical results or throws
+         a <code class="calibre12">NullPointerException</code>.
+      </p>
+      
+      <p class="indent">This situation could never occur as a result of calling the sole constructor in the
+         <code class="calibre12">Stack</code> class. <strong class="calibre11">In effect, the</strong> <code class="calibre12"><strong class="calibre11">clone</strong></code> <strong class="calibre11">method functions as a constructor; you must ensure that it does no harm to the original
+            object and that it properly establishes invariants on the clone</strong>. In order for the <code class="calibre12">clone</code> method on <code class="calibre12">Stack</code> to work properly, it must copy the internals of the stack. The easiest way to do
+         this is to call <code class="calibre12">clone</code> recursively on the <code class="calibre12">elements</code> array:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex34a" id="pch3ex34" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Clone method for class with references to mutable state</strong><br class="calibre7"/>
+         @Override public Stack clone() {<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 Stack result = (Stack) super.clone();<br class="calibre7"/>
+                 result.elements = elements.clone();<br class="calibre7"/>
+                 return result;<br class="calibre7"/>
+             } catch (CloneNotSupportedException e) {<br class="calibre7"/>
+                 throw new AssertionError();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that we do not have to cast the result of <code class="calibre12">elements.clone</code> to <code class="calibre12">Object[]</code>. Calling <code class="calibre12">clone</code> on an array returns an array whose runtime and compile-time types are identical to
+         those of the array being cloned. This is the preferred idiom to duplicate an array.
+         In fact, arrays are the sole compelling use of the <code class="calibre12">clone</code> facility.
+      </p>
+      
+      <p class="indent">Note also that the earlier solution would not work if the <code class="calibre12">elements</code> field were final because <code class="calibre12">clone</code> would be prohibited from assigning a new value to the field. This is a fundamental
+         problem: like serialization, <strong class="calibre11">the</strong> <code class="calibre12"><strong class="calibre11">Cloneable</strong></code> <strong class="calibre11">architecture is incompatible with normal use of final fields referring to mutable
+            objects</strong>, except in cases where the mutable objects may be safely shared between an object
+         and its clone. In order to make a class cloneable, it may be necessary to remove <code class="calibre12">final</code> modifiers from some fields.
+      </p>
+      
+      <p class="indent">It is not always sufficient merely to call <code class="calibre12">clone</code> recursively. For example, suppose you are writing a <code class="calibre12">clone</code> method for a hash table whose internals consist of an array of buckets, each of which
+         references the first entry in a linked list of key-value pairs. For performance, the
+         class implements its own lightweight singly linked list instead of using <code class="calibre12">java.util.LinkedList</code> internally:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex35a" id="pch3ex35" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class HashTable implements Cloneable {<br class="calibre7"/>
+             private Entry[] buckets = ...;<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_62"></span>
+             private static class Entry {<br class="calibre7"/>
+                 final Object key;<br class="calibre7"/>
+                 Object value;<br class="calibre7"/>
+                 Entry  next;<br class="calibre7"/>
+         <br class="calibre7"/>
+                 Entry(Object key, Object value, Entry next) {<br class="calibre7"/>
+                     this.key   = key;<br class="calibre7"/>
+                     this.value = value;<br class="calibre7"/>
+                     this.next  = next;  <br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ... // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Suppose you merely clone the bucket array recursively, as we did for <code class="calibre12">Stack</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex36a" id="pch3ex36" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken clone method - results in shared mutable state!</strong><br class="calibre7"/>
+         @Override public HashTable clone() {<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 HashTable result = (HashTable) super.clone();<br class="calibre7"/>
+                 result.buckets = buckets.clone();<br class="calibre7"/>
+                 return result;<br class="calibre7"/>
+             } catch (CloneNotSupportedException e) {<br class="calibre7"/>
+                 throw new AssertionError();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Though the clone has its own bucket array, this array references the same linked lists
+         as the original, which can easily cause nondeterministic behavior in both the clone
+         and the original. To fix this problem, you’ll have to copy the linked list that comprises
+         each bucket. Here is one common approach:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex37a" id="pch3ex37" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Recursive clone method for class with complex mutable state</strong><br class="calibre7"/>
+         public class HashTable implements Cloneable {<br class="calibre7"/>
+             private Entry[] buckets = ...;<br class="calibre7"/>
+         <br class="calibre7"/>
+             private static class Entry {<br class="calibre7"/>
+                 final Object key;<br class="calibre7"/>
+                 Object value;<br class="calibre7"/>
+                 Entry  next;<br class="calibre7"/>
+         <br class="calibre7"/>
+                 Entry(Object key, Object value, Entry next) {<br class="calibre7"/>
+                     this.key   = key;<br class="calibre7"/>
+                     this.value = value;<br class="calibre7"/>
+                     this.next  = next;  <br class="calibre7"/>
+                 }<br class="calibre7"/>
+         <br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_63"></span><br class="calibre7"/>
+                 <strong class="calibre11">// Recursively copy the linked list headed by this Entry</strong><br class="calibre7"/>
+                 Entry deepCopy() {<br class="calibre7"/>
+                     return new Entry(key, value,<br class="calibre7"/>
+                         next == null ? null : next.deepCopy());<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public HashTable clone() {<br class="calibre7"/>
+                 try {<br class="calibre7"/>
+                     HashTable result = (HashTable) super.clone();<br class="calibre7"/>
+                     result.buckets = new Entry[buckets.length];<br class="calibre7"/>
+                     for (int i = 0; i &lt; buckets.length; i++)<br class="calibre7"/>
+                         if (buckets[i] != null)<br class="calibre7"/>
+                             result.buckets[i] = buckets[i].deepCopy();<br class="calibre7"/>
+                     return result;<br class="calibre7"/>
+                 } catch (CloneNotSupportedException e) {<br class="calibre7"/>
+                     throw new AssertionError();<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ... // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The private class <code class="calibre12">HashTable.Entry</code> has been augmented to support a “deep copy” method. The <code class="calibre12">clone</code> method on <code class="calibre12">HashTable</code> allocates a new <code class="calibre12">buckets</code> array of the proper size and iterates over the original <code class="calibre12">buckets</code> array, deep-copying each nonempty bucket. The <code class="calibre12">deepCopy</code> method on <code class="calibre12">Entry</code> invokes itself recursively to copy the entire linked list headed by the entry. While
+         this technique is cute and works fine if the buckets aren’t too long, it is not a
+         good way to clone a linked list because it consumes one stack frame for each element
+         in the list. If the list is long, this could easily cause a stack overflow. To prevent
+         this from happening, you can replace the recursion in <code class="calibre12">deepCopy</code> with iteration:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex38a" id="pch3ex38" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Iteratively copy the linked list headed by this Entry</strong><br class="calibre7"/>
+         Entry deepCopy() {<br class="calibre7"/>
+            Entry result = new Entry(key, value, next);<br class="calibre7"/>
+            for (Entry p = result; p.next != null; p = p.next)<br class="calibre7"/>
+               p.next = new Entry(p.next.key, p.next.value, p.next.next);<br class="calibre7"/>
+            return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">A final approach to cloning complex mutable objects is to call <code class="calibre12">super.clone</code>, set all of the fields in the resulting object to their initial state, and then call
+         higher-level methods to regenerate the state of the original object. In the case of
+         our <code class="calibre12">HashTable</code> example, the <code class="calibre12">buckets</code> field would be initialized to a new bucket array, and the <code class="calibre12">put(key, value)</code> method (not shown) would be invoked for each key-value <span epub:type="pagebreak" id="page_64"></span>mapping in the hash table being cloned. This approach typically yields a simple, reasonably
+         elegant <code class="calibre12">clone</code> method that does not run as quickly as one that directly manipulates the innards
+         of the clone. While this approach is clean, it is antithetical to the whole <code class="calibre12">Cloneable</code> architecture because it blindly overwrites the field-by-field object copy that forms
+         the basis of the architecture.
+      </p>
+      
+      <p class="indent">Like a constructor, a <code class="calibre12">clone</code> method must never invoke an overridable method on the clone under construction (<a href="ch4.xhtml#lev19" class="calibre8">Item 19</a>). If <code class="calibre12">clone</code> invokes a method that is overridden in a subclass, this method will execute before
+         the subclass has had a chance to fix its state in the clone, quite possibly leading
+         to corruption in the clone and the original. Therefore, the <code class="calibre12">put(key, value)</code> method discussed in the previous paragraph should be either final or private. (If
+         it is private, it is presumably the “helper method” for a nonfinal public method.)
+      </p>
+      
+      <p class="indent"><code class="calibre12">Object</code>’s <code class="calibre12">clone</code> method is declared to throw <code class="calibre12">CloneNotSupportedException</code>, but overriding methods need not. <strong class="calibre11">Public</strong> <code class="calibre12"><strong class="calibre11">clone</strong></code> <strong class="calibre11">methods should omit the</strong> <code class="calibre12"><strong class="calibre11">throws</strong></code> <strong class="calibre11">clause</strong>, as methods that don’t throw checked exceptions are easier to use (<a href="ch10.xhtml#lev71" class="calibre8">Item 71</a>).
+      </p>
+      
+      <p class="indent">You have two choices when designing a class for inheritance (<a href="ch4.xhtml#lev19" class="calibre8">Item 19</a>), but whichever one you choose, the class should <em class="calibre9">not</em> implement <code class="calibre12">Cloneable</code>. You may choose to mimic the behavior of <code class="calibre12">Object</code> by implementing a properly functioning protected <code class="calibre12">clone</code> method that is declared to throw <code class="calibre12">CloneNotSupportedException</code>. This gives subclasses the freedom to implement <code class="calibre12">Cloneable</code> or not, just as if they extended <code class="calibre12">Object</code> directly. Alternatively, you may choose <em class="calibre9">not</em> to implement a working <code class="calibre12">clone</code> method, and to prevent subclasses from implementing one, by providing the following
+         degenerate <code class="calibre12">clone</code> implementation:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex39a" id="pch3ex39" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// clone method for extendable class not supporting Cloneable</strong><br class="calibre7"/>
+         @Override<br class="calibre7"/>
+         protected final Object clone() throws CloneNotSupportedException {<br class="calibre7"/>
+             throw new CloneNotSupportedException();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">There is one more detail that bears noting. If you write a thread-safe class that
+         implements <code class="calibre12">Cloneable</code>, remember that its <code class="calibre12">clone</code> method must be properly synchronized, just like any other method (<a href="ch11.xhtml#lev78" class="calibre8">Item 78</a>). <code class="calibre12">Object</code>’s <code class="calibre12">clone</code> method is not synchronized, so even if its implementation is otherwise satisfactory,
+         you may have to write a synchronized <code class="calibre12">clone</code> method that returns <code class="calibre12">super.clone()</code>.
+      </p>
+      
+      <p class="indent">To recap, all classes that implement <code class="calibre12">Cloneable</code> should override <code class="calibre12">clone</code> with a public method whose return type is the class itself. This method should first
+         call <code class="calibre12">super.clone</code>, then fix any fields that need fixing. Typically, this means copying any mutable
+         objects that comprise the internal “deep structure” of the object and replacing the
+         clone’s references to these objects with references to their copies. <span epub:type="pagebreak" id="page_65"></span>While these internal copies can usually be made by calling <code class="calibre12">clone</code> recursively, this is not always the best approach. If the class contains only primitive
+         fields or references to immutable objects, then it is likely the case that no fields
+         need to be fixed. There are exceptions to this rule. For example, a field representing
+         a serial number or other unique ID will need to be fixed even if it is primitive or
+         immutable.
+      </p>
+      
+      <p class="indent">Is all this complexity really necessary? Rarely. If you extend a class that already
+         implements <code class="calibre12">Cloneable</code>, you have little choice but to implement a well-behaved <code class="calibre12">clone</code> method. Otherwise, you are usually better off providing an alternative means of object
+         copying. <strong class="calibre11">A better approach to object copying is to provide a</strong> <em class="calibre9"><strong class="calibre11">copy constructor</strong></em> or <em class="calibre9"><strong class="calibre11">copy factory</strong></em><strong class="calibre11">.</strong> A copy constructor is simply a constructor that takes a single argument whose type
+         is the class containing the constructor, for example,
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex40a" id="pch3ex40" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Copy constructor</strong><br class="calibre7"/>
+         public Yum(Yum yum) { ... };
+      </p>
+      
+      <p class="noindent">A copy factory is the static factory (<a href="ch2.xhtml#lev1" class="calibre8">Item 1</a>) analogue of a copy constructor:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex41a" id="pch3ex41" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Copy factory</strong><br class="calibre7"/>
+         public static Yum newInstance(Yum yum) { ... };
+      </p>
+      
+      <p class="indent">The copy constructor approach and its static factory variant have many advantages
+         over <code class="calibre12">Cloneable</code>/<code class="calibre12">clone</code>: they don’t rely on a risk-prone extralinguistic object creation mechanism; they
+         don’t demand unenforceable adherence to thinly documented conventions; they don’t
+         conflict with the proper use of final fields; they don’t throw unnecessary checked
+         exceptions; and they don’t require casts.
+      </p>
+      
+      <p class="indent">Furthermore, a copy constructor or factory can take an argument whose type is an interface
+         implemented by the class. For example, by convention all general-purpose collection
+         implementations provide a constructor whose argument is of type <code class="calibre12">Collection</code> or <code class="calibre12">Map</code>. Interface-based copy constructors and factories, more properly known as <em class="calibre9">conversion constructors</em> and <em class="calibre9">conversion factories</em>, allow the client to choose the implementation type of the copy rather than forcing
+         the client to accept the implementation type of the original. For example, suppose
+         you have a <code class="calibre12">HashSet</code>, <code class="calibre12">s</code>, and you want to copy it as a <code class="calibre12">TreeSet</code>. The <code class="calibre12">clone</code> method can’t offer this functionality, but it’s easy with a conversion constructor:
+         <code class="calibre12">new TreeSet&lt;&gt;(s)</code>.
+      </p>
+      
+      <p class="indent">Given all the problems associated with <code class="calibre12">Cloneable</code>, new interfaces should not extend it, and new extendable classes should not implement
+         it. While it’s less harmful for final classes to implement <code class="calibre12">Cloneable</code>, this should be viewed as a performance optimization, reserved for the rare cases
+         where it is justified (<a href="ch9.xhtml#lev67" class="calibre8">Item 67</a>). As a rule, copy functionality is best provided by constructors or factories. A
+         notable exception to this rule is arrays, which are best copied with the clone method.
+      </p>
+      
+      <h3 class="h2"><a id="lev14" class="calibre4"></a><span epub:type="pagebreak" id="page_66" class="calibre15"></span><strong class="calibre10">Item 14: Consider implementing</strong> <code class="calibre19"><strong class="calibre10">Comparable</strong></code></h3>
+      
+      <p class="noindent">Unlike the other methods discussed in this chapter, the <code class="calibre12">compareTo</code> method is not declared in <code class="calibre12">Object</code>. Rather, it is the sole method in the <code class="calibre12">Comparable</code> interface. It is similar in character to <code class="calibre12">Object</code>’s <code class="calibre12">equals</code> method, except that it permits order comparisons in addition to simple equality comparisons,
+         and it is generic. By implementing <code class="calibre12">Comparable</code>, a class indicates that its instances have a <em class="calibre9">natural ordering.</em> Sorting an array of objects that implement <code class="calibre12">Comparable</code> is as simple as this:
+      </p>
+      
+      <p class="codep1">Arrays.sort(a);</p>
+      
+      <p class="indent">It is similarly easy to search, compute extreme values, and maintain automatically
+         sorted collections of <code class="calibre12">Comparable</code> objects. For example, the following program, which relies on the fact that <code class="calibre12">String</code> implements <code class="calibre12">Comparable</code>, prints an alphabetized list of its command-line arguments with duplicates eliminated:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex42a" id="pch3ex42" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class WordList {<br class="calibre7"/>
+             public static void main(String[] args) {<br class="calibre7"/>
+                 Set&lt;String&gt; s = new TreeSet&lt;&gt;();<br class="calibre7"/>
+                 Collections.addAll(s, args);<br class="calibre7"/>
+                 System.out.println(s);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">By implementing <code class="calibre12">Comparable</code>, you allow your class to interoperate with all of the many generic algorithms and
+         collection implementations that depend on this interface. You gain a tremendous amount
+         of power for a small amount of effort. Virtually all of the value classes in the Java
+         platform libraries, as well as all enum types (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>), implement <code class="calibre12">Comparable</code>. If you are writing a value class with an obvious natural ordering, such as alphabetical
+         order, numerical order, or chronological order, you should implement the <code class="calibre12">Comparable</code> interface:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex43a" id="pch3ex43" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public interface Comparable&lt;T&gt; {<br class="calibre7"/>
+             int compareTo(T t);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindentb">The general contract of the <code class="calibre12">compareTo</code> method is similar to that of <code class="calibre12">equals</code>:
+      </p>
+      
+      <p class="indenti">Compares this object with the specified object for order. Returns a negative integer,
+         zero, or a positive integer as this object is less than, equal to, or greater than
+         the specified object. Throws <code class="calibre12">ClassCastException</code> if the specified object’s type prevents it from being compared to this object.
+      </p>
+      
+      <p class="indenti"><span epub:type="pagebreak" id="page_67"></span>In the following description, the notation <code class="calibre12">sgn</code>(<em class="calibre9">expression</em>) designates the mathematical <em class="calibre9">signum</em> function, which is defined to return <code class="calibre12">-</code>1, 0, or 1, according to whether the value of <em class="calibre9">expression</em> is negative, zero, or positive.
+      </p>
+      
+      <p class="bull1i">• The implementor must ensure that <code class="calibre12">sgn(x.compareTo(y)) == -sgn(y. compareTo(x))</code> for all <code class="calibre12">x</code> and <code class="calibre12">y</code>. (This implies that <code class="calibre12">x.compareTo(y)</code> must throw an exception if and only if <code class="calibre12">y.compareTo(x)</code> throws an exception.)
+      </p>
+      
+      <p class="bull1i">• The implementor must also ensure that the relation is transitive: <code class="calibre12">(x. compareTo(y) &gt; 0 &amp;&amp; y.compareTo(z) &gt; 0)</code> implies <code class="calibre12">x.compareTo(z) &gt; 0</code>.
+      </p>
+      
+      <p class="bull1i">• Finally, the implementor must ensure that <code class="calibre12">x.compareTo(y) == 0</code> implies that <code class="calibre12">sgn(x.compareTo(z)) == sgn(y.compareTo(z))</code>, for all <code class="calibre12">z</code>.
+      </p>
+      
+      <p class="bull1i">• It is strongly recommended, but not required, that <code class="calibre12">(x.compareTo(y) == 0) == (x.equals(y))</code>. Generally speaking, any class that implements the <code class="calibre12">Comparable</code> interface and violates this condition should clearly indicate this fact. The recommended
+         language is “Note: This class has a natural ordering that is inconsistent with <code class="calibre12">equals</code>.”
+      </p>
+      
+      <p class="indent">Don’t be put off by the mathematical nature of this contract. Like the <code class="calibre12">equals</code> contract (<a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>), this contract isn’t as complicated as it looks. Unlike the <code class="calibre12">equals</code> method, which imposes a global equivalence relation on all objects, <code class="calibre12">compareTo</code> doesn’t have to work across objects of different types: when confronted with objects
+         of different types, <code class="calibre12">compareTo</code> is permitted to throw <code class="calibre12">ClassCastException</code>. Usually, that is exactly what it does. The contract does <em class="calibre9">permit</em> intertype comparisons, which are typically defined in an interface implemented by
+         the objects being compared.
+      </p>
+      
+      <p class="indent">Just as a class that violates the <code class="calibre12">hashCode</code> contract can break other classes that depend on hashing, a class that violates the
+         <code class="calibre12">compareTo</code> contract can break other classes that depend on comparison. Classes that depend on
+         comparison include the sorted collections <code class="calibre12">TreeSet</code> and <code class="calibre12">TreeMap</code> and the utility classes <code class="calibre12">Collections</code> and <code class="calibre12">Arrays</code>, which contain searching and sorting algorithms.
+      </p>
+      
+      <p class="indent">Let’s go over the provisions of the <code class="calibre12">compareTo</code> contract. The first provision says that if you reverse the direction of a comparison
+         between two object references, the expected thing happens: if the first object is
+         less than the second, then the second must be greater than the first; if the first
+         object is equal to the second, then the second must be equal to the first; and if
+         the first object is greater than the second, then the second must be less than the
+         first. The second provision says that if one object is greater than a second and the
+         second is greater than a third, then the first must be greater than the third. The
+         final provision says that all objects that compare as equal must yield the same results
+         when compared to any other object.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_68"></span>One consequence of these three provisions is that the equality test imposed by a <code class="calibre12">compareTo</code> method must obey the same restrictions imposed by the <code class="calibre12">equals</code> con-tract: reflexivity, symmetry, and transitivity. Therefore, the same caveat applies:
+         there is no way to extend an instantiable class with a new value component while preserving
+         the <code class="calibre12">compareTo</code> contract, unless you are willing to forgo the benefits of object-oriented abstraction
+         (<a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>). The same workaround applies, too. If you want to add a value component to a class
+         that implements <code class="calibre12">Comparable</code>, don’t extend it; write an unrelated class containing an instance of the first class.
+         Then provide a “view” method that returns the contained instance. This frees you to
+         implement whatever <code class="calibre12">compareTo</code> method you like on the containing class, while allowing its client to view an instance
+         of the containing class as an instance of the contained class when needed.
+      </p>
+      
+      <p class="indent">The final paragraph of the <code class="calibre12">compareTo</code> contract, which is a strong suggestion rather than a true requirement, simply states
+         that the equality test imposed by the <code class="calibre12">compareTo</code> method should generally return the same results as the <code class="calibre12">equals</code> method. If this provision is obeyed, the ordering imposed by the <code class="calibre12">compareTo</code> method is said to be <em class="calibre9">consistent with</em> <code class="calibre12"><em class="calibre9">equals</em></code>. If it’s violated, the ordering is said to be <em class="calibre9">inconsistent with</em> <code class="calibre12"><em class="calibre9">equals</em></code>. A class whose <code class="calibre12">compareTo</code> method imposes an order that is inconsistent with <code class="calibre12">equals</code> will still work, but sorted collections containing elements of the class may not
+         obey the general contract of the appropriate collection interfaces (<code class="calibre12">Collection</code>, <code class="calibre12">Set</code>, or <code class="calibre12">Map</code>). This is because the general contracts for these interfaces are defined in terms
+         of the <code class="calibre12">equals</code> method, but sorted collections use the equality test imposed by <code class="calibre12">compareTo</code> in place of <code class="calibre12">equals</code>. It is not a catastrophe if this happens, but it’s something to be aware of.
+      </p>
+      
+      <p class="indent">For example, consider the <code class="calibre12">BigDecimal</code> class, whose <code class="calibre12">compareTo</code> method is inconsistent with <code class="calibre12">equals</code>. If you create an empty <code class="calibre12">HashSet</code> instance and then add <code class="calibre12">new BigDecimal("1.0")</code> and <code class="calibre12">new BigDecimal("1.00")</code>, the set will contain two elements because the two <code class="calibre12">BigDecimal</code> instances added to the set are unequal when compared using the <code class="calibre12">equals</code> method. If, however, you perform the same procedure using a <code class="calibre12">TreeSet</code> instead of a <code class="calibre12">HashSet</code>, the set will contain only one element because the two <code class="calibre12">BigDecimal</code> instances are equal when compared using the <code class="calibre12">compareTo</code> method. (See the <code class="calibre12">BigDecimal</code> documentation for details.)
+      </p>
+      
+      <p class="indent">Writing a <code class="calibre12">compareTo</code> method is similar to writing an <code class="calibre12">equals</code> method, but there are a few key differences. Because the <code class="calibre12">Comparable</code> interface is parameterized, the <code class="calibre12">compareTo</code> method is statically typed, so you don’t need to type check or cast its argument.
+         If the argument is of the wrong type, the invocation won’t even compile. If the argument
+         is <code class="calibre12">null</code>, the invocation should throw a <code class="calibre12">NullPointer-Exception</code>, and it will, as soon as the method attempts to access its members.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_69"></span>In a <code class="calibre12">compareTo</code> method, fields are compared for order rather than equality. To compare object reference
+         fields, invoke the <code class="calibre12">compareTo</code> method recursively. If a field does not implement <code class="calibre12">Comparable</code> or you need a nonstandard ordering, use a <code class="calibre12">Comparator</code> instead. You can write your own comparator or use an existing one, as in this <code class="calibre12">compareTo</code> method for <code class="calibre12">CaseInsensitiveString</code> in <a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex44a" id="pch3ex44" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Single-field Comparable with object reference field</strong><br class="calibre7"/>
+         public final class CaseInsensitiveString<br class="calibre7"/>
+                 implements Comparable&lt;CaseInsensitiveString&gt; {<br class="calibre7"/>
+             public int compareTo(CaseInsensitiveString cis) {<br class="calibre7"/>
+                 return String.CASE_INSENSITIVE_ORDER.compare(s, cis.s);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             ... // Remainder omitted<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that <code class="calibre12">CaseInsensitiveString</code> implements <code class="calibre12">Comparable&lt;CaseInsensitiveString&gt;</code>. This means that a <code class="calibre12">CaseInsensitiveString</code> reference can be compared only to another <code class="calibre12">CaseInsensitiveString</code> reference. This is the normal pattern to follow when declaring a class to implement
+         <code class="calibre12">Comparable</code>.
+      </p>
+      
+      <p class="indent">Prior editions of this book recommended that <code class="calibre12">compareTo</code> methods compare integral primitive fields using the relational operators <code class="calibre12">&lt;</code> and <code class="calibre12">&gt;</code>, and floating point primitive fields using the static methods <code class="calibre12">Double.compare</code> and <code class="calibre12">Float.compare</code>. In Java 7, static <code class="calibre12">compare</code> methods were added to all of Java’s boxed primitive classes. <strong class="calibre11">Use of the relational operators</strong> <code class="calibre12"><strong class="calibre11">&lt;</strong></code> <strong class="calibre11">and</strong> <code class="calibre12"><strong class="calibre11">&gt;</strong></code> <strong class="calibre11">in</strong> <code class="calibre12"><strong class="calibre11">compareTo</strong></code> <strong class="calibre11">methods is verbose and error-prone and no longer recommended.</strong></p>
+      
+      <p class="indent">If a class has multiple significant fields, the order in which you compare them is
+         critical. Start with the most significant field and work your way down. If a comparison
+         results in anything other than zero (which represents equality), you’re done; just
+         return the result. If the most significant field is equal, compare the next-most-significant
+         field, and so on, until you find an unequal field or compare the least significant
+         field. Here is a <code class="calibre12">compareTo</code> method for the <code class="calibre12">PhoneNumber</code> class in <a href="ch3.xhtml#lev11" class="calibre8">Item 11</a> demonstrating this technique:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex45a" id="pch3ex45" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Multiple-field Comparable with primitive fields</strong><br class="calibre7"/>
+         public int compareTo(PhoneNumber pn) {<br class="calibre7"/>
+             int result = Short.compare(areaCode, pn.areaCode);<br class="calibre7"/>
+             if (result == 0)  {<br class="calibre7"/>
+                 result = Short.compare(prefix, pn.prefix);<br class="calibre7"/>
+                 if (result == 0)<br class="calibre7"/>
+                     result = Short.compare(lineNum, pn.lineNum);<br class="calibre7"/>
+             }<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_70"></span>In Java 8, the <code class="calibre12">Comparator</code> interface was outfitted with a set of <em class="calibre9">comparator construction methods</em>, which enable fluent construction of comparators. These comparators can then be used
+         to implement a <code class="calibre12">compareTo</code> method, as required by the <code class="calibre12">Comparable</code> interface. Many programmers prefer the conciseness of this approach, though it does
+         come at a modest performance cost: sorting arrays of <code class="calibre12">PhoneNumber</code> instances is about 10% slower on my machine. When using this approach, consider using
+         Java’s <em class="calibre9">static import</em> facility so you can refer to static comparator construction methods by their simple
+         names for clarity and brevity. Here’s how the <code class="calibre12">compareTo</code> method for <code class="calibre12">PhoneNumber</code> looks using this approach:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex46a" id="pch3ex46" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Comparable with comparator construction methods</strong><br class="calibre7"/>
+         private static final Comparator&lt;PhoneNumber&gt; COMPARATOR =<br class="calibre7"/>
+                 comparingInt((PhoneNumber pn) -&gt; pn.areaCode)<br class="calibre7"/>
+                   .thenComparingInt(pn -&gt; pn.prefix)<br class="calibre7"/>
+                   .thenComparingInt(pn -&gt; pn.lineNum);<br class="calibre7"/>
+         <br class="calibre7"/>
+         public int compareTo(PhoneNumber pn) {<br class="calibre7"/>
+             return COMPARATOR.compare(this, pn);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This implementation builds a comparator at class initialization time, using two comparator
+         construction methods. The first is <code class="calibre12">comparingInt</code>. It is a static method that takes a <em class="calibre9">key extractor function</em> that maps an object reference to a key of type <code class="calibre12">int</code> and returns a comparator that orders instances according to that key. In the previous
+         example, <code class="calibre12">comparingInt</code> takes a <em class="calibre9">lambda</em> () that extracts the area code from a <code class="calibre12">PhoneNumber</code> and returns a <code class="calibre12">Comparator&lt;PhoneNumber&gt;</code> that orders phone numbers according to their area codes. Note that the lambda explicitly
+         specifies the type of its input parameter (<code class="calibre12">PhoneNumber pn</code>). It turns out that in this situation, Java’s type inference isn’t powerful enough
+         to figure the type out for itself, so we’re forced to help it in order to make the
+         program compile.
+      </p>
+      
+      <p class="indent">If two phone numbers have the same area code, we need to further refine the comparison,
+         and that’s exactly what the second comparator construction method, <code class="calibre12">thenComparingInt</code>, does. It is an instance method on <code class="calibre12">Comparator</code> that takes an <code class="calibre12">int</code> key extractor function, and returns a comparator that first applies the original
+         comparator and then uses the extracted key to break ties. You can stack up as many
+         calls to <code class="calibre12">thenComparingInt</code> as you like, resulting in a <em class="calibre9">lexicographic ordering</em>. In the example above, we stack up two calls to <code class="calibre12">thenComparingInt</code>, resulting in an ordering whose secondary key is the prefix and whose tertiary key
+         is the line number. Note that we did <em class="calibre9">not</em> have to specify the parameter type of the key extractor function passed to either
+         of the calls to <code class="calibre12">thenComparingInt</code>: Java’s type inference was smart enough to figure this one out for itself.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_71"></span>The <code class="calibre12">Comparator</code> class has a full complement of construction methods. There are analogues to <code class="calibre12">comparingInt</code> and <code class="calibre12">thenComparingInt</code> for the primitive types <code class="calibre12">long</code> and <code class="calibre12">double</code>. The <code class="calibre12">int</code> versions can also be used for narrower integral types, such as <code class="calibre12">short</code>, as in our <code class="calibre12">PhoneNumber</code> example. The <code class="calibre12">double</code> versions can also be used for <code class="calibre12">float</code>. This provides coverage of all of Java’s numerical primitive types.
+      </p>
+      
+      <p class="indent">There are also comparator construction methods for object reference types. The static
+         method, named <code class="calibre12">comparing</code>, has two overloadings. One takes a key extractor and uses the keys’ natural order.
+         The second takes both a key extractor and a comparator to be used on the extracted
+         keys. There are three overloadings of the instance method, which is named <code class="calibre12">thenComparing</code>. One overloading takes only a comparator and uses it to provide a secondary order.
+         A second overloading takes only a key extractor and uses the key’s natural order as
+         a secondary order. The final overloading takes both a key extractor and a comparator
+         to be used on the extracted keys.
+      </p>
+      
+      <p class="indent">Occasionally you may see <code class="calibre12">compareTo</code> or <code class="calibre12">compare</code> methods that rely on the fact that the difference between two values is negative
+         if the first value is less than the second, zero if the two values are equal, and
+         positive if the first value is greater. Here is an example:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex47a" id="pch3ex47" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// BROKEN difference-based comparator - violates transitivity!</strong><br class="calibre7"/>
+         static Comparator&lt;Object&gt; hashCodeOrder = new Comparator&lt;&gt;() {<br class="calibre7"/>
+             public int compare(Object o1, Object o2) {<br class="calibre7"/>
+                 return o1.hashCode() - o2.hashCode();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         };
+      </p>
+      
+      <p class="noindent">Do not use this technique. It is fraught with danger from integer overflow and IEEE
+         754 floating point arithmetic artifacts [<a href="ref.xhtml#rJLS" class="calibre8">JLS 15.20.1, 15.21.1</a>]. Furthermore, the resulting methods are unlikely to be significantly faster than
+         those written using the techniques described in this item. Use either a static <code class="calibre12">compare</code> method:
+      </p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex48a" id="pch3ex48" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Comparator based on static compare method</strong><br class="calibre7"/>
+         static Comparator&lt;Object&gt; hashCodeOrder = new Comparator&lt;&gt;() {<br class="calibre7"/>
+             public int compare(Object o1, Object o2) {<br class="calibre7"/>
+                 return Integer.compare(o1.hashCode(), o2.hashCode());<br class="calibre7"/>
+             }<br class="calibre7"/>
+         };
+      </p>
+      
+      <p class="noindent">or a comparator construction method:</p>
+      
+      <p class="codelink"><a href="ch3_images.xhtml#pch3ex49a" id="pch3ex49" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Comparator based on Comparator construction method</strong><br class="calibre7"/>
+         static Comparator&lt;Object&gt; hashCodeOrder =<br class="calibre7"/>
+                 Comparator.comparingInt(o -&gt; o.hashCode());
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_72"></span>In summary, whenever you implement a value class that has a sensible ordering, you
+         should have the class implement the <code class="calibre12">Comparable</code> interface so that its instances can be easily sorted, searched, and used in comparison-based
+         collections. When comparing field values in the implementations of the <code class="calibre12">compareTo</code> methods, avoid the use of the <code class="calibre12">&lt;</code> and <code class="calibre12">&gt;</code> operators. Instead, use the static <code class="calibre12">compare</code> methods in the boxed primitive classes or the comparator construction methods in
+         the <code class="calibre12">Comparator</code> interface.
+      </p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="ch2.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch4.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

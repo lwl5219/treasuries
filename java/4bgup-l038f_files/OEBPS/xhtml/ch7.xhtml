@@ -1,0 +1,2057 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 7 Lambdas and Streams</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="ch6.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch8.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch7"><span epub:type="pagebreak" id="page_193" class="calibre15"></span>Chapter 7. Lambdas and Streams
+      </h2>
+      
+      <p class="noindent">In Java 8, functional interfaces, lambdas, and method references were added to make
+         it easier to create function objects. The streams API was added in tandem with these
+         language changes to provide library support for processing sequences of data elements.
+         In this chapter, we discuss how to make best use of these facilities.
+      </p>
+      
+      <h3 class="h2"><a id="lev42" class="calibre4"></a><strong class="calibre10">Item 42: Prefer lambdas to anonymous classes</strong></h3>
+      
+      <p class="noindent">Historically, interfaces (or, rarely, abstract classes) with a single abstract method
+         were used as <em class="calibre9">function types</em>. Their instances, known as <em class="calibre9">function objects</em>, represent functions or actions. Since JDK 1.1 was released in 1997, the primary
+         means of creating a function object was the <em class="calibre9">anonymous class</em> (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>). Here’s a code snippet to sort a list of strings in order of length, using an anonymous
+         class to create the sort’s comparison function (which imposes the sort order):
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex1a" id="pch7ex1" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Anonymous class instance as a function object - obsolete!</strong><br class="calibre7"/>
+         Collections.sort(words, new Comparator&lt;String&gt;() {<br class="calibre7"/>
+             public int compare(String s1, String s2) {<br class="calibre7"/>
+                 return Integer.compare(s1.length(), s2.length());<br class="calibre7"/>
+             }<br class="calibre7"/>
+         });
+      </p>
+      
+      <p class="indent">Anonymous classes were adequate for the classic objected-oriented design patterns
+         requiring function objects, notably the <em class="calibre9">Strategy</em> pattern [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>]. The <code class="calibre12">Comparator</code> interface represents an <em class="calibre9">abstract strategy</em> for sorting; the anonymous class above is a <em class="calibre9">concrete strategy</em> for sorting strings. The verbosity of anonymous classes, however, made functional
+         programming in Java an unappealing prospect.
+      </p>
+      
+      <p class="indent">In Java 8, the language formalized the notion that interfaces with a single abstract
+         method are special and deserve special treatment. These interfaces are now known as
+         <em class="calibre9">functional interfaces</em>, and the language allows you to create instances of these interfaces using <em class="calibre9">lambda expressions</em>, or <em class="calibre9">lambdas</em> for short. <span epub:type="pagebreak" id="page_194"></span>Lambdas are similar in function to anonymous classes, but far more concise. Here’s
+         how the code snippet above looks with the anonymous class replaced by a lambda. The
+         boilerplate is gone, and the behavior is clearly evident:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex2a" id="pch7ex2" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Lambda expression as function object (replaces anonymous class)</strong><br class="calibre7"/>
+         Collections.sort(words,<br class="calibre7"/>
+                 <strong class="calibre11">(s1, s2) -&gt; Integer.compare(s1.length(), s2.length()</strong>));
+      </p>
+      
+      <p class="indent">Note that the types of the lambda (<code class="calibre12">Comparator&lt;String&gt;</code>), of its parameters (<code class="calibre12">s1</code> and <code class="calibre12">s2</code>, both <code class="calibre12">String</code>), and of its return value (<code class="calibre12">int</code>) are not present in the code. The compiler deduces these types from context, using
+         a process known as <em class="calibre9">type inference</em>. In some cases, the compiler won’t be able to determine the types, and you’ll have
+         to specify them. The rules for type inference are complex: they take up an entire
+         chapter in the JLS [JLS, 18]. Few programmers understand these rules in detail, but
+         that’s OK. <strong class="calibre11">Omit the types of all lambda parameters unless their presence makes your program clearer.</strong> If the compiler generates an error telling you it can’t infer the type of a lambda
+         parameter, <em class="calibre9">then</em> specify it. Sometimes you may have to cast the return value or the entire lambda
+         expression, but this is rare.
+      </p>
+      
+      <p class="indent">One caveat should be added concerning type inference. <a href="ch5.xhtml#lev26" class="calibre8">Item 26</a> tells you not to use raw types, <a href="ch5.xhtml#lev29" class="calibre8">Item 29</a> tells you to favor generic types, and <a href="ch5.xhtml#lev30" class="calibre8">Item 30</a> tells you to favor generic methods. This advice is doubly important when you’re using
+         lambdas, because the compiler obtains most of the type information that allows it
+         to perform type inference from generics. If you don’t provide this information, the
+         compiler will be unable to do type inference, and you’ll have to specify types manually
+         in your lambdas, which will greatly increase their verbosity. By way of example, the
+         code snippet above won’t compile if the variable <code class="calibre12">words</code> is declared to be of the raw type <code class="calibre12">List</code> instead of the parameterized type <code class="calibre12">List&lt;String&gt;</code>.
+      </p>
+      
+      <p class="indent">Incidentally, the comparator in the snippet can be made even more succinct if a <em class="calibre9">comparator construction method</em> is used in place of a lambda (<a href="ch3.xhtml#lev14" class="calibre8">Items 14</a>. <a href="ch7.xhtml#lev43" class="calibre8">43</a>):
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex3a" id="pch7ex3" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Collections.sort(words, <strong class="calibre11">comparingInt(String::length)</strong>);
+      </p>
+      
+      <p class="noindent">In fact, the snippet can be made still shorter by taking advantage of the <code class="calibre12">sort</code> method that was added to the <code class="calibre12">List</code> interface in Java 8:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex4a" id="pch7ex4" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">words<strong class="calibre11">.sort</strong>(comparingInt(String::length));
+      </p>
+      
+      <p class="indent">The addition of lambdas to the language makes it practical to use function objects
+         where it would not previously have made sense. For example, consider the <code class="calibre12">Operation</code> enum type in <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>. Because each enum required different behavior for its <code class="calibre12">apply</code> method, we used constant-specific class bodies and overrode the <code class="calibre12">apply</code> method in each enum constant. To refresh your memory, here is the code:
+      </p>
+      <span epub:type="pagebreak" id="page_195"></span>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex5a" id="pch7ex5" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum type with constant-specific class bodies &amp; data (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>)</strong><br class="calibre7"/>
+         public enum Operation {<br class="calibre7"/>
+             PLUS("+") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x + y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             MINUS("-") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x - y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             TIMES("*") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x * y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             DIVIDE("/") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x / y; }<br class="calibre7"/>
+             };<br class="calibre7"/>
+             private final String symbol;<br class="calibre7"/>
+             Operation(String symbol) { this.symbol = symbol; }<br class="calibre7"/>
+             @Override public String toString() { return symbol; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public abstract double apply(double x, double y);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Item 34 says that enum instance fields are preferable to constant-specific class bodies.
+         Lambdas make it easy to implement constant-specific behavior using the former instead
+         of the latter. Merely pass a lambda implementing each enum constant’s behavior to
+         its constructor. The constructor stores the lambda in an instance field, and the <code class="calibre12">apply</code> method forwards invocations to the lambda. The resulting code is simpler and clearer
+         than the original version:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex6a" id="pch7ex6" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum with function object fields &amp; constant-specific behavior</strong><br class="calibre7"/>
+         public enum Operation {<br class="calibre7"/>
+             PLUS  ("+", (x, y) -&gt; x + y),<br class="calibre7"/>
+             MINUS ("-", (x, y) -&gt; x - y),<br class="calibre7"/>
+             TIMES ("*", (x, y) -&gt; x * y),<br class="calibre7"/>
+             DIVIDE("/", (x, y) -&gt; x / y);<br class="calibre7"/>
+         <br class="calibre7"/>
+             private final String symbol;<br class="calibre7"/>
+             private final DoubleBinaryOperator op;<br class="calibre7"/>
+         <br class="calibre7"/>
+             Operation(String symbol, DoubleBinaryOperator op) {<br class="calibre7"/>
+                 this.symbol = symbol;<br class="calibre7"/>
+                 this.op = op;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() { return symbol; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public double apply(double x, double y) {<br class="calibre7"/>
+                 return op.applyAsDouble(x, y);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_196"></span>Note that we’re using the <code class="calibre12">DoubleBinaryOperator</code> interface for the lambdas that represent the enum constant’s behavior. This is one
+         of the many predefined functional interfaces in <code class="calibre12">java.util.function</code> (<a href="ch7.xhtml#lev44" class="calibre8">Item 44</a>). It represents a function that takes two <code class="calibre12">double</code> arguments and returns a <code class="calibre12">double</code> result.
+      </p>
+      
+      <p class="indent">Looking at the lambda-based <code class="calibre12">Operation</code> enum, you might think constant-specific method bodies have outlived their usefulness,
+         but this is not the case. Unlike methods and classes, <strong class="calibre11">lambdas lack names and documentation; if a computation isn’t self-explanatory, or
+            exceeds a few lines, don’t put it in a lambda.</strong> One line is ideal for a lambda, and three lines is a reasonable maximum. If you violate
+         this rule, it can cause serious harm to the readability of your programs. If a lambda
+         is long or difficult to read, either find a way to simplify it or refactor your program
+         to eliminate it. Also, the arguments passed to enum constructors are evaluated in
+         a static context. Thus, lambdas in enum constructors can’t access instance members
+         of the enum. Constant-specific class bodies are still the way to go if an enum type
+         has constant-specific behavior that is difficult to understand, that can’t be implemented
+         in a few lines, or that requires access to instance fields or methods.
+      </p>
+      
+      <p class="indent">Likewise, you might think that anonymous classes are obsolete in the era of lambdas.
+         This is closer to the truth, but there are a few things you can do with anonymous
+         classes that you can’t do with lambdas. Lambdas are limited to functional interfaces.
+         If you want to create an instance of an abstract class, you can do it with an anonymous
+         class, but not a lambda. Similarly, you can use anonymous classes to create instances
+         of interfaces with multiple abstract methods. Finally, a lambda cannot obtain a reference
+         to itself. In a lambda, the <code class="calibre12">this</code> keyword refers to the enclosing instance, which is typically what you want. In an
+         anonymous class, the <code class="calibre12">this</code> keyword refers to the anonymous class instance. If you need access to the function
+         object from within its body, then you must use an anonymous class.
+      </p>
+      
+      <p class="indent">Lambdas share with anonymous classes the property that you can’t reliably serialize
+         and deserialize them across implementations. Therefore, <strong class="calibre11">you should rarely, if ever, serialize a lambda</strong> (or an anonymous class instance). If you have a function object that you want to
+         make serializable, such as a <code class="calibre12">Comparator</code>, use an instance of a private static nested class (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>).
+      </p>
+      
+      <p class="indent">In summary, as of Java 8, lambdas are by far the best way to represent small function
+         objects. <strong class="calibre11">Don’t use anonymous classes for function objects unless you have to create instances
+            of types that aren’t functional interfaces.</strong> Also, remember that lambdas make it so easy to represent small function objects that
+         it opens the door to functional programming techniques that were not previously practical
+         in Java.
+      </p>
+      
+      <h3 class="h2"><a id="lev43" class="calibre4"></a><span epub:type="pagebreak" id="page_197" class="calibre15"></span><strong class="calibre10">Item 43: Prefer method references to lambdas</strong></h3>
+      
+      <p class="noindent">The primary advantage of lambdas over anonymous classes is that they are more succinct.
+         Java provides a way to generate function objects even more succinct than lambdas:
+         <em class="calibre9">method references</em>. Here is a code snippet from a program that maintains a map from arbitrary keys to
+         <code class="calibre12">Integer</code> values. If the value is interpreted as a count of the number of instances of the
+         key, then the program is a multiset implementation. The function of the code snippet
+         is to associate the number 1 with the key if it is not in the map and to increment
+         the associated value if the key is already present:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex7a" id="pch7ex7" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">map.merge(key, 1, (count, incr) -&gt; count + incr);</p>
+      
+      <p class="indent">Note that this code uses the <code class="calibre12">merge</code> method, which was added to the <code class="calibre12">Map</code> interface in Java 8. If no mapping is present for the given key, the method simply
+         inserts the given value; if a mapping is already present, <code class="calibre12">merge</code> applies the given function to the current value and the given value and overwrites
+         the current value with the result. This code represents a typical use case for the
+         <code class="calibre12">merge</code> method.
+      </p>
+      
+      <p class="indent">The code reads nicely, but there’s still some boilerplate. The parameters <code class="calibre12">count</code> and <code class="calibre12">incr</code> don’t add much value, and they take up a fair amount of space. Really, all the lambda
+         tells you is that the function returns the sum of its two arguments. As of Java 8,
+         <code class="calibre12">Integer</code> (and all the other boxed numerical primitive types) provides a static method <code class="calibre12">sum</code> that does exactly the same thing. We can simply pass a reference to this method and
+         get the same result with less visual clutter:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex8a" id="pch7ex8" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">map.merge(key, 1, Integer::sum);</p>
+      
+      <p class="noindent">The more parameters a method has, the more boilerplate you can eliminate with a method
+         reference. In some lambdas, however, the parameter names you choose provide useful
+         documentation, making the lambda more readable and maintainable than a method reference,
+         even if the lambda is longer.
+      </p>
+      
+      <p class="indent">There’s nothing you can do with a method reference that you can’t also do with a lambda
+         (with one obscure exception—see JLS, 9.9-2 if you’re curious). That said, method references
+         usually result in shorter, clearer code. They also give you an out if a lambda gets
+         too long or complex: You can extract the code from the lambda into a new method and
+         replace the lambda with a reference to that method. You can give the method a good
+         name and document it to your heart’s content.
+      </p>
+      
+      <p class="indent">If you’re programming with an IDE, it will offer to replace a lambda with a method
+         reference wherever it can. You should usually, but not always, take the IDE up on
+         the offer. Occasionally, a lambda will be more succinct than a method reference. This
+         happens most often when the method is in the same class as the <span epub:type="pagebreak" id="page_198"></span>lambda. For example, consider this snippet, which is presumed to occur in a class
+         named <code class="calibre12">GoshThisClassNameIsHumongous</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex9a" id="pch7ex9" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">service.execute(GoshThisClassNameIsHumongous::action);</p>
+      
+      <p class="noindent">The lambda equivalent looks like this:</p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex10a" id="pch7ex10" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">service.execute(() -&gt; action());</p>
+      
+      <p class="noindent">The snippet using the method reference is neither shorter nor clearer than the snippet
+         using the lambda, so prefer the latter. Along similar lines, the <code class="calibre12">Function</code> interface provides a generic static factory method to return the identity function,
+         <code class="calibre12">Function.identity()</code>. It’s typically shorter and cleaner <em class="calibre9">not</em> to use this method but to code the equivalent lambda inline: <code class="calibre12">x -&gt; x</code>.
+      </p>
+      
+      <p class="indentb">Many method references refer to static methods, but there are four kinds that do not.
+         Two of them are <em class="calibre9">bound</em> and <em class="calibre9">unbound</em> instance method references. In bound references, the receiving object is specified
+         in the method reference. Bound references are similar in nature to static references:
+         the function object takes the same arguments as the referenced method. In unbound
+         references, the receiving object is specified when the function object is applied,
+         via an additional parameter before the method’s declared parameters. Unbound references
+         are often used as mapping and filter functions in stream pipelines (<a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>). Finally, there are two kinds of <em class="calibre9">constructor</em> references, for classes and arrays. Constructor references serve as factory objects.
+         All five kinds of method references are summarized in the table below:
+      </p>
+      
+      <table class="tablewidth">
+         
+         <tbody class="calibre16">
+            
+            <tr class="calibre17">
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Method Ref Type</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Example</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Lambda Equivalent</strong></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Static</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Integer::parseInt</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">str -&gt; Integer.parseInt(str)</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Bound</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Instant.now()::isAfter</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Instant then = Instant.now(); t -&gt; then.isAfter(t)</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Unbound</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">String::toLowerCase</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">str -&gt; str.toLowerCase()</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Class Constructor</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">TreeMap&lt;K,V&gt;::new</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">() -&gt; new TreeMap&lt;K,V&gt;</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="table1">
+                  <p class="noindent1">Array Constructor</p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">int[]::new</code></p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">len -&gt; new int[len]</code></p>
+               </td>
+               
+            </tr>
+            
+         </tbody>
+         
+      </table>
+      
+      <p class="indentt">In summary, method references often provide a more succinct alternative to lambdas.
+         <strong class="calibre11">Where method references are shorter and clearer, use them; where they aren’t, stick
+            with lambdas.</strong></p>
+      
+      <h3 class="h2"><a id="lev44" class="calibre4"></a><span epub:type="pagebreak" id="page_199" class="calibre15"></span><strong class="calibre10">Item 44: Favor the use of standard functional interfaces</strong></h3>
+      
+      <p class="noindent">Now that Java has lambdas, best practices for writing APIs have changed considerably.
+         For example, the <em class="calibre9">Template Method</em> pattern [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>], wherein a subclass overrides a <em class="calibre9">primitive method</em> to specialize the behavior of its superclass, is far less attractive. The modern
+         alternative is to provide a static factory or constructor that accepts a function
+         object to achieve the same effect. More generally, you’ll be writing more constructors
+         and methods that take function objects as parameters. Choosing the right functional
+         parameter type demands care.
+      </p>
+      
+      <p class="indent">Consider <code class="calibre12">LinkedHashMap</code>. You can use this class as a cache by overriding its protected <code class="calibre12">removeEldestEntry</code> method, which is invoked by <code class="calibre12">put</code> each time a new key is added to the map. When this method returns <code class="calibre12">true</code>, the map removes its eldest entry, which is passed to the method. The following override
+         allows the map to grow to one hundred entries and then deletes the eldest entry each
+         time a new key is added, maintaining the hundred most recent entries:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex11a" id="pch7ex11" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">protected boolean removeEldestEntry(Map.Entry&lt;K,V&gt; eldest) {<br class="calibre7"/>
+            return size() &gt; 100;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This technique works fine, but you can do much better with lambdas. If <code class="calibre12">LinkedHashMap</code> were written today, it would have a static factory or constructor that took a function
+         object. Looking at the declaration for <code class="calibre12">removeEldestEntry</code>, you might think that the function object should take a <code class="calibre12">Map.Entry&lt;K,V&gt;</code> and return a <code class="calibre12">boolean</code>, but that wouldn’t quite do it: The <code class="calibre12">removeEldestEntry</code> method calls <code class="calibre12">size()</code> to get the number of entries in the map, which works because <code class="calibre12">removeEldestEntry</code> is an instance method on the map. The function object that you pass to the constructor
+         is not an instance method on the map and can’t capture it because the map doesn’t
+         exist yet when its factory or constructor is invoked. Thus, the map must pass itself
+         to the function object, which must therefore take the map on input as well as its
+         eldest entry. If you were to declare such a functional interface, it would look something
+         like this:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex12a" id="pch7ex12" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Unnecessary functional interface; use a standard one instead.</strong><br class="calibre7"/>
+         @FunctionalInterface interface EldestEntryRemovalFunction&lt;K,V&gt;{<br class="calibre7"/>
+             boolean remove(Map&lt;K,V&gt; map, Map.Entry&lt;K,V&gt; eldest);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This interface would work fine, but you shouldn’t use it, because you don’t need to
+         declare a new interface for this purpose. The <code class="calibre12">java.util.function</code> package provides a large collection of standard functional interfaces for your use.
+         <span epub:type="pagebreak" id="page_200"></span><strong class="calibre11">If one of the standard functional interfaces does the job, you should generally use
+            it in preference to a purpose-built functional interface.</strong> This will make your API easier to learn, by reducing its conceptual surface area,
+         and will provide significant interoperability benefits, as many of the standard functional
+         interfaces provide useful default methods. The <code class="calibre12">Predicate</code> interface, for instance, provides methods to combine predicates. In the case of our
+         <code class="calibre12">LinkedHashMap</code> example, the standard <code class="calibre12">BiPredicate&lt;Map&lt;K,V&gt;, Map.Entry&lt;K,V&gt;&gt;</code> interface should be used in preference to a custom <code class="calibre12">EldestEntryRemovalFunction</code> interface.
+      </p>
+      
+      <p class="indentb">There are forty-three interfaces in <code class="calibre12">java.util.Function</code>. You can’t be expected to remember them all, but if you remember six basic interfaces,
+         you can derive the rest when you need them. The basic interfaces operate on object
+         reference types. The <code class="calibre12">Operator</code> interfaces represent functions whose result and argument types are the same. The
+         <code class="calibre12">Predicate</code> interface represents a function that takes an argument and returns a <code class="calibre12">boolean</code>. The <code class="calibre12">Function</code> interface represents a function whose argument and return types differ. The <code class="calibre12">Supplier</code> interface represents a function that takes no arguments and returns (or “supplies”)
+         a value. Finally, <code class="calibre12">Consumer</code> represents a function that takes an argument and returns nothing, essentially consuming
+         its argument. The six basic functional interfaces are summarized below:
+      </p>
+      
+      <table class="tablewidth">
+         
+         <tbody class="calibre16">
+            
+            <tr class="calibre17">
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Interface</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Function Signature</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Example</strong></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">UnaryOperator&lt;T&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">T apply(T t)</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">String::toLowerCase</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">BinaryOperator&lt;T&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">T apply(T t1, T t2)</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">BigInteger::add</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Predicate&lt;T&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">boolean test(T t)</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Collection::isEmpty</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Function&lt;T,R&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">R apply(T t)</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Arrays::asList</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Supplier&lt;T&gt;</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">T get()</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Instant::now</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">Consumer&lt;T&gt;</code></p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">void accept(T t)</code></p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">System.out::println</code></p>
+               </td>
+               
+            </tr>
+            
+         </tbody>
+         
+      </table>
+      
+      <p class="indentt">There are also three variants of each of the six basic interfaces to operate on the
+         primitive types <code class="calibre12">int</code>, <code class="calibre12">long</code>, and <code class="calibre12">double</code>. Their names are derived from the basic interfaces by prefixing them with a primitive
+         type. So, for example, a predicate that takes an <code class="calibre12">int</code> is an <code class="calibre12">IntPredicate</code>, and a binary operator that takes two <code class="calibre12">long</code> values and returns a <code class="calibre12">long</code> is a <code class="calibre12">LongBinaryOperator</code>. None of these variant types is parameterized except for the <code class="calibre12">Function</code> variants, which are parameterized by return type. For example, <code class="calibre12">LongFunction&lt;int[]&gt;</code> takes a <code class="calibre12">long</code> and returns an <code class="calibre12">int[]</code>.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_201"></span>There are nine additional variants of the <code class="calibre12">Function</code> interface, for use when the result type is primitive. The source and result types
+         always differ, because a function from a type to itself is a <code class="calibre12">UnaryOperator</code>. If both the source and result types are primitive, prefix <code class="calibre12">Function</code> with <em class="calibre9">Src</em><code class="calibre12">To<em class="calibre9">Result</em>, for example LongToIntFunction</code> (six variants). If the source is a primitive and the result is an object reference,
+         prefix <code class="calibre12">Function</code> with &lt;Src&gt;<code class="calibre12">ToObj</code>, for example <code class="calibre12">DoubleToObjFunction</code> (three variants).
+      </p>
+      
+      <p class="indent">There are two-argument versions of the three basic functional interfaces for which
+         it makes sense to have them: <code class="calibre12">BiPredicate&lt;T,U&gt;</code>, <code class="calibre12">BiFunction&lt;T,U,R&gt;</code>, and <code class="calibre12">BiConsumer&lt;T,U&gt;</code>. There are also <code class="calibre12">BiFunction</code> variants returning the three relevant primitive types: <code class="calibre12">ToIntBiFunction&lt;T,U&gt;</code>, <code class="calibre12">ToLongBiFunction&lt;T,U&gt;</code>, and <code class="calibre12">ToDoubleBiFunction&lt;T,U&gt;</code>. There are two-argument variants of <code class="calibre12">Consumer</code> that take one object reference and one primitive type: <code class="calibre12">ObjDoubleConsumer&lt;T&gt;</code>, <code class="calibre12">ObjIntConsumer&lt;T&gt;</code>, and <code class="calibre12">ObjLongConsumer&lt;T&gt;</code>. In total, there are nine two-argument versions of the basic interfaces.
+      </p>
+      
+      <p class="indent">Finally, there is the <code class="calibre12">BooleanSupplier</code> interface, a variant of <code class="calibre12">Supplier</code> that returns <code class="calibre12">boolean</code> values. This is the only explicit mention of the <code class="calibre12">boolean</code> type in any of the standard functional interface names, but <code class="calibre12">boolean</code> return values are supported via <code class="calibre12">Predicate</code> and its four variant forms. The <code class="calibre12">BooleanSupplier</code> interface and the forty-two interfaces described in the previous paragraphs account
+         for all forty-three standard functional interfaces. Admittedly, this is a lot to swallow,
+         and not terribly orthogonal. On the other hand, the bulk of the functional interfaces
+         that you’ll need have been written for you and their names are regular enough that
+         you shouldn’t have too much trouble coming up with one when you need it.
+      </p>
+      
+      <p class="indent">Most of the standard functional interfaces exist only to provide support for primitive
+         types. <strong class="calibre11">Don’t be tempted to use basic functional interfaces with boxed primitives instead
+            of primitive functional interfaces.</strong> While it works, it violates the advice of <a href="ch9.xhtml#lev61" class="calibre8">Item 61</a>, “prefer primitive types to boxed primitives.” The performance consequences of using
+         boxed primitives for bulk operations can be deadly.
+      </p>
+      
+      <p class="indent">Now you know that you should typically use standard functional interfaces in preference
+         to writing your own. But when <em class="calibre9">should</em> you write your own? Of course you need to write your own if none of the standard
+         ones does what you need, for example if you require a predicate that takes three parameters,
+         or one that throws a checked exception. But there are times you should write your
+         own functional interface even when one of the standard ones is structurally identical.
+      </p>
+      
+      <p class="indent">Consider our old friend <code class="calibre12">Comparator&lt;T&gt;</code>, which is structurally identical to the <code class="calibre12">ToIntBiFunction&lt;T,T&gt;</code> interface. Even if the latter interface had existed when the former was added to
+         the libraries, it would have been wrong to use it. There <span epub:type="pagebreak" id="page_202"></span>are several reasons that <code class="calibre12">Comparator</code> deserves its own interface. First, its name provides excellent documentation every
+         time it is used in an API, and it’s used a lot. Second, the <code class="calibre12">Comparator</code> interface has strong requirements on what constitutes a valid instance, which comprise
+         its <em class="calibre9">general contract</em>. By implementing the interface, you are pledging to adhere to its contract. Third,
+         the interface is heavily outfitted with useful default methods to transform and combine
+         comparators.
+      </p>
+      
+      <p class="indentb">You should seriously consider writing a purpose-built functional interface in preference
+         to using a standard one if you need a functional interface that shares one or more
+         of the following characteristics with <code class="calibre12">Comparator</code>:
+      </p>
+      
+      <p class="bull">• It will be commonly used and could benefit from a descriptive name.</p>
+      
+      <p class="bull">• It has a strong contract associated with it.</p>
+      
+      <p class="bull">• It would benefit from custom default methods.</p>
+      
+      <p class="noindentt">If you elect to write your own functional interface, remember that it’s an interface
+         and hence should be designed with great care (<a href="ch4.xhtml#lev21" class="calibre8">Item 21</a>).
+      </p>
+      
+      <p class="indent">Notice that the <code class="calibre12">EldestEntryRemovalFunction</code> interface (page 199) is labeled with the <code class="calibre12">@FunctionalInterface</code> annotation. This annotation type is similar in spirit to <code class="calibre12">@Override</code>. It is a statement of programmer intent that serves three purposes: it tells readers
+         of the class and its documentation that the interface was designed to enable lambdas;
+         it keeps you honest because the interface won’t compile unless it has exactly one
+         abstract method; and it prevents maintainers from accidentally adding abstract methods
+         to the interface as it evolves. <strong class="calibre11">Always annotate your functional interfaces with the</strong> <code class="calibre12"><strong class="calibre11">@FunctionalInterface</strong></code> <strong class="calibre11">annotation.</strong></p>
+      
+      <p class="indent">A final point should be made concerning the use of functional interfaces in APIs.
+         Do not provide a method with multiple overloadings that take different functional
+         interfaces in the same argument position if it could create a possible ambiguity in
+         the client. This is not just a theoretical problem. The <code class="calibre12">submit</code> method of <code class="calibre12">ExecutorService</code> can take either a <code class="calibre12">Callable&lt;T&gt;</code> or a <code class="calibre12">Runnable</code>, and it is possible to write a client program that requires a cast to indicate the
+         correct overloading (<a href="ch8.xhtml#lev52" class="calibre8">Item 52</a>). The easiest way to avoid this problem is not to write overloadings that take different
+         functional interfaces in the same argument position. This is a special case of the
+         advice in <a href="ch8.xhtml#lev52" class="calibre8">Item 52</a>, “use overloading judiciously.”
+      </p>
+      
+      <p class="indent">In summary, now that Java has lambdas, it is imperative that you design your APIs
+         with lambdas in mind. Accept functional interface types on input and return them on
+         output. It is generally best to use the standard interfaces provided in <code class="calibre12">java.util.function.Function</code>, but keep your eyes open for the relatively rare cases where you would be better
+         off writing your own functional interface.
+      </p>
+      
+      <h3 class="h2"><a id="lev45" class="calibre4"></a><span epub:type="pagebreak" id="page_203" class="calibre15"></span><strong class="calibre10">Item 45: Use streams judiciously</strong></h3>
+      
+      <p class="noindent">The streams API was added in Java 8 to ease the task of performing bulk operations,
+         sequentially or in parallel. This API provides two key abstractions: the <em class="calibre9">stream</em>, which represents a finite or infinite sequence of data elements, and the <em class="calibre9">stream pipeline</em>, which represents a multistage computation on these elements. The elements in a stream
+         can come from anywhere. Common sources include collections, arrays, files, regular
+         expression pattern matchers, pseudorandom number generators, and other streams. The
+         data elements in a stream can be object references or primitive values. Three primitive
+         types are supported: <code class="calibre12">int</code>, <code class="calibre12">long</code>, and <code class="calibre12">double</code>.
+      </p>
+      
+      <p class="indent">A stream pipeline consists of a source stream followed by zero or more <em class="calibre9">intermediate operations</em> and one <em class="calibre9">terminal operation</em>. Each intermediate operation transforms the stream in some way, such as mapping each
+         element to a function of that element or filtering out all elements that do not satisfy
+         some condition. Intermediate operations all transform one stream into another, whose
+         element type may be the same as the input stream or different from it. The terminal
+         operation performs a final computation on the stream resulting from the last intermediate
+         operation, such as storing its elements into a collection, returning a certain element,
+         or printing all of its elements.
+      </p>
+      
+      <p class="indent">Stream pipelines are evaluated <em class="calibre9">lazily</em>: evaluation doesn’t start until the terminal operation is invoked, and data elements
+         that aren’t required in order to complete the terminal operation are never computed.
+         This lazy evaluation is what makes it possible to work with infinite streams. Note
+         that a stream pipeline without a terminal operation is a silent no-op, so don’t forget
+         to include one.
+      </p>
+      
+      <p class="indent">The streams API is <em class="calibre9">fluent</em>: it is designed to allow all of the calls that comprise a pipeline to be chained
+         into a single expression. In fact, multiple pipelines can be chained together into
+         a single expression.
+      </p>
+      
+      <p class="indent">By default, stream pipelines run sequentially. Making a pipeline execute in parallel
+         is as simple as invoking the <code class="calibre12">parallel</code> method on any stream in the pipeline, but it is seldom appropriate to do so (<a href="ch7.xhtml#lev48" class="calibre8">Item 48</a>).
+      </p>
+      
+      <p class="indent">The streams API is sufficiently versatile that practically any computation can be
+         performed using streams, but just because you can doesn’t mean you should. When used
+         appropriately, streams can make programs shorter and clearer; when used inappropriately,
+         they can make programs difficult to read and maintain. There are no hard and fast
+         rules for when to use streams, but there are heuristics.
+      </p>
+      
+      <p class="indent">Consider the following program, which reads the words from a dictionary file and prints
+         all the anagram groups whose size meets a user-specified minimum. Recall that two
+         words are anagrams if they consist of the same letters in a different <span epub:type="pagebreak" id="page_204"></span>order. The program reads each word from a user-specified dictionary file and places
+         the words into a map. The map key is the word with its letters alphabetized, so the
+         key for <code class="calibre12">"staple"</code> is <code class="calibre12">"aelpst"</code>, and the key for <code class="calibre12">"petals"</code> is also <code class="calibre12">"aelpst"</code>: the two words are anagrams, and all anagrams share the same alphabetized form (or
+         <em class="calibre9">alphagram</em>, as it is sometimes known). The map value is a list containing all of the words that
+         share an alphabetized form. After the dictionary has been processed, each list is
+         a complete anagram group. The program then iterates through the map’s <code class="calibre12">values()</code> view and prints each list whose size meets the threshold:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex13a" id="pch7ex13" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Prints all large anagram groups in a dictionary iteratively</strong><br class="calibre7"/>
+         public class Anagrams {<br class="calibre7"/>
+             public static void main(String[] args) throws IOException {<br class="calibre7"/>
+                 File dictionary = new File(args[0]);<br class="calibre7"/>
+                 int minGroupSize = Integer.parseInt(args[1]);<br class="calibre7"/>
+         <br class="calibre7"/>
+                 Map&lt;String, Set&lt;String&gt;&gt; groups = new HashMap&lt;&gt;();<br class="calibre7"/>
+                 try (Scanner s = new Scanner(dictionary)) {<br class="calibre7"/>
+                     while (s.hasNext()) {<br class="calibre7"/>
+                         String word = s.next();<br class="calibre7"/>
+                         <strong class="calibre11">groups.computeIfAbsent(alphabetize(word),</strong><br class="calibre7"/>
+                             <strong class="calibre11">(unused) -&gt; new TreeSet&lt;&gt;()).add(word);</strong><br class="calibre7"/>
+                     }<br class="calibre7"/>
+                 }<br class="calibre7"/>
+         <br class="calibre7"/>
+                 for (Set&lt;String&gt; group : groups.values())<br class="calibre7"/>
+                     if (group.size() &gt;= minGroupSize)<br class="calibre7"/>
+                         System.out.println(group.size() + ": " + group);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             private static String alphabetize(String s) {<br class="calibre7"/>
+                 char[] a = s.toCharArray();<br class="calibre7"/>
+                 Arrays.sort(a);<br class="calibre7"/>
+                 return new String(a);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">One step in this program is worthy of note. The insertion of each word into the map,
+         which is shown in bold, uses the <code class="calibre12">computeIfAbsent</code> method, which was added in Java 8. This method looks up a key in the map: If the
+         key is present, the method simply returns the value associated with it. If not, the
+         method computes a value by applying the given function object to the key, associates
+         this value with the key, and returns the computed value. The <code class="calibre12">computeIfAbsent</code> method simplifies the implementation of maps that associate multiple values with
+         each key.
+      </p>
+      
+      <p class="indent">Now consider the following program, which solves the same problem, but makes heavy
+         use of streams. Note that the entire program, with the exception of <span epub:type="pagebreak" id="page_205"></span>the code that opens the dictionary file, is contained in a single expression. The
+         only reason the dictionary is opened in a separate expression is to allow the use
+         of the <code class="calibre12">try</code>-with-resources statement, which ensures that the dictionary file is closed:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex14a" id="pch7ex14" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Overuse of streams - don't do this!</strong><br class="calibre7"/>
+         public class Anagrams {<br class="calibre7"/>
+           public static void main(String[] args) throws IOException {<br class="calibre7"/>
+             Path dictionary = Paths.get(args[0]);<br class="calibre7"/>
+             int minGroupSize = Integer.parseInt(args[1]);<br class="calibre7"/>
+         <br class="calibre7"/>
+               try (Stream&lt;String&gt; words = Files.lines(dictionary)) {<br class="calibre7"/>
+                 words.collect(<br class="calibre7"/>
+                   groupingBy(word -&gt; word.chars().sorted()<br class="calibre7"/>
+                               .collect(StringBuilder::new,<br class="calibre7"/>
+                                 (sb, c) -&gt; sb.append((char) c),<br class="calibre7"/>
+                                 StringBuilder::append).toString()))<br class="calibre7"/>
+                   .values().stream()<br class="calibre7"/>
+                     .filter(group -&gt; group.size() &gt;= minGroupSize)<br class="calibre7"/>
+                     .map(group -&gt; group.size() + ": " + group)<br class="calibre7"/>
+                     .forEach(System.out::println);<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If you find this code hard to read, don’t worry; you’re not alone. It is shorter,
+         but it is also less readable, especially to programmers who are not experts in the
+         use of streams. <strong class="calibre11">Overusing streams makes programs hard to read and maintain.</strong></p>
+      
+      <p class="indent">Luckily, there is a happy medium. The following program solves the same problem, using
+         streams without overusing them. The result is a program that’s both shorter and clearer
+         than the original:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex15a" id="pch7ex15" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Tasteful use of streams enhances clarity and conciseness</strong><br class="calibre7"/>
+         public class Anagrams {<br class="calibre7"/>
+            public static void main(String[] args) throws IOException {<br class="calibre7"/>
+               Path dictionary = Paths.get(args[0]);<br class="calibre7"/>
+               int minGroupSize = Integer.parseInt(args[1]);<br class="calibre7"/>
+         <br class="calibre7"/>
+               try (Stream&lt;String&gt; words = Files.lines(dictionary)) {<br class="calibre7"/>
+                  words.collect(groupingBy(word -&gt; alphabetize(word)))<br class="calibre7"/>
+                    .values().stream()<br class="calibre7"/>
+                    .filter(group -&gt; group.size() &gt;= minGroupSize)<br class="calibre7"/>
+                    .forEach(g -&gt; System.out.println(g.size() + ": " + g));<br class="calibre7"/>
+               }<br class="calibre7"/>
+            }<br class="calibre7"/>
+         <br class="calibre7"/>
+            // alphabetize method is the same as in original version<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_206"></span>Even if you have little previous exposure to streams, this program is not hard to
+         understand. It opens the dictionary file in a <code class="calibre12">try</code>-with-resources block, obtaining a stream consisting of all the lines in the file.
+         The <code class="calibre12">stream</code> variable is named <code class="calibre12">words</code> to suggest that each element in the stream is a word. The pipeline on this stream
+         has no intermediate operations; its terminal operation collects all the words into
+         a map that groups the words by their alphabetized form (<a href="ch7.xhtml#lev46" class="calibre8">Item 46</a>). This is exactly the same map that was constructed in both previous versions of
+         the program. Then a new <code class="calibre12">Stream&lt;List&lt;String&gt;&gt;</code> is opened on the <code class="calibre12">values()</code> view of the map. The elements in this stream are, of course, the anagram groups.
+         The stream is filtered so that all of the groups whose size is less than <code class="calibre12">minGroupSize</code> are ignored, and finally, the remaining groups are printed by the terminal operation
+         <code class="calibre12">forEach</code>.
+      </p>
+      
+      <p class="indent">Note that the lambda parameter names were chosen carefully. The parameter <code class="calibre12">g</code> should really be named <code class="calibre12">group</code>, but the resulting line of code would be too wide for the book. <strong class="calibre11">In the absence of explicit types, careful naming of lambda parameters is essential
+            to the readability of stream pipelines.</strong></p>
+      
+      <p class="indent">Note also that word alphabetization is done in a separate <code class="calibre12">alphabetize</code> method. This enhances readability by providing a name for the operation and keeping
+         implementation details out of the main program. <strong class="calibre11">Using helper methods is even more important for readability in stream pipelines than
+            in iterative code</strong> because pipelines lack explicit type information and named temporary variables.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">alphabetize</code> method could have been reimplemented to use streams, but a stream-based <code class="calibre12">alphabetize</code> method would have been less clear, more difficult to write correctly, and probably
+         slower. These deficiencies result from Java’s lack of support for primitive <code class="calibre12">char</code> streams (which is not to imply that Java should have supported <code class="calibre12">char</code> streams; it would have been infeasible to do so). To demonstrate the hazards of processing
+         <code class="calibre12">char</code> values with streams, consider the following code:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex16a" id="pch7ex16" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">"Hello world!".chars().forEach(System.out::print);</p>
+      
+      <p class="noindent">You might expect it to print <code class="calibre12">Hello world!</code>, but if you run it, you’ll find that it prints <code class="calibre12">721011081081113211911111410810033</code>. This happens because the elements of the stream returned by <code class="calibre12">"Hello world!".chars()</code> are not <code class="calibre12">char</code> values but <code class="calibre12">int</code> values, so the <code class="calibre12">int</code> overloading of <code class="calibre12">print</code> is invoked. It is admittedly confusing that a method named <code class="calibre12">chars</code> returns a stream of <code class="calibre12">int</code> values. You <em class="calibre9">could</em> fix the program by using a cast to force the invocation of the correct overloading:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex17a" id="pch7ex17" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">"Hello world!".chars().forEach(x -&gt; System.out.print((char) x));</p>
+      
+      <p class="noindent">but ideally you should <strong class="calibre11">refrain from using streams to process</strong> <code class="calibre12"><strong class="calibre11">char</strong></code> <strong class="calibre11">values.</strong></p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_207"></span>When you start using streams, you may feel the urge to convert all your loops into
+         streams, but resist the urge. While it may be possible, it will likely harm the readability
+         and maintainability of your code base. As a rule, even moderately complex tasks are
+         best accomplished using some combination of streams and iteration, as illustrated
+         by the <code class="calibre12">Anagrams</code> programs above. So <strong class="calibre11">refactor existing code to use streams and use them in new code only where it makes
+            sense to do so.</strong></p>
+      
+      <p class="indentb">As shown in the programs in this item, stream pipelines express repeated computation
+         using function objects (typically lambdas or method references), while iterative code
+         expresses repeated computation using code blocks. There are some things you can do
+         from code blocks that you can’t do from function objects:
+      </p>
+      
+      <p class="bull">• From a code block, you can read or modify any local variable in scope; from a lambda,
+         you can only read final or effectively final variables [<a href="ref.xhtml#rJLS" class="calibre8">JLS 4.12.4</a>], and you can’t modify any local variables.
+      </p>
+      
+      <p class="bull">• From a code block, you can <code class="calibre12">return</code> from the enclosing method, <code class="calibre12">break</code> or <code class="calibre12">continue</code> an enclosing loop, or throw any checked exception that this method is declared to
+         throw; from a lambda you can do none of these things.
+      </p>
+      
+      <p class="noindenttb">If a computation is best expressed using these techniques, then it’s probably not
+         a good match for streams. Conversely, streams make it very easy to do some things:
+      </p>
+      
+      <p class="bull">• Uniformly transform sequences of elements</p>
+      
+      <p class="bull">• Filter sequences of elements</p>
+      
+      <p class="bull">• Combine sequences of elements using a single operation (for example to add them,
+         concatenate them, or compute their minimum)
+      </p>
+      
+      <p class="bull">• Accumulate sequences of elements into a collection, perhaps grouping them by some
+         common attribute
+      </p>
+      
+      <p class="bull">• Search a sequence of elements for an element satisfying some criterion</p>
+      
+      <p class="noindentt">If a computation is best expressed using these techniques, then it is a good candidate
+         for streams.
+      </p>
+      
+      <p class="indent">One thing that is hard to do with streams is to access corresponding elements from
+         multiple stages of a pipeline simultaneously: once you map a value to some other value,
+         the original value is lost. One workaround is to map each value to a <em class="calibre9">pair object</em> containing the original value and the new value, but this is not a satisfying solution,
+         especially if the pair objects are required for multiple stages of a pipeline. The
+         resulting code is messy and verbose, which defeats a primary purpose of streams. When
+         it is applicable, a better workaround is to invert the mapping when you need access
+         to the earlier-stage value.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_208"></span>For example, let’s write a program to print the first twenty <em class="calibre9">Mersenne primes</em>. To refresh your memory, a <em class="calibre9">Mersenne number</em> is a number of the form 2<em class="calibre9"><sup class="calibre14">p</sup></em> − 1. If <em class="calibre9">p</em> is prime, the corresponding Mersenne number <em class="calibre9">may</em> be prime; if so, it’s a Mersenne prime. As the initial stream in our pipeline, we
+         want all the prime numbers. Here’s a method to return that (infinite) stream. We assume
+         a static import has been used for easy access to the static members of <code class="calibre12">BigInteger</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex18a" id="pch7ex18" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">static Stream&lt;BigInteger&gt; primes() {<br class="calibre7"/>
+             return Stream.iterate(TWO, BigInteger::nextProbablePrime);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The name of the method (<code class="calibre12">primes</code>) is a plural noun describing the elements of the stream. This naming convention is
+         highly recommended for all methods that return streams because it enhances the readability
+         of stream pipelines. The method uses the static factory <code class="calibre12">Stream.iterate</code>, which takes two parameters: the first element in the stream, and a function to generate
+         the next element in the stream from the previous one. Here is the program to print
+         the first twenty Mersenne primes:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex19a" id="pch7ex19" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             primes().map(p -&gt; TWO.pow(p.intValueExact()).subtract(ONE))<br class="calibre7"/>
+                 .filter(mersenne -&gt; mersenne.isProbablePrime(50))<br class="calibre7"/>
+                 .limit(20)<br class="calibre7"/>
+                 .forEach(System.out::println);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This program is a straightforward encoding of the prose description above: it starts
+         with the primes, computes the corresponding Mersenne numbers, filters out all but
+         the primes (the magic number <code class="calibre12">50</code> controls the probabilistic primality test), limits the resulting stream to twenty
+         elements, and prints them out.
+      </p>
+      
+      <p class="indent">Now suppose that we want to precede each Mersenne prime with its exponent (<em class="calibre9">p</em>). This value is present only in the initial stream, so it is inaccessible in the
+         terminal operation, which prints the results. Luckily, it’s easy to compute the exponent
+         of a Mersenne number by inverting the mapping that took place in the first intermediate
+         operation. The exponent is simply the number of bits in the binary representation,
+         so this terminal operation generates the desired result:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex20a" id="pch7ex20" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">.forEach(mp -&gt; System.out.println(mp.bitLength() + ": " + mp));</p>
+      
+      <p class="indent">There are plenty of tasks where it is not obvious whether to use streams or iteration.
+         For example, consider the task of initializing a new deck of cards. Assume that <code class="calibre12">Card</code> is an immutable value class that encapsulates a <code class="calibre12">Rank</code> and a <code class="calibre12">Suit</code>, both of which are enum types. This task is representative of any task that <span epub:type="pagebreak" id="page_209"></span>requires computing all the pairs of elements that can be chosen from two sets. Mathematicians
+         call this the <em class="calibre9">Cartesian product</em> of the two sets. Here’s an iterative implementation with a nested for-each loop that
+         should look very familiar to you:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex21a" id="pch7ex21" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Iterative Cartesian product computation</strong><br class="calibre7"/>
+         private static List&lt;Card&gt; newDeck() {<br class="calibre7"/>
+             List&lt;Card&gt; result = new ArrayList&lt;&gt;();<br class="calibre7"/>
+             for (Suit suit : Suit.values())<br class="calibre7"/>
+                 for (Rank rank : Rank.values())<br class="calibre7"/>
+                     result.add(new Card(suit, rank));<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">And here is a stream-based implementation that makes use of the intermediate operation
+         <code class="calibre12">flatMap</code>. This operation maps each element in a stream to a stream and then concatenates all
+         of these new streams into a single stream (or <em class="calibre9">flattens</em> them). Note that this implementation contains a nested lambda, shown in boldface:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex22a" id="pch7ex22" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Stream-based Cartesian product computation</strong><br class="calibre7"/>
+         private static List&lt;Card&gt; newDeck() {<br class="calibre7"/>
+             return Stream.of(Suit.values())<br class="calibre7"/>
+                 .flatMap(suit -&gt;<br class="calibre7"/>
+                     Stream.of(Rank.values())<br class="calibre7"/>
+                         .map(<strong class="calibre11">rank -&gt; new Card(suit, rank))</strong>)<br class="calibre7"/>
+                 .collect(toList());<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Which of the two versions of <code class="calibre12">newDeck</code> is better? It boils down to personal preference and the environment in which you’re
+         programming. The first version is simpler and perhaps feels more natural. A larger
+         fraction of Java programmers will be able to understand and maintain it, but some
+         programmers will feel more comfortable with the second (stream-based) version. It’s
+         a bit more concise and not too difficult to understand if you’re reasonably well-versed
+         in streams and functional programming. If you’re not sure which version you prefer,
+         the iterative version is probably the safer choice. If you prefer the stream version
+         and you believe that other programmers who will work with the code will share your
+         preference, then you should use it.
+      </p>
+      
+      <p class="indent">In summary, some tasks are best accomplished with streams, and others with iteration.
+         Many tasks are best accomplished by combining the two approaches. There are no hard
+         and fast rules for choosing which approach to use for a task, but there are some useful
+         heuristics. In many cases, it will be clear which approach to use; in some cases,
+         it won’t. <strong class="calibre11">If you’re not sure whether a task is better served by streams or iteration, try both
+            and see which works better.</strong></p>
+      
+      <h3 class="h2"><a id="lev46" class="calibre4"></a><span epub:type="pagebreak" id="page_210" class="calibre15"></span><strong class="calibre10">Item 46: Prefer side-effect-free functions in streams</strong></h3>
+      
+      <p class="noindent">If you’re new to streams, it can be difficult to get the hang of them. Merely expressing
+         your computation as a stream pipeline can be hard. When you succeed, your program
+         will run, but you may realize little if any benefit. Streams isn’t just an API, it’s
+         a paradigm based on functional programming. In order to obtain the expressiveness,
+         speed, and in some cases parallelizability that streams have to offer, you have to
+         adopt the paradigm as well as the API.
+      </p>
+      
+      <p class="indent">The most important part of the streams paradigm is to structure your computation as
+         a sequence of transformations where the result of each stage is as close as possible
+         to a <em class="calibre9">pure function</em> of the result of the previous stage. A pure function is one whose result depends
+         only on its input: it does not depend on any mutable state, nor does it update any
+         state. In order to achieve this, any function objects that you pass into stream operations,
+         both intermediate and terminal, should be free of side-effects.
+      </p>
+      
+      <p class="indent">Occasionally, you may see streams code that looks like this snippet, which builds
+         a frequency table of the words in a text file:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex23a" id="pch7ex23" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Uses the streams API but not the paradigm--Don't do this!</strong><br class="calibre7"/>
+         Map&lt;String, Long&gt; freq = new HashMap&lt;&gt;();<br class="calibre7"/>
+         try (Stream&lt;String&gt; words = new Scanner(file).tokens()) {<br class="calibre7"/>
+             words.forEach(word -&gt; {<br class="calibre7"/>
+                 freq.merge(word.toLowerCase(), 1L, Long::sum);<br class="calibre7"/>
+             });<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">What’s wrong with this code? After all, it uses streams, lambdas, and method references,
+         and gets the right answer. Simply put, it’s not streams code at all; it’s iterative
+         code masquerading as streams code. It derives no benefits from the streams API, and
+         it’s (a bit) longer, harder to read, and less maintainable than the corresponding
+         iterative code. The problem stems from the fact that this code is doing all its work
+         in a terminal <code class="calibre12">forEach</code> operation, using a lambda that mutates external state (the frequency table). A <code class="calibre12">forEach</code> operation that does anything more than present the result of the computation performed
+         by a stream is a “bad smell in code,” as is a lambda that mutates state. So how should
+         this code look?
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex24a" id="pch7ex24" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Proper use of streams to initialize a frequency table</strong><br class="calibre7"/>
+         Map&lt;String, Long&gt; freq;<br class="calibre7"/>
+         try (Stream&lt;String&gt; words = new Scanner(file).tokens()) {<br class="calibre7"/>
+             freq = words<br class="calibre7"/>
+                 .collect(groupingBy(String::toLowerCase, counting()));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_211"></span>This snippet does the same thing as the previous one but makes proper use of the streams
+         API. It’s shorter and clearer. So why would anyone write it the other way? Because
+         it uses tools they’re already familiar with. Java programmers know how to use for-each
+         loops, and the <code class="calibre12">forEach</code> terminal operation is similar. But the <code class="calibre12">forEach</code> operation is among the least powerful of the terminal operations and the least stream-friendly.
+         It’s explicitly iterative, and hence not amenable to parallelization. <strong class="calibre11">The</strong> <code class="calibre12"><strong class="calibre11">forEach</strong></code> <strong class="calibre11">operation should be used only to report the result of a stream computation, not to
+            perform the computation.</strong> Occasionally, it makes sense to use <code class="calibre12">forEach</code> for some other purpose, such as adding the results of a stream computation to a preexisting
+         collection.
+      </p>
+      
+      <p class="indent">The improved code uses a <em class="calibre9">collector</em>, which is a new concept that you have to learn in order to use streams. The <code class="calibre12">Collectors</code> API is intimidating: it has thirty-nine methods, some of which have as many as five
+         type parameters. The good news is that you can derive most of the benefit from this
+         API without delving into its full complexity. For starters, you can ignore the <code class="calibre12">Collector</code> interface and think of a collector as an opaque object that encapsulates a <em class="calibre9">reduction</em> strategy. In this context, reduction means combining the elements of a stream into
+         a single object. The object produced by a collector is typically a collection (which
+         accounts for the name collector).
+      </p>
+      
+      <p class="indent">The collectors for gathering the elements of a stream into a true <code class="calibre12">Collection</code> are straightforward. There are three such collectors: <code class="calibre12">toList()</code>, <code class="calibre12">toSet()</code>, and <code class="calibre12">toCollection(collectionFactory)</code>. They return, respectively, a set, a list, and a programmer-specified collection
+         type. Armed with this knowledge, we can write a stream pipeline to extract a top-ten
+         list from our frequency table.
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex25a" id="pch7ex25" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Pipeline to get a top-ten list of words from a frequency table</strong><br class="calibre7"/>
+         List&lt;String&gt; topTen = freq.keySet().stream()<br class="calibre7"/>
+             .sorted(<strong class="calibre11">comparing(freq::get).reversed()</strong>)<br class="calibre7"/>
+             .limit(10)<br class="calibre7"/>
+             .collect(toList());
+      </p>
+      
+      <p class="noindent">Note that we haven’t qualified the <code class="calibre12">toList</code> method with its class, <code class="calibre12">Collectors</code>. <strong class="calibre11">It is customary and wise to statically import all members of</strong> <code class="calibre12"><strong class="calibre11">Collectors because</strong></code> <strong class="calibre11">it makes stream pipelines more readable.</strong></p>
+      
+      <p class="indent">The only tricky part of this code is the comparator that we pass to <code class="calibre12">sorted</code>, <code class="calibre12">comparing(freq::get).reversed()</code>. The <code class="calibre12">comparing</code> method is a comparator construction method (<a href="ch3.xhtml#lev14" class="calibre8">Item 14</a>) that takes a key extraction function. The function takes a word, and the “extraction”
+         is actually a table lookup: the bound method reference <code class="calibre12">freq::get</code> looks up the word in the frequency table and returns the number of times the word
+         appears in the file. Finally, we call <code class="calibre12">reversed</code> on the <span epub:type="pagebreak" id="page_212"></span>comparator, so we’re sorting the words from most frequent to least frequent. Then
+         it’s a simple matter to limit the stream to ten words and collect them into a list.
+      </p>
+      
+      <p class="indent">The previous code snippets use <code class="calibre12">Scanner</code>’s <code class="calibre12">stream</code> method to get a stream over the scanner. This method was added in Java 9. If you’re
+         using an earlier release, you can translate the scanner, which implements <code class="calibre12">Iterator</code>, into a stream using an adapter similar to the one in <a href="ch7.xhtml#lev47" class="calibre8">Item 47</a> (<code class="calibre12">streamOf(Iterable&lt;E&gt;)</code>).
+      </p>
+      
+      <p class="indent">So what about the other thirty-six methods in <code class="calibre12">Collectors</code>? Most of them exist to let you collect streams into maps, which is far more complicated
+         than collecting them into true collections. Each stream element is associated with
+         a key <em class="calibre9">and a value</em>, and multiple stream elements can be associated with the same key.
+      </p>
+      
+      <p class="indent">The simplest map collector is <code class="calibre12">toMap(keyMapper, valueMapper)</code>, which takes two functions, one of which maps a stream element to a key, the other,
+         to a value. We used this collector in our <code class="calibre12">fromString</code> implementation in <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a> to make a map from the string form of an enum to the enum itself:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex26a" id="pch7ex26" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using a toMap collector to make a map from string to enum</strong><br class="calibre7"/>
+         private static final Map&lt;String, Operation&gt; stringToEnum =<br class="calibre7"/>
+             Stream.of(values()).collect(<br class="calibre7"/>
+                 <strong class="calibre11">toMap(Object::toString, e -&gt; e)</strong>);
+      </p>
+      
+      <p class="noindent">This simple form of <code class="calibre12">toMap</code> is perfect if each element in the stream maps to a unique key. If multiple stream
+         elements map to the same key, the pipeline will terminate with an <code class="calibre12">IllegalStateException</code>.
+      </p>
+      
+      <p class="indent">The more complicated forms of <code class="calibre12">toMap</code>, as well as the <code class="calibre12">groupingBy</code> method, give you various ways to provide strategies for dealing with such collisions.
+         One way is to provide the <code class="calibre12">toMap</code> method with a <em class="calibre9">merge function</em> in addition to its key and value mappers. The merge function is a <code class="calibre12">BinaryOperator&lt;V&gt;</code>, where <code class="calibre12">V</code> is the value type of the map. Any additional values associated with a key are combined
+         with the existing value using the merge function, so, for example, if the merge function
+         is multiplication, you end up with a value that is the product of all the values associated
+         with the key by the value mapper.
+      </p>
+      
+      <p class="indent">The three-argument form of <code class="calibre12">toMap</code> is also useful to make a map from a key to a chosen element associated with that
+         key. For example, suppose we have a stream of record albums by various artists, and
+         we want a map from recording artist to best-selling album. This collector will do
+         the job.
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex27a" id="pch7ex27" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Collector to generate a map from key to chosen element for key</strong><br class="calibre7"/>
+         Map&lt;Artist, Album&gt; topHits = albums.collect(<br class="calibre7"/>
+            <strong class="calibre11">toMap(Album::artist, a-&gt;a, maxBy(comparing(Album::sales)))</strong>);
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_213"></span>Note that the comparator uses the static factory method <code class="calibre12">maxBy</code>, which is statically imported from <code class="calibre12">BinaryOperator</code>. This method converts a <code class="calibre12">Comparator&lt;T&gt;</code> into a <code class="calibre12">BinaryOperator&lt;T&gt;</code> that computes the maximum implied by the specified comparator. In this case, the
+         comparator is returned by the comparator construction method <code class="calibre12">comparing</code>, which takes the key extractor function <code class="calibre12">Album::sales</code>. This may seem a bit convoluted, but the code reads nicely. Loosely speaking, it
+         says, “convert the stream of albums to a map, mapping each artist to the album that
+         has the best album by sales.” This is surprisingly close to the problem statement.
+      </p>
+      
+      <p class="indent">Another use of the three-argument form of <code class="calibre12">toMap</code> is to produce a collector that imposes a last-write-wins policy when there are collisions.
+         For many streams, the results will be nondeterministic, but if all the values that
+         may be associated with a key by the mapping functions are identical, or if they are
+         all acceptable, this collector’s s behavior may be just what you want:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex28a" id="pch7ex28" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Collector to impose last-write-wins policy</strong><br class="calibre7"/>
+         toMap(keyMapper, valueMapper, (v1, v2) -&gt; v2)
+      </p>
+      
+      <p class="indent">The third and final version of <code class="calibre12">toMap</code> takes a fourth argument, which is a map factory, for use when you want to specify
+         a particular map implementation such as an <code class="calibre12">EnumMap</code> or a <code class="calibre12">TreeMap</code>.
+      </p>
+      
+      <p class="indent">There are also variant forms of the first three versions of <code class="calibre12">toMap</code>, named <code class="calibre12">toConcurrentMap</code>, that run efficiently in parallel and produce <code class="calibre12">ConcurrentHashMap</code> instances.
+      </p>
+      
+      <p class="indent">In addition to the <code class="calibre12">toMap</code> method, the <code class="calibre12">Collectors</code> API provides the <code class="calibre12">groupingBy</code> method, which returns collectors to produce maps that group elements into categories
+         based on a <em class="calibre9">classifier function</em>. The classifier function takes an element and returns the category into which it
+         falls. This category serves as the element’s map key. The simplest version of the
+         <code class="calibre12">groupingBy</code> method takes only a classifier and returns a map whose values are lists of all the
+         elements in each category. This is the collector that we used in the <code class="calibre12">Anagram</code> program in <a href="ch7.xhtml#lev45" class="calibre8">Item 45</a> to generate a map from alphabetized word to a list of the words sharing the alphabetization:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex29a" id="pch7ex29" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">words.collect(<strong class="calibre11">groupingBy(word -&gt; alphabetize(word))</strong>)
+      </p>
+      
+      <p class="indent">If you want <code class="calibre12">groupingBy</code> to return a collector that produces a map with values other than lists, you can specify
+         a <em class="calibre9">downstream collector</em> in addition to a classifier. A downstream collector produces a value from a stream
+         containing all the <span epub:type="pagebreak" id="page_214"></span>elements in a category. The simplest use of this parameter is to pass <code class="calibre12">toSet()</code>, which results in a map whose values are sets of elements rather than lists.
+      </p>
+      
+      <p class="indent">Alternatively, you can pass <code class="calibre12">toCollection(collectionFactory)</code>, which lets you create the collections into which each category of elements is placed.
+         This gives you the flexibility to choose any collection type you want. Another simple
+         use of the two-argument form of <code class="calibre12">groupingBy</code> is to pass <code class="calibre12">counting()</code> as the downstream collector. This results in a map that associates each category
+         with the <em class="calibre9">number</em> of elements in the category, rather than a collection containing the elements. That’s
+         what you saw in the frequency table example at the beginning of this item:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex30a" id="pch7ex30" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Map&lt;String, Long&gt; freq = words<br class="calibre7"/>
+                 .collect(<strong class="calibre11">groupingBy(String::toLowerCase, counting())</strong>);
+      </p>
+      
+      <p class="indent">The third version of <code class="calibre12">groupingBy</code> lets you specify a map factory in addition to a downstream collector. Note that this
+         method violates the standard telescoping argument list pattern: the <code class="calibre12">mapFactory</code> parameter precedes, rather than follows, the <code class="calibre12">downStream</code> parameter. This version of <code class="calibre12">groupingBy</code> gives you control over the containing map as well as the contained collections, so,
+         for example, you can specify a collector that returns a <code class="calibre12">TreeMap</code> whose values are <code class="calibre12">TreeSets</code>.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">groupingByConcurrent</code> method provides variants of all three overloadings of <code class="calibre12">groupingBy</code>. These variants run efficiently in parallel and produce <code class="calibre12">ConcurrentHashMap</code> instances. There is also a rarely used relative of <code class="calibre12">groupingBy</code> called <code class="calibre12">partitioningBy</code>. In lieu of a classifier method, it takes a predicate and returns a map whose key
+         is a <code class="calibre12">Boolean</code>. There are two overloadings of this method, one of which takes a downstream collector
+         in addition to a predicate.
+      </p>
+      
+      <p class="indent">The collectors returned by the <code class="calibre12">counting</code> method are intended <em class="calibre9">only</em> for use as downstream collectors. The same functionality is available directly on
+         <code class="calibre12">Stream</code>, via the <code class="calibre12">count</code> method, so <strong class="calibre11">there is never a reason to say</strong> <code class="calibre12"><strong class="calibre11">collect(counting())</strong></code>. There are fifteen more <code class="calibre12">Collectors</code> methods with this property. They include the nine methods whose names begin with
+         <code class="calibre12">summing</code>, <code class="calibre12">averaging</code>, and <code class="calibre12">summarizing</code> (whose functionality is available on the corresponding primitive stream types). They
+         also include all overloadings of the <code class="calibre12">reducing</code> method, and the <code class="calibre12">filtering</code>, <code class="calibre12">mapping</code>, <code class="calibre12">flatMapping</code>, and <code class="calibre12">collectingAndThen</code> methods. Most programmers can safely ignore the majority of these methods. From a
+         design perspective, these collectors represent an attempt to partially duplicate the
+         functionality of streams in collectors so that downstream collectors can act as “ministreams.”
+      </p>
+      
+      <p class="indent">There are three <code class="calibre12">Collectors</code> methods we have yet to mention. Though they are in <code class="calibre12">Collectors</code>, they don’t involve collections. The first two are <code class="calibre12">minBy</code> and <code class="calibre12">maxBy</code>, which take a comparator and return the minimum or maximum element in <span epub:type="pagebreak" id="page_215"></span>the stream as determined by the comparator. They are minor generalizations of the
+         <code class="calibre12">min</code> and <code class="calibre12">max</code> methods in the <code class="calibre12">Stream</code> interface and are the collector analogues of the binary operators returned by the
+         like-named methods in <code class="calibre12">BinaryOperator</code>. Recall that we used <code class="calibre12">BinaryOperator.maxBy</code> in our best-selling album example.
+      </p>
+      
+      <p class="indent">The final <code class="calibre12">Collectors</code> method is <code class="calibre12">joining</code>, which operates only on streams of <code class="calibre12">CharSequence</code> instances such as strings. In its parameterless form, it returns a collector that
+         simply concatenates the elements. Its one argument form takes a single <code class="calibre12">CharSequence</code> parameter named <code class="calibre12">delimiter</code> and returns a collector that joins the stream elements, inserting the delimiter between
+         adjacent elements. If you pass in a comma as the delimiter, the collector returns
+         a comma-separated values string (but beware that the string will be ambiguous if any
+         of the elements in the stream contain commas). The three argument form takes a prefix
+         and suffix in addition to the delimiter. The resulting collector generates strings
+         like the ones that you get when you print a collection, for example <code class="calibre12">[came, saw, conquered]</code>.
+      </p>
+      
+      <p class="indent">In summary, the essence of programming stream pipelines is side-effect-free function
+         objects. This applies to all of the many function objects passed to streams and related
+         objects. The terminal operation <code class="calibre12">forEach</code> should only be used to report the result of a computation performed by a stream,
+         not to perform the computation. In order to use streams properly, you have to know
+         about collectors. The most important collector factories are <code class="calibre12">toList</code>, <code class="calibre12">toSet</code>, <code class="calibre12">toMap</code>, <code class="calibre12">groupingBy</code>, and <code class="calibre12">joining</code>.
+      </p>
+      
+      <h3 class="h2"><a id="lev47" class="calibre4"></a><span epub:type="pagebreak" id="page_216" class="calibre15"></span><strong class="calibre10">Item 47: Prefer Collection to Stream as a return type</strong></h3>
+      
+      <p class="noindent">Many methods return sequences of elements. Prior to Java 8, the obvious return types
+         for such methods were the collection interfaces <code class="calibre12">Collection</code>, <code class="calibre12">Set</code>, and <code class="calibre12">List</code>; <code class="calibre12">Iterable</code>; and the array types. Usually, it was easy to decide which of these types to return.
+         The norm was a collection interface. If the method existed solely to enable for-each
+         loops or the returned sequence couldn’t be made to implement some <code class="calibre12">Collection</code> method (typically, <code class="calibre12">contains(Object)</code>), the <code class="calibre12">Iterable</code> interface was used. If the returned elements were primitive values or there were
+         stringent performance requirements, arrays were used. In Java 8, streams were added
+         to the platform, substantially complicating the task of choosing the appropriate return
+         type for a sequence-returning method.
+      </p>
+      
+      <p class="indent">You may hear it said that streams are now the obvious choice to return a sequence
+         of elements, but as discussed in <a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>, streams do not make iteration obsolete: writing good code requires combining streams
+         and iteration judiciously. If an API returns only a stream and some users want to
+         iterate over the returned sequence with a for-each loop, those users will be justifiably
+         upset. It is especially frustrating because the <code class="calibre12">Stream</code> interface contains the sole abstract method in the <code class="calibre12">Iterable</code> interface, and <code class="calibre12">Stream</code>’s specification for this method is compatible with <code class="calibre12">Iterable</code>’s. The only thing preventing programmers from using a for-each loop to iterate over
+         a stream is <code class="calibre12">Stream</code>’s failure to extend <code class="calibre12">Iterable</code>.
+      </p>
+      
+      <p class="indent">Sadly, there is no good workaround for this problem. At first glance, it might appear
+         that passing a method reference to <code class="calibre12">Stream</code>’s <code class="calibre12">iterator</code> method would work. The resulting code is perhaps a bit noisy and opaque, but not
+         unreasonable:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex31a" id="pch7ex31" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Won't compile, due to limitations on Java's type inference</strong><br class="calibre7"/>
+         for (ProcessHandle ph : ProcessHandle.allProcesses()::iterator) {<br class="calibre7"/>
+             // Process the process<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Unfortunately, if you attempt to compile this code, you’ll get an error message:</p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex32a" id="pch7ex32" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Test.java:6: error: method reference not expected here<br class="calibre7"/>
+         for (ProcessHandle ph : ProcessHandle.allProcesses()::iterator) {<br class="calibre7"/>
+                                 ^
+      </p>
+      
+      <p class="noindent">In order to make the code compile, you have to cast the method reference to an appropriately
+         parameterized <code class="calibre12">Iterable</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex33a" id="pch7ex33" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Hideous workaround to iterate over a stream</strong><br class="calibre7"/>
+         for  (ProcessHandle ph : (Iterable&lt;ProcessHandle&gt;)<br class="calibre7"/>
+                                 ProcessHandle.allProcesses()::iterator)
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_217"></span>This client code works, but it is too noisy and opaque to use in practice. A better
+         workaround is to use an adapter method. The JDK does not provide such a method, but
+         it’s easy to write one, using the same technique used in-line in the snippets above.
+         Note that no cast is necessary in the adapter method because Java’s type inference
+         works properly in this context:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex34a" id="pch7ex34" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Adapter from  Stream&lt;E&gt; to Iterable&lt;E&gt;</strong><br class="calibre7"/>
+         public static &lt;E&gt; Iterable&lt;E&gt; iterableOf(Stream&lt;E&gt; stream) {<br class="calibre7"/>
+             return stream::iterator;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">With this adapter, you can iterate over any stream with a for-each statement:</p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex35a" id="pch7ex35" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">for (ProcessHandle p : iterableOf(ProcessHandle.allProcesses())) {<br class="calibre7"/>
+             // Process the process<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that the stream versions of the <code class="calibre12">Anagrams</code> program in <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a> use the <code class="calibre12">Files.lines</code> method to read the dictionary, while the iterative version uses a scanner. The <code class="calibre12">Files.lines</code> method is superior to a scanner, which silently swallows any exceptions encountered
+         while reading the file. Ideally, we would have used <code class="calibre12">Files.lines</code> in the iterative version too. This is the sort of compromise that programmers will
+         make if an API provides only stream access to a sequence and they want to iterate
+         over the sequence with a for-each statement.
+      </p>
+      
+      <p class="indent">Conversely, a programmer who wants to process a sequence using a stream pipeline will
+         be justifiably upset by an API that provides only an <code class="calibre12">Iterable</code>. Again the JDK does not provide an adapter, but it’s easy enough to write one:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex36a" id="pch7ex36" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Adapter from Iterable&lt;E&gt; to Stream&lt;E&gt;</strong><br class="calibre7"/>
+         public static &lt;E&gt; Stream&lt;E&gt; streamOf(Iterable&lt;E&gt; iterable) {<br class="calibre7"/>
+             return StreamSupport.stream(iterable.spliterator(), false);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">If you’re writing a method that returns a sequence of objects and you know that it
+         will only be used in a stream pipeline, then of course you should feel free to return
+         a stream. Similarly, a method returning a sequence that will only be used for iteration
+         should return an <code class="calibre12">Iterable</code>. But if you’re writing a public API that returns a sequence, you should provide for
+         users who want to write stream pipelines as well as those who want to write for-each
+         statements, unless you have a good reason to believe that most of your users will
+         want to use the same mechanism.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_218"></span>The <code class="calibre12">Collection</code> interface is a subtype of <code class="calibre12">Iterable</code> and has a <code class="calibre12">stream</code> method, so it provides for both iteration and stream access. Therefore, <code class="calibre12"><strong class="calibre11">Collection</strong></code> <strong class="calibre11">or an appropriate subtype is generally the best return type for a public, sequence-returning
+            method.</strong> Arrays also provide for easy iteration and stream access with the <code class="calibre12">Arrays.asList</code> and <code class="calibre12">Stream.of</code> methods. If the sequence you’re returning is small enough to fit easily in memory,
+         you’re probably best off returning one of the standard collection implementations,
+         such as <code class="calibre12">ArrayList</code> or <code class="calibre12">HashSet</code>. But <strong class="calibre11">do not store a large sequence in memory just to return it as a collection.</strong></p>
+      
+      <p class="indent">If the sequence you’re returning is large but can be represented concisely, consider
+         implementing a special-purpose collection. For example, suppose you want to return
+         the <em class="calibre9">power set</em> of a given set, which consists of all of its subsets. The power set of {<em class="calibre9">a</em>, <em class="calibre9">b</em>, <em class="calibre9">c</em>} is {{}, {<em class="calibre9">a</em>}, {<em class="calibre9">b</em>}, {<em class="calibre9">c</em>}, {<em class="calibre9">a</em>, <em class="calibre9">b</em>}, {<em class="calibre9">a, c</em>}, {<em class="calibre9">b</em>, <em class="calibre9">c</em>}, {<em class="calibre9">a</em>, <em class="calibre9">b</em>, <em class="calibre9">c</em>}}. If a set has <em class="calibre9">n</em> elements, its power set has 2<em class="calibre9"><sup class="calibre14">n</sup></em>. Therefore, you shouldn’t even consider storing the power set in a standard collection
+         implementation. It is, however, easy to implement a custom collection for the job
+         with the help of <code class="calibre12">AbstractList</code>.
+      </p>
+      
+      <p class="indent">The trick is to use the index of each element in the power set as a bit vector, where
+         the <em class="calibre9">n</em>th bit in the index indicates the presence or absence of the <em class="calibre9">n</em>th element from the source set. In essence, there is a natural mapping between the
+         binary numbers from 0 to 2<em class="calibre9"><sup class="calibre14">n</sup></em> − 1 and the power set of an <em class="calibre9">n</em>-element set. Here’s the code:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex37a" id="pch7ex37" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Returns the power set of an input set as custom collection</strong><br class="calibre7"/>
+         public class PowerSet {<br class="calibre7"/>
+            public static final &lt;E&gt; Collection&lt;Set&lt;E&gt;&gt; of(Set&lt;E&gt; s) {<br class="calibre7"/>
+               List&lt;E&gt; src = new ArrayList&lt;&gt;(s);<br class="calibre7"/>
+               if (src.size() &gt; 30)<br class="calibre7"/>
+                  throw new IllegalArgumentException("Set too big " + s);<br class="calibre7"/>
+               return new AbstractList&lt;Set&lt;E&gt;&gt;() {<br class="calibre7"/>
+                  @Override public int size() {<br class="calibre7"/>
+                     return 1 &lt;&lt; src.size(); // 2 to the power srcSize<br class="calibre7"/>
+                  }<br class="calibre7"/>
+         <br class="calibre7"/>
+                  @Override public boolean contains(Object o) {<br class="calibre7"/>
+                     return o instanceof Set &amp;&amp; src.containsAll((Set)o);<br class="calibre7"/>
+                  }<br class="calibre7"/>
+         <br class="calibre7"/>
+                  @Override public Set&lt;E&gt; get(int index) {<br class="calibre7"/>
+                     Set&lt;E&gt; result = new HashSet&lt;&gt;();<br class="calibre7"/>
+                     for (int i = 0; index != 0; i++, index &gt;&gt;= 1)<br class="calibre7"/>
+                        if ((index &amp; 1) == 1)<br class="calibre7"/>
+                           result.add(src.get(i));<br class="calibre7"/>
+                     return result;<br class="calibre7"/>
+                  }<br class="calibre7"/>
+               };<br class="calibre7"/>
+            }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_219"></span>Note that <code class="calibre12">PowerSet.of</code> throws an exception if the input set has more than 30 elements. This highlights a
+         disadvantage of using <code class="calibre12">Collection</code> as a return type rather than <code class="calibre12">Stream</code> or <code class="calibre12">Iterable</code>: <code class="calibre12">Collection</code> has an <code class="calibre12">int</code>-returning <code class="calibre12">size</code> method, which limits the length of the returned sequence to <code class="calibre12">Integer.MAX_VALUE</code>, or 2<sup class="calibre14">31</sup> − 1. The <code class="calibre12">Collection</code> specification does allow the <code class="calibre12">size</code> method to return 2<sup class="calibre14">31</sup> − 1 if the collection is larger, even infinite, but this is not a wholly satisfying
+         solution.
+      </p>
+      
+      <p class="indent">In order to write a <code class="calibre12">Collection</code> implementation atop <code class="calibre12">AbstractCollection</code>, you need implement only two methods beyond the one required for <code class="calibre12">Iterable</code>: <code class="calibre12">contains</code> and <code class="calibre12">size</code>. Often it’s easy to write efficient implementations of these methods. If it isn’t
+         feasible, perhaps because the contents of the sequence aren’t predetermined before
+         iteration takes place, return a stream or iterable, whichever feels more natural.
+         If you choose, you can return both using two separate methods.
+      </p>
+      
+      <p class="indent">There are times when you’ll choose the return type based solely on ease of implementation.
+         For example, suppose you want to write a method that returns all of the (contiguous)
+         sublists of an input list. It takes only three lines of code to generate these sublists
+         and put them in a standard collection, but the memory required to hold this collection
+         is quadratic in the size of the source list. While this is not as bad as the power
+         set, which is exponential, it is clearly unacceptable. Implementing a custom collection,
+         as we did for the power set, would be tedious, more so because the JDK lacks a skeletal
+         <code class="calibre12">Iterator</code> implementation to help us.
+      </p>
+      
+      <p class="indent">It is, however, straightforward to implement a stream of all the sublists of an input
+         list, though it does require a minor insight. Let’s call a sublist that contains the
+         first element of a list a <em class="calibre9">prefix</em> of the list. For example, the prefixes of (<em class="calibre9">a</em>, <em class="calibre9">b</em>, <em class="calibre9">c</em>) are (<em class="calibre9">a</em>), (<em class="calibre9">a</em>, <em class="calibre9">b</em>), and (<em class="calibre9">a</em>, <em class="calibre9">b</em>, <em class="calibre9">c</em>). Similarly, let’s call a sublist that contains the last element a <em class="calibre9">suffix</em>, so the suffixes of (<em class="calibre9">a</em>, <em class="calibre9">b</em>, <em class="calibre9">c</em>) are (<em class="calibre9">a</em>, <em class="calibre9">b</em>, <em class="calibre9">c</em>), (<em class="calibre9">b</em>, c), and (<em class="calibre9">c</em>). The insight is that the sublists of a list are simply the suffixes of the prefixes
+         (or identically, the prefixes of the suffixes) and the empty list. This observation
+         leads directly to a clear, reasonably concise implementation:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex38a" id="pch7ex38" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Returns a stream of all the sublists of its input list</strong><br class="calibre7"/>
+         public class SubLists {<br class="calibre7"/>
+            public static &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; of(List&lt;E&gt; list) {<br class="calibre7"/>
+               return Stream.concat(Stream.of(Collections.emptyList()),<br class="calibre7"/>
+                  prefixes(list).flatMap(SubLists::suffixes));<br class="calibre7"/>
+            }<br class="calibre7"/>
+         <br class="calibre7"/>
+            private static &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; prefixes(List&lt;E&gt; list) {<br class="calibre7"/>
+               return IntStream.rangeClosed(1, list.size())<br class="calibre7"/>
+                  .mapToObj(end -&gt; list.subList(0, end));<br class="calibre7"/>
+            }<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_220"></span><br class="calibre7"/>
+            private static &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; suffixes(List&lt;E&gt; list) {<br class="calibre7"/>
+               return IntStream.range(0, list.size())<br class="calibre7"/>
+                  .mapToObj(start -&gt; list.subList(start, list.size()));<br class="calibre7"/>
+            }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that the <code class="calibre12">Stream.concat</code> method is used to add the empty list into the returned stream. Also note that the
+         <code class="calibre12">flatMap</code> method (<a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>) is used to generate a single stream consisting of all the suffixes of all the prefixes.
+         Finally, note that we generate the prefixes and suffixes by mapping a stream of consecutive
+         <code class="calibre12">int</code> values returned by <code class="calibre12">IntStream.range</code> and <code class="calibre12">IntStream.rangeClosed</code>. This idiom is, roughly speaking, the stream equivalent of the standard <code class="calibre12">for</code>-loop on integer indices. Thus, our sublist implementation is similar in spirit to
+         the obvious nested <code class="calibre12">for</code>-loop:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex39a" id="pch7ex39" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">for (int start = 0; start &lt; src.size(); start++)<br class="calibre7"/>
+             for (int end = start + 1; end &lt;= src.size(); end++)<br class="calibre7"/>
+                 System.out.println(src.subList(start, end));
+      </p>
+      
+      <p class="noindent">It is possible to translate this <code class="calibre12">for</code>-loop directly into a stream. The result is more concise than our previous implementation,
+         but perhaps a bit less readable. It is similar in spirit to the streams code for the
+         Cartesian product in <a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex40a" id="pch7ex40" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Returns a stream of all the sublists of its input list</strong><br class="calibre7"/>
+         public static &lt;E&gt; Stream&lt;List&lt;E&gt;&gt; of(List&lt;E&gt; list) {<br class="calibre7"/>
+            return IntStream.range(0, list.size())<br class="calibre7"/>
+               .mapToObj(start -&gt;<br class="calibre7"/>
+                  IntStream.rangeClosed(start + 1, list.size())<br class="calibre7"/>
+                     .mapToObj(end -&gt; list.subList(start, end)))<br class="calibre7"/>
+               .flatMap(x -&gt; x);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Like the <code class="calibre12">for</code>-loop that precedes it, this code does <em class="calibre9">not</em> emit the empty list. In order to fix this deficiency, you could either use <code class="calibre12">concat</code>, as we did in the previous version, or replace <code class="calibre12">1</code> by <code class="calibre12">(int) Math.signum(start)</code> in the <code class="calibre12">rangeClosed</code> call.
+      </p>
+      
+      <p class="indent">Either of these stream implementations of sublists is fine, but both will require
+         some users to employ a <code class="calibre12">Stream</code>-to-<code class="calibre12">Iterable</code> adapter or to use a stream in places where iteration would be more natural. Not only
+         does the <code class="calibre12">Stream</code>-to-<code class="calibre12">Iterable</code> adapter clutter up client code, but it slows down the loop by a factor of 2.3 on
+         my machine. A purpose-built <code class="calibre12">Collection</code> implementation (not shown here) is considerably more verbose but runs about 1.4 times
+         as fast as our stream-based implementation on my machine.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_221"></span>In summary, when writing a method that returns a sequence of elements, remember that
+         some of your users may want to process them as a stream while others may want to iterate
+         over them. Try to accommodate both groups. If it’s feasible to return a collection,
+         do so. If you already have the elements in a collection or the number of elements
+         in the sequence is small enough to justify creating a new one, return a standard collection
+         such as <code class="calibre12">ArrayList</code>. Otherwise, consider implementing a custom collection as we did for the power set.
+         If it isn’t feasible to return a collection, return a stream or iterable, whichever
+         seems more natural. If, in a future Java release, the <code class="calibre12">Stream</code> interface declaration is modified to extend <code class="calibre12">Iterable</code>, then you should feel free to return streams because they will allow for both stream
+         processing and iteration.
+      </p>
+      
+      <h3 class="h2"><a id="lev48" class="calibre4"></a><span epub:type="pagebreak" id="page_222" class="calibre15"></span><strong class="calibre10">Item 48: Use caution when making streams parallel</strong></h3>
+      
+      <p class="noindent">Among mainstream languages, Java has always been at the forefront of providing facilities
+         to ease the task of concurrent programming. When Java was released in 1996, it had
+         built-in support for threads, with synchronization and <code class="calibre12">wait</code>/<code class="calibre12">notify</code>. Java 5 introduced the <code class="calibre12">java.util.concurrent</code> library, with concurrent collections and the executor framework. Java 7 introduced
+         the fork-join package, a high-performance framework for parallel decomposition. Java
+         8 introduced streams, which can be parallelized with a single call to the <code class="calibre12">parallel</code> method. Writing concurrent programs in Java keeps getting easier, but writing concurrent
+         programs that are correct and fast is as difficult as it ever was. Safety and liveness
+         violations are a fact of life in concurrent programming, and parallel stream pipelines
+         are no exception.
+      </p>
+      
+      <p class="indent">Consider this program from <a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex41a" id="pch7ex41" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Stream-based program to generate the first 20 Mersenne primes</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             primes().map(p -&gt; TWO.pow(p.intValueExact()).subtract(ONE))<br class="calibre7"/>
+                 .filter(mersenne -&gt; mersenne.isProbablePrime(50))<br class="calibre7"/>
+                 .limit(20)<br class="calibre7"/>
+                 .forEach(System.out::println);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         static Stream&lt;BigInteger&gt; primes() {<br class="calibre7"/>
+             return Stream.iterate(TWO, BigInteger::nextProbablePrime);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">On my machine, this program immediately starts printing primes and takes 12.5 seconds
+         to run to completion. Suppose I naively try to speed it up by adding a call to <code class="calibre12">parallel()</code> to the stream pipeline. What do you think will happen to its performance? Will it
+         get a few percent faster? A few percent slower? Sadly, what happens is that it doesn’t
+         print anything, but CPU usage spikes to 90 percent and stays there indefinitely (a
+         <em class="calibre9">liveness failure</em>). The program might terminate eventually, but I was unwilling to find out; I stopped
+         it forcibly after half an hour.
+      </p>
+      
+      <p class="indent">What’s going on here? Simply put, the streams library has no idea how to parallelize
+         this pipeline and the heuristics fail. Even under the best of circumstances, <strong class="calibre11">parallelizing a pipeline is unlikely to increase its performance if the source is
+            from</strong> <code class="calibre12"><strong class="calibre11">Stream.iterate</strong></code><strong class="calibre11">, or the intermediate operation</strong> <code class="calibre12"><strong class="calibre11">limit</strong></code> <strong class="calibre11">is used.</strong> This pipeline has to contend with <em class="calibre9">both</em> of these issues. Worse, the default parallelization strategy deals with the unpredictability
+         of <code class="calibre12">limit</code> by assuming there’s no harm in processing a few extra elements and discarding any
+         unneeded results. In this case, <span epub:type="pagebreak" id="page_223"></span>it takes roughly twice as long to find each Mersenne prime as it did to find the previous
+         one. Thus, the cost of computing a single extra element is roughly equal to the cost
+         of computing all previous elements combined, and this innocuous-looking pipeline brings
+         the automatic parallelization algorithm to its knees. The moral of this story is simple:
+         <strong class="calibre11">Do not parallelize stream pipelines indiscriminately.</strong> The performance consequences may be disastrous.
+      </p>
+      
+      <p class="indent">As a rule, <strong class="calibre11">performance gains from parallelism are best on streams over</strong> <code class="calibre12"><strong class="calibre11">ArrayList</strong></code><strong class="calibre11">,</strong> <code class="calibre12"><strong class="calibre11">HashMap</strong></code><strong class="calibre11">,</strong> <code class="calibre12"><strong class="calibre11">HashSet</strong></code><strong class="calibre11">, and</strong> <code class="calibre12"><strong class="calibre11">ConcurrentHashMap</strong></code> <strong class="calibre11">instances; arrays;</strong> <code class="calibre12"><strong class="calibre11">int</strong></code> <strong class="calibre11">ranges; and</strong> <code class="calibre12"><strong class="calibre11">long</strong></code> <strong class="calibre11">ranges.</strong> What these data structures have in common is that they can all be accurately and
+         cheaply split into subranges of any desired sizes, which makes it easy to divide work
+         among parallel threads. The abstraction used by the streams library to perform this
+         task is the <em class="calibre9">spliterator</em>, which is returned by the <code class="calibre12">spliterator</code> method on <code class="calibre12">Stream</code> and <code class="calibre12">Iterable</code>.
+      </p>
+      
+      <p class="indent">Another important factor that all of these data structures have in common is that
+         they provide good-to-excellent <em class="calibre9">locality of reference</em> when processed sequentially: sequential element references are stored together in
+         memory. The objects referred to by those references may not be close to one another
+         in memory, which reduces locality-of-reference. Locality-of-reference turns out to
+         be critically important for parallelizing bulk operations: without it, threads spend
+         much of their time idle, waiting for data to be transferred from memory into the processor’s
+         cache. The data structures with the best locality of reference are primitive arrays
+         because the data itself is stored contiguously in memory.
+      </p>
+      
+      <p class="indent">The nature of a stream pipeline’s terminal operation also affects the effectiveness
+         of parallel execution. If a significant amount of work is done in the terminal operation
+         compared to the overall work of the pipeline and that operation is inherently sequential,
+         then parallelizing the pipeline will have limited effectiveness. The best terminal
+         operations for parallelism are <em class="calibre9">reductions</em>, where all of the elements emerging from the pipeline are combined using one of <code class="calibre12">Stream</code>’s <code class="calibre12">reduce</code> methods, or prepackaged reductions such as <code class="calibre12">min</code>, <code class="calibre12">max</code>, <code class="calibre12">count</code>, and <code class="calibre12">sum</code>. The <em class="calibre9">short-circuiting</em> operations <code class="calibre12">anyMatch</code>, <code class="calibre12">allMatch</code>, and <code class="calibre12">noneMatch</code> are also amenable to parallelism. The operations performed by <code class="calibre12">Stream</code>’s <code class="calibre12">collect</code> method, which are known as <em class="calibre9">mutable reductions</em>, are not good candidates for parallelism because the overhead of combining collections
+         is costly.
+      </p>
+      
+      <p class="indent">If you write your own <code class="calibre12">Stream</code>, <code class="calibre12">Iterable</code>, or <code class="calibre12">Collection</code> implementation and you want decent parallel performance, you must override the <code class="calibre12">spliterator</code> method and test the parallel performance of the resulting streams extensively. Writing
+         high-quality spliterators is difficult and beyond the scope of this book.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_224"></span><strong class="calibre11">Not only can parallelizing a stream lead to poor performance, including liveness failures;
+            it can lead to incorrect results and unpredictable behavior</strong> (<em class="calibre9">safety failures</em>). Safety failures may result from parallelizing a pipeline that uses mappers, filters,
+         and other programmer-supplied function objects that fail to adhere to their specifications.
+         The <code class="calibre12">Stream</code> specification places stringent requirements on these function objects. For example,
+         the accumulator and combiner functions passed to <code class="calibre12">Stream</code>’s <code class="calibre12">reduce</code> operation must be associative, non-interfering, and stateless. If you violate these
+         requirements (some of which are discussed in <a href="ch7.xhtml#lev46" class="calibre8">Item 46</a>) but run your pipeline sequentially, it will likely yield correct results; if you
+         parallelize it, it will likely fail, perhaps catastrophically.
+      </p>
+      
+      <p class="indent">Along these lines, it’s worth noting that even if the parallelized Mersenne primes
+         program had run to completion, it would not have printed the primes in the correct
+         (ascending) order. To preserve the order displayed by the sequential version, you’d
+         have to replace the <code class="calibre12">forEach</code> terminal operation with <code class="calibre12">forEachOrdered</code>, which is guaranteed to traverse parallel streams in <em class="calibre9">encounter order</em>.
+      </p>
+      
+      <p class="indent">Even assuming that you’re using an efficiently splittable source stream, a parallelizable
+         or cheap terminal operation, and non-interfering function objects, you won’t get a
+         good speedup from parallelization unless the pipeline is doing enough real work to
+         offset the costs associated with parallelism. As a <em class="calibre9">very</em> rough estimate, the number of elements in the stream times the number of lines of
+         code executed per element should be at least a hundred thousand [<a href="ref.xhtml#rLea14" class="calibre8">Lea14</a>].
+      </p>
+      
+      <p class="indent">It’s important to remember that parallelizing a stream is strictly a performance optimization.
+         As is the case for any optimization, you must test the performance before and after
+         the change to ensure that it is worth doing (<a href="ch9.xhtml#lev67" class="calibre8">Item 67</a>). Ideally, you should perform the test in a realistic system setting. Normally, all
+         parallel stream pipelines in a program run in a common fork-join pool. A single misbehaving
+         pipeline can harm the performance of others in unrelated parts of the system.
+      </p>
+      
+      <p class="indent">If it sounds like the odds are stacked against you when parallelizing stream pipelines,
+         it’s because they are. An acquaintance who maintains a multimillion-line codebase
+         that makes heavy use of streams found only a handful of places where parallel streams
+         were effective. This does <em class="calibre9">not</em> mean that you should refrain from parallelizing streams. <strong class="calibre11">Under the right circumstances, it</strong> <em class="calibre9"><strong class="calibre11">is</strong></em> <strong class="calibre11">possible to achieve near-linear speedup in the number of processor cores simply by
+            adding a</strong> <code class="calibre12"><strong class="calibre11">parallel</strong></code> <strong class="calibre11">call to a stream pipeline.</strong> Certain domains, such as machine learning and data processing, are particularly amenable
+         to these speedups.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_225"></span>As a simple example of a stream pipeline where parallelism is effective, consider
+         this function for computing π(<em class="calibre9">n</em>), the number of primes less than or equal to <em class="calibre9">n</em>:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex42a" id="pch7ex42" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Prime-counting stream pipeline - benefits from parallelization</strong><br class="calibre7"/>
+         static long pi(long n) {<br class="calibre7"/>
+             return LongStream.rangeClosed(2, n)<br class="calibre7"/>
+                 .mapToObj(BigInteger::valueOf)<br class="calibre7"/>
+                 .filter(i -&gt; i.isProbablePrime(50))<br class="calibre7"/>
+                 .count();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">On my machine, it takes 31 seconds to compute π(10<sup class="calibre14">8</sup>) using this function. Simply adding a <code class="calibre12">parallel()</code> call reduces the time to 9.2 seconds:
+      </p>
+      
+      <p class="codelink"><a href="ch7_images.xhtml#pch7ex43a" id="pch7ex43" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Prime-counting stream pipeline - parallel version</strong><br class="calibre7"/>
+         static long pi(long n) {<br class="calibre7"/>
+             return LongStream.rangeClosed(2, n)<br class="calibre7"/>
+                 <strong class="calibre11">.parallel()</strong><br class="calibre7"/>
+                 .mapToObj(BigInteger::valueOf)<br class="calibre7"/>
+                 .filter(i -&gt; i.isProbablePrime(50))<br class="calibre7"/>
+                 .count();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">In other words, parallelizing the computation speeds it up by a factor of 3.7 on my
+         quad-core machine. It’s worth noting that this is <em class="calibre9">not</em> how you’d compute π(<em class="calibre9">n</em>) for large values of <em class="calibre9">n</em> in practice. There are far more efficient algorithms, notably Lehmer’s formula.
+      </p>
+      
+      <p class="indent">If you are going to parallelize a stream of random numbers, start with a <code class="calibre12">SplittableRandom</code> instance rather than a <code class="calibre12">ThreadLocalRandom</code> (or the essentially obsolete <code class="calibre12">Random</code>). <code class="calibre12">SplittableRandom</code> is designed for precisely this use, and has the potential for linear speedup. ThreadLocalRandom
+         is designed for use by a single thread, and will adapt itself to function as a parallel
+         stream source, but won’t be as fast as <code class="calibre12">SplittableRandom</code>. <code class="calibre12">Random</code> synchronizes on every operation, so it will result in excessive, parallelism-killing
+         contention.
+      </p>
+      
+      <p class="indent">In summary, do not even attempt to parallelize a stream pipeline unless you have good
+         reason to believe that it will preserve the correctness of the computation and increase
+         its speed. The cost of inappropriately parallelizing a stream can be a program failure
+         or performance disaster. If you believe that parallelism may be justified, ensure
+         that your code remains correct when run in parallel, and do careful performance measurements
+         under realistic conditions. If your code remains correct and these experiments bear
+         out your suspicion of increased performance, then and only then parallelize the stream
+         in production code.<span epub:type="pagebreak" id="page_226"></span></p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="ch6.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch8.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,2078 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 6 Enums and Annotations</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="ch5.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch7.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch6"><span epub:type="pagebreak" id="page_157" class="calibre15"></span>Chapter 6. Enums and Annotations
+      </h2>
+      
+      <p class="noindent"><strong class="calibre11">J</strong><small class="calibre13">AVA</small> supports two special-purpose families of reference types: a kind of class called
+         an <em class="calibre9">enum type,</em> and a kind of interface called an <em class="calibre9">annotation type</em>. This chapter discusses best practices for using these type families.
+      </p>
+      
+      <h3 class="h2"><a id="lev34" class="calibre4"></a><strong class="calibre10">Item 34: Use enums instead of</strong> <code class="calibre19"><strong class="calibre10">int</strong></code> <strong class="calibre10">constants</strong></h3>
+      
+      <p class="noindent">An <em class="calibre9">enumerated type</em> is a type whose legal values consist of a fixed set of constants, such as the seasons
+         of the year, the planets in the solar system, or the suits in a deck of playing cards.
+         Before enum types were added to the language, a common pattern for representing enumerated
+         types was to declare a group of named <code class="calibre12">int</code> constants, one for each member of the type:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex1a" id="pch6ex1" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// The int enum pattern - severely deficient!</strong><br class="calibre7"/>
+         public static final int APPLE_FUJI         = 0;<br class="calibre7"/>
+         public static final int APPLE_PIPPIN       = 1;<br class="calibre7"/>
+         public static final int APPLE_GRANNY_SMITH = 2;<br class="calibre7"/>
+         public static final int ORANGE_NAVEL  = 0;<br class="calibre7"/>
+         public static final int ORANGE_TEMPLE = 1;<br class="calibre7"/>
+         public static final int ORANGE_BLOOD  = 2;
+      </p>
+      
+      <p class="indent">This technique, known as the <code class="calibre12"><em class="calibre9">int</em></code> <em class="calibre9">enum pattern,</em> has many shortcomings. It provides nothing in the way of type safety and little in
+         the way of expressive power. The compiler won’t complain if you pass an apple to a
+         method that expects an orange, compare apples to oranges with the <code class="calibre12">==</code> operator, or worse:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex2a" id="pch6ex2" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Tasty citrus flavored applesauce!</strong><br class="calibre7"/>
+         int i = (APPLE_FUJI - ORANGE_TEMPLE) / APPLE_PIPPIN;
+      </p>
+      
+      <p class="indent">Note that the name of each apple constant is prefixed with <code class="calibre12">APPLE_</code> and the name of each orange constant is prefixed with <code class="calibre12">ORANGE_</code>. This is because Java <span epub:type="pagebreak" id="page_158"></span>doesn’t provide namespaces for <code class="calibre12">int</code> enum groups. Prefixes prevent name clashes when two <code class="calibre12">int</code> enum groups have identically named constants, for example between <code class="calibre12">ELEMENT_MERCURY</code> and <code class="calibre12">PLANET_MERCURY</code>.
+      </p>
+      
+      <p class="indent">Programs that use <code class="calibre12">int</code> enums are brittle. Because <code class="calibre12">int</code> enums are <em class="calibre9">constant variables</em> [JLS, 4.12.4], their <code class="calibre12">int</code> values are compiled into the clients that use them [JLS, 13.1]. If the value associated
+         with an <code class="calibre12">int</code> enum is changed, its clients must be recompiled. If not, the clients will still run,
+         but their behavior will be incorrect.
+      </p>
+      
+      <p class="indent">There is no easy way to translate <code class="calibre12">int</code> enum constants into printable strings. If you print such a constant or display it
+         from a debugger, all you see is a number, which isn’t very helpful. There is no reliable
+         way to iterate over all the <code class="calibre12">int</code> enum constants in a group, or even to obtain the size of an <code class="calibre12">int</code> enum group.
+      </p>
+      
+      <p class="indent">You may encounter a variant of this pattern in which <code class="calibre12">String</code> constants are used in place of <code class="calibre12">int</code> constants. This variant, known as the <code class="calibre12"><em class="calibre9">String</em></code> <em class="calibre9">enum pattern</em>, is even less desirable. While it does provide printable strings for its constants,
+         it can lead naive users to hard-code string constants into client code instead of
+         using field names. If such a hard-coded string constant contains a typographical error,
+         it will escape detection at compile time and result in bugs at runtime. Also, it might
+         lead to performance problems, because it relies on string comparisons.
+      </p>
+      
+      <p class="indent">Luckily, Java provides an alternative that avoids all the shortcomings of the <code class="calibre12">int</code> and <code class="calibre12">string</code> enum patterns and provides many added benefits. It is the <em class="calibre9">enum type</em> [JLS, 8.9]. Here’s how it looks in its simplest form:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex3a" id="pch6ex3" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public enum Apple  { FUJI, PIPPIN, GRANNY_SMITH }<br class="calibre7"/>
+         public enum Orange { NAVEL, TEMPLE, BLOOD }
+      </p>
+      
+      <p class="noindent">On the surface, these enum types may appear similar to those of other languages, such
+         as C, C++, and C#, but appearances are deceiving. Java’s enum types are full-fledged
+         classes, far more powerful than their counterparts in these other languages, where
+         enums are essentially <code class="calibre12">int</code> values.
+      </p>
+      
+      <p class="indent">The basic idea behind Java’s enum types is simple: they are classes that export one
+         instance for each enumeration constant via a public static final field. Enum types
+         are effectively final, by virtue of having no accessible constructors. Because clients
+         can neither create instances of an enum type nor extend it, there can be no instances
+         but the declared enum constants. In other words, enum types are instance-controlled
+         (page 6). They are a generalization of singletons (<a href="ch2.xhtml#lev3" class="calibre8">Item 3</a>), which are essentially single-element enums.
+      </p>
+      
+      <p class="indent">Enums provide compile-time type safety. If you declare a parameter to be of type <code class="calibre12">Apple</code>, you are guaranteed that any non-null object reference passed to the parameter is
+         one of the three valid <code class="calibre12">Apple</code> values. Attempts to pass values of the <span epub:type="pagebreak" id="page_159"></span>wrong type will result in compile-time errors, as will attempts to assign an expression
+         of one enum type to a variable of another, or to use the <code class="calibre12">==</code> operator to compare values of different enum types.
+      </p>
+      
+      <p class="indent">Enum types with identically named constants coexist peacefully because each type has
+         its own namespace. You can add or reorder constants in an enum type without recompiling
+         its clients because the fields that export the constants provide a layer of insulation
+         between an enum type and its clients: constant values are not compiled into the clients
+         as they are in the <code class="calibre12">int</code> enum patterns. Finally, you can translate enums into printable strings by calling
+         their <code class="calibre12">toString</code> method.
+      </p>
+      
+      <p class="indent">In addition to rectifying the deficiencies of <code class="calibre12">int</code> enums, enum types let you add arbitrary methods and fields and implement arbitrary
+         interfaces. They provide high-quality implementations of all the <code class="calibre12">Object</code> methods (<a href="ch3.xhtml#ch3" class="calibre8">Chapter 3</a>), they implement <code class="calibre12">Comparable</code> (<a href="ch3.xhtml#lev14" class="calibre8">Item 14</a>) and <code class="calibre12">Serializable</code> (<a href="ch12.xhtml#ch12" class="calibre8">Chapter 12</a>), and their serialized form is designed to withstand most changes to the enum type.
+      </p>
+      
+      <p class="indent">So why would you want to add methods or fields to an enum type? For starters, you
+         might want to associate data with its constants. Our <code class="calibre12">Apple</code> and <code class="calibre12">Orange</code> types, for example, might benefit from a method that returns the color of the fruit,
+         or one that returns an image of it. You can augment an enum type with any method that
+         seems appropriate. An enum type can start life as a simple collection of enum constants
+         and evolve over time into a full-featured abstraction.
+      </p>
+      
+      <p class="indent">For a nice example of a rich enum type, consider the eight planets of our solar system.
+         Each planet has a mass and a radius, and from these two attributes you can compute
+         its surface gravity. This in turn lets you compute the weight of an object on the
+         planet’s surface, given the mass of the object. Here’s how this enum looks. The numbers
+         in parentheses after each enum constant are parameters that are passed to its constructor.
+         In this case, they are the planet’s mass and radius:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex4a" id="pch6ex4" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum type with data and behavior</strong><br class="calibre7"/>
+         public enum Planet {<br class="calibre7"/>
+             MERCURY(3.302e+23, 2.439e6),<br class="calibre7"/>
+             VENUS  (4.869e+24, 6.052e6),<br class="calibre7"/>
+             EARTH  (5.975e+24, 6.378e6),<br class="calibre7"/>
+             MARS   (6.419e+23, 3.393e6),<br class="calibre7"/>
+             JUPITER(1.899e+27, 7.149e7),<br class="calibre7"/>
+             SATURN (5.685e+26, 6.027e7),<br class="calibre7"/>
+             URANUS (8.683e+25, 2.556e7),<br class="calibre7"/>
+             NEPTUNE(1.024e+26, 2.477e7);<br class="calibre7"/>
+         <br class="calibre7"/>
+             private final double mass;           // In kilograms<br class="calibre7"/>
+             private final double radius;         // In meters<br class="calibre7"/>
+             private final double surfaceGravity; // In m / s^2<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_160"></span><br class="calibre7"/>
+             // Universal gravitational constant in m^3 / kg s^2<br class="calibre7"/>
+             private static final double G = 6.67300E-11;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Constructor<br class="calibre7"/>
+             Planet(double mass, double radius) {<br class="calibre7"/>
+                 this.mass = mass;<br class="calibre7"/>
+                 this.radius = radius;<br class="calibre7"/>
+                 surfaceGravity = G * mass / (radius * radius);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public double mass()           { return mass; }<br class="calibre7"/>
+             public double radius()         { return radius; }<br class="calibre7"/>
+             public double surfaceGravity() { return surfaceGravity; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public double surfaceWeight(double mass) {<br class="calibre7"/>
+                 return mass * surfaceGravity;  // F = ma<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">It is easy to write a rich enum type such as <code class="calibre12">Planet</code>. <strong class="calibre11">To associate data with enum constants, declare instance fields and write a constructor
+            that takes the data and stores it in the fields.</strong> Enums are by their nature immutable, so all fields should be final (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>). Fields can be public, but it is better to make them private and provide public
+         accessors (<a href="ch4.xhtml#lev16" class="calibre8">Item 16</a>). In the case of <code class="calibre12">Planet</code>, the constructor also computes and stores the surface gravity, but this is just an
+         optimization. The gravity could be recomputed from the mass and radius each time it
+         was used by the <code class="calibre12">surfaceWeight</code> method, which takes an object’s mass and returns its weight on the planet represented
+         by the constant.
+      </p>
+      
+      <p class="indent">While the <code class="calibre12">Planet</code> enum is simple, it is surprisingly powerful. Here is a short program that takes the
+         earth weight of an object (in any unit) and prints a nice table of the object’s weight
+         on all eight planets (in the same unit):
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex5a" id="pch6ex5" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class WeightTable {<br class="calibre7"/>
+            public static void main(String[] args) {<br class="calibre7"/>
+               double earthWeight = Double.parseDouble(args[0]);<br class="calibre7"/>
+               double mass = earthWeight / Planet.EARTH.surfaceGravity();<br class="calibre7"/>
+               for (Planet p : Planet.values())<br class="calibre7"/>
+                   System.out.printf("Weight on %s is %f%n",<br class="calibre7"/>
+                                     p, p.surfaceWeight(mass));<br class="calibre7"/>
+               }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Note that <code class="calibre12">Planet</code>, like all enums, has a static <code class="calibre12">values</code> method that returns an array of its values in the order they were declared. Note
+         also that the <code class="calibre12">toString</code> method returns the declared name of each enum value, enabling easy printing by <code class="calibre12">println</code> and <code class="calibre12">printf</code>. If you’re dissatisfied with this string representation, you can change it <span epub:type="pagebreak" id="page_161"></span>by overriding the <code class="calibre12">toString</code> method. Here is the result of running our <code class="calibre12">WeightTable</code> program (which doesn’t override <code class="calibre12">toString</code>) with the command line argument 185:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex6a" id="pch6ex6" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Weight on MERCURY is 69.912739<br class="calibre7"/>
+         Weight on VENUS is 167.434436<br class="calibre7"/>
+         Weight on EARTH is 185.000000<br class="calibre7"/>
+         Weight on MARS is 70.226739<br class="calibre7"/>
+         Weight on JUPITER is 467.990696<br class="calibre7"/>
+         Weight on SATURN is 197.120111<br class="calibre7"/>
+         Weight on URANUS is 167.398264<br class="calibre7"/>
+         Weight on NEPTUNE is 210.208751
+      </p>
+      
+      <p class="indent">Until 2006, two years after enums were added to Java, Pluto was a planet. This raises
+         the question “what happens when you remove an element from an enum type?” The answer
+         is that any client program that doesn’t refer to the removed element will continue
+         to work fine. So, for example, our <code class="calibre12">WeightTable</code> program would simply print a table with one fewer row. And what of a client program
+         that refers to the removed element (in this case, <code class="calibre12">Planet.Pluto</code>)? If you recompile the client program, the compilation will fail with a helpful error
+         message at the line that refers to the erstwhile planet; if you fail to recompile
+         the client, it will throw a helpful exception from this line at runtime. This is the
+         best behavior you could hope for, far better than what you’d get with the int enum
+         pattern.
+      </p>
+      
+      <p class="indent">Some behaviors associated with enum constants may need to be used only from within
+         the class or package in which the enum is defined. Such behaviors are best implemented
+         as private or package-private methods. Each constant then carries with it a hidden
+         collection of behaviors that allows the class or package containing the enum to react
+         appropriately when presented with the constant. Just as with other classes, unless
+         you have a compelling reason to expose an enum method to its clients, declare it private
+         or, if need be, package-private (<a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>).
+      </p>
+      
+      <p class="indent">If an enum is generally useful, it should be a top-level class; if its use is tied
+         to a specific top-level class, it should be a member class of that top-level class
+         (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>). For example, the <code class="calibre12">java.math.RoundingMode</code> enum represents a rounding mode for decimal fractions. These rounding modes are used
+         by the <code class="calibre12">BigDecimal</code> class, but they provide a useful abstraction that is not fundamentally tied to <code class="calibre12">BigDecimal</code>. By making <code class="calibre12">RoundingMode</code> a top-level enum, the library designers encourage any programmer who needs rounding
+         modes to reuse this enum, leading to increased consistency across APIs.
+      </p>
+      
+      <p class="indent">The techniques demonstrated in the <code class="calibre12">Planet</code> example are sufficient for most enum types, but sometimes you need more. There is
+         different data associated with each <code class="calibre12">Planet</code> constant, but sometimes you need to associate fundamentally different <em class="calibre9">behavior</em> with each constant. For example, suppose you are writing an enum <span epub:type="pagebreak" id="page_162"></span>type to represent the operations on a basic four-function calculator and you want
+         to provide a method to perform the arithmetic operation represented by each constant.
+         One way to achieve this is to switch on the value of the enum:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex7a" id="pch6ex7" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum type that switches on its own value - questionable</strong><br class="calibre7"/>
+         public enum Operation {<br class="calibre7"/>
+             PLUS, MINUS, TIMES, DIVIDE;<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Do the arithmetic operation represented by this constant<br class="calibre7"/>
+             public double apply(double x, double y) {<br class="calibre7"/>
+                 switch(this) {<br class="calibre7"/>
+                     case PLUS:   return x + y;<br class="calibre7"/>
+                     case MINUS:  return x - y;<br class="calibre7"/>
+                     case TIMES:  return x * y;<br class="calibre7"/>
+                     case DIVIDE: return x / y;<br class="calibre7"/>
+                 }<br class="calibre7"/>
+                 throw new AssertionError("Unknown op: " + this);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This code works, but it isn’t very pretty. It won’t compile without the <code class="calibre12">throw</code> statement because the end of the method is technically reachable, even though it
+         will never be reached [JLS, 14.21]. Worse, the code is fragile. If you add a new enum
+         constant but forget to add a corresponding case to the <code class="calibre12">switch</code>, the enum will still compile, but it will fail at runtime when you try to apply the
+         new operation.
+      </p>
+      
+      <p class="indent">Luckily, there is a better way to associate a different behavior with each enum constant:
+         declare an abstract <code class="calibre12">apply</code> method in the enum type, and override it with a concrete method for each constant
+         in a <em class="calibre9">constant-specific class body</em>. Such methods are known as <em class="calibre9">constant-specific method implementations</em>:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex8a" id="pch6ex8" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum type with constant-specific method implementations</strong><br class="calibre7"/>
+         public enum Operation {<br class="calibre7"/>
+           PLUS  {public double apply(double x, double y){return x + y;}},<br class="calibre7"/>
+           MINUS {public double apply(double x, double y){return x - y;}},<br class="calibre7"/>
+           TIMES {public double apply(double x, double y){return x * y;}},<br class="calibre7"/>
+           DIVIDE{public double apply(double x, double y){return x / y;}};<br class="calibre7"/>
+         <br class="calibre7"/>
+           public abstract double apply(double x, double y);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">If you add a new constant to the second version of <code class="calibre12">Operation</code>, it is unlikely that you’ll forget to provide an <code class="calibre12">apply</code> method, because the method immediately follows each constant declaration. In the
+         unlikely event that you do forget, the compiler will remind you because abstract methods
+         in an enum type must be overridden with concrete methods in all of its constants.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_163"></span>Constant-specific method implementations can be combined with constant-specific data.
+         For example, here is a version of <code class="calibre12">Operation</code> that overrides the <code class="calibre12">toString</code> method to return the symbol commonly associated with the operation:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex9a" id="pch6ex9" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum type with constant-specific class bodies and data</strong><br class="calibre7"/>
+         public enum Operation {<br class="calibre7"/>
+             PLUS("+") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x + y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             MINUS("-") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x - y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             TIMES("*") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x * y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             DIVIDE("/") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x / y; }<br class="calibre7"/>
+             };<br class="calibre7"/>
+         <br class="calibre7"/>
+             private final String symbol;<br class="calibre7"/>
+         <br class="calibre7"/>
+             Operation(String symbol) { this.symbol = symbol; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() { return symbol; }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public abstract double apply(double x, double y);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The <code class="calibre12">toString</code> implementation shown makes it easy to print arithmetic expressions, as demonstrated
+         by this little program:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex10a" id="pch6ex10" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             double x = Double.parseDouble(args[0]);<br class="calibre7"/>
+             double y = Double.parseDouble(args[1]);<br class="calibre7"/>
+             for (Operation op : Operation.values())<br class="calibre7"/>
+                 System.out.printf("%f %s %f = %f%n",<br class="calibre7"/>
+                                   x, op, y, op.apply(x, y));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Running this program with 2 and 4 as command line arguments produces the following
+         output:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex11a" id="pch6ex11" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">2.000000 + 4.000000 = 6.000000<br class="calibre7"/>
+         2.000000 - 4.000000 = -2.000000<br class="calibre7"/>
+         2.000000 * 4.000000 = 8.000000<br class="calibre7"/>
+         2.000000 / 4.000000 = 0.500000
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_164"></span>Enum types have an automatically generated <code class="calibre12">valueOf(String)</code> method that translates a constant’s name into the constant itself. If you override
+         the <code class="calibre12">toString</code> method in an enum type, consider writing a <code class="calibre12">fromString</code> method to translate the custom string representation back to the corresponding enum.
+         The following code (with the type name changed appropriately) will do the trick for
+         any enum, so long as each constant has a unique string representation:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex12a" id="pch6ex12" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Implementing a fromString method on an enum type</strong><br class="calibre7"/>
+         private static final Map&lt;String, Operation&gt; stringToEnum =<br class="calibre7"/>
+                 Stream.of(values()).collect(<br class="calibre7"/>
+                     toMap(Object::toString, e -&gt; e));<br class="calibre7"/>
+         <br class="calibre7"/>
+         // Returns Operation for string, if any<br class="calibre7"/>
+         public static Optional&lt;Operation&gt; fromString(String symbol) {<br class="calibre7"/>
+             return Optional.ofNullable(stringToEnum.get(symbol));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that the <code class="calibre12">Operation</code> constants are put into the <code class="calibre12">stringToEnum</code> map from a static field initialization that runs after the enum constants have been
+         created. The previous code uses a stream (<a href="ch7.xhtml#ch7" class="calibre8">Chapter 7</a>) over the array returned by the <code class="calibre12">values()</code> method; prior to Java 8, we would have created an empty hash map and iterated over
+         the values array inserting the string-to-enum mappings into the map, and you can still
+         do it that way if you prefer. But note that attempting to have each constant put itself
+         into a map from its own constructor does <em class="calibre9">not</em> work. It would cause a compilation error, which is good thing because if it were
+         legal, it would cause a <code class="calibre12">NullPointerException</code> at runtime. Enum constructors aren’t permitted to access the enum’s static fields,
+         with the exception of constant variables (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>). This restriction is necessary because static fields have not yet been initialized
+         when enum constructors run. A special case of this restriction is that enum constants
+         cannot access one another from their constructors.
+      </p>
+      
+      <p class="indent">Also note that the <code class="calibre12">fromString</code> method returns an <code class="calibre12">Optional&lt;String&gt;</code>. This allows the method to indicate that the string that was passed in does not represent
+         a valid operation, and it forces the client to confront this possibility (<a href="ch8.xhtml#lev55" class="calibre8">Item 55</a>).
+      </p>
+      
+      <p class="indent">A disadvantage of constant-specific method implementations is that they make it harder
+         to share code among enum constants. For example, consider an enum representing the
+         days of the week in a payroll package. This enum has a method that calculates a worker’s
+         pay for that day given the worker’s base salary (per hour) and the number of minutes
+         worked on that day. On the five weekdays, any time worked in excess of a normal shift
+         generates overtime pay; on the two weekend days, all work generates overtime pay.
+         With a <code class="calibre12">switch</code> statement, it’s easy <span epub:type="pagebreak" id="page_165"></span>to do this calculation by applying multiple case labels to each of two code fragments:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex13a" id="pch6ex13" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Enum that switches on its value to share code - questionable</strong><br class="calibre7"/>
+         enum PayrollDay {<br class="calibre7"/>
+             MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,<br class="calibre7"/>
+             SATURDAY, SUNDAY;<br class="calibre7"/>
+         <br class="calibre7"/>
+             private static final int MINS_PER_SHIFT = 8 * 60;<br class="calibre7"/>
+         <br class="calibre7"/>
+             int pay(int minutesWorked, int payRate) {<br class="calibre7"/>
+                 int basePay = minutesWorked * payRate;<br class="calibre7"/>
+         <br class="calibre7"/>
+                 int overtimePay;<br class="calibre7"/>
+                 <strong class="calibre11">switch(this) {</strong><br class="calibre7"/>
+                   <strong class="calibre11">case SATURDAY: case SUNDAY: // Weekend</strong><br class="calibre7"/>
+                     <strong class="calibre11">overtimePay = basePay / 2;</strong><br class="calibre7"/>
+                     <strong class="calibre11">break;</strong><br class="calibre7"/>
+                   <strong class="calibre11">default: // Weekday</strong><br class="calibre7"/>
+                     <strong class="calibre11">overtimePay = minutesWorked &lt;= MINS_PER_SHIFT ?</strong><br class="calibre7"/>
+                       <strong class="calibre11">0 : (minutesWorked - MINS_PER_SHIFT) * payRate / 2;</strong><br class="calibre7"/>
+                 <strong class="calibre11">}</strong><br class="calibre7"/>
+         <br class="calibre7"/>
+                 return basePay + overtimePay;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This code is undeniably concise, but it is dangerous from a maintenance perspective.
+         Suppose you add an element to the enum, perhaps a special value to represent a vacation
+         day, but forget to add a corresponding case to the <code class="calibre12">switch</code> statement. The program will still compile, but the <code class="calibre12">pay</code> method will silently pay the worker the same amount for a vacation day as for an
+         ordinary weekday.
+      </p>
+      
+      <p class="indent">To perform the pay calculation safely with constant-specific method implementations,
+         you would have to duplicate the overtime pay computation for each constant, or move
+         the computation into two helper methods, one for weekdays and one for weekend days,
+         and invoke the appropriate helper method from each constant. Either approach would
+         result in a fair amount of boilerplate code, substantially reducing readability and
+         increasing the opportunity for error.
+      </p>
+      
+      <p class="indent">The boilerplate could be reduced by replacing the abstract <code class="calibre12">overtimePay</code> method on <code class="calibre12">PayrollDay</code> with a concrete method that performs the overtime calculation for weekdays. Then
+         only the weekend days would have to override the method. But this would have the same
+         disadvantage as the <code class="calibre12">switch</code> statement: if you added another day without overriding the <code class="calibre12">overtimePay</code> method, you would silently inherit the weekday calculation.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_166"></span>What you really want is to be <em class="calibre9">forced</em> to choose an overtime pay strategy each time you add an enum constant. Luckily, there
+         is a nice way to achieve this. The idea is to move the overtime pay computation into
+         a private nested enum, and to pass an instance of this <em class="calibre9">strategy enum</em> to the constructor for the <code class="calibre12">PayrollDay</code> enum. The <code class="calibre12">PayrollDay</code> enum then delegates the overtime pay calculation to the strategy enum, eliminating
+         the need for a <code class="calibre12">switch</code> statement or constant-specific method implementation in <code class="calibre12">PayrollDay</code>. While this pattern is less concise than the <code class="calibre12">switch</code> statement, it is safer and more flexible:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex14a" id="pch6ex14" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// The strategy enum pattern</strong><br class="calibre7"/>
+         enum PayrollDay {<br class="calibre7"/>
+             MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY,<br class="calibre7"/>
+             SATURDAY(PayType.WEEKEND), SUNDAY(PayType.WEEKEND);<br class="calibre7"/>
+         <br class="calibre7"/>
+             private final PayType payType;<br class="calibre7"/>
+         <br class="calibre7"/>
+             PayrollDay(PayType payType) { this.payType = payType; }<br class="calibre7"/>
+             PayrollDay() { this(PayType.WEEKDAY); }  // Default<br class="calibre7"/>
+         <br class="calibre7"/>
+             int pay(int minutesWorked, int payRate) {<br class="calibre7"/>
+                 return payType.pay(minutesWorked, payRate);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             <strong class="calibre11">// The strategy enum type</strong><br class="calibre7"/>
+             private enum PayType {<br class="calibre7"/>
+                 WEEKDAY {<br class="calibre7"/>
+                     int overtimePay(int minsWorked, int payRate) {<br class="calibre7"/>
+                         return minsWorked &lt;= MINS_PER_SHIFT ? 0 :<br class="calibre7"/>
+                           (minsWorked - MINS_PER_SHIFT) * payRate / 2;<br class="calibre7"/>
+                     }<br class="calibre7"/>
+                 },<br class="calibre7"/>
+                 WEEKEND {<br class="calibre7"/>
+                     int overtimePay(int minsWorked, int payRate) {<br class="calibre7"/>
+                         return minsWorked * payRate / 2;<br class="calibre7"/>
+                     }<br class="calibre7"/>
+                 };<br class="calibre7"/>
+         <br class="calibre7"/>
+                 abstract int overtimePay(int mins, int payRate);<br class="calibre7"/>
+                 private static final int MINS_PER_SHIFT = 8 * 60;<br class="calibre7"/>
+         <br class="calibre7"/>
+                 int pay(int minsWorked, int payRate) {<br class="calibre7"/>
+                     int basePay = minsWorked * payRate;<br class="calibre7"/>
+                     return basePay + overtimePay(minsWorked, payRate);<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_167"></span>If <code class="calibre12">switch</code> statements on enums are not a good choice for implementing constant-specific behavior
+         on enums, what <em class="calibre9">are</em> they good for? <strong class="calibre11">Switches on enums are good for augmenting enum types with constant-specific behavior.</strong> For example, suppose the <code class="calibre12">Operation</code> enum is not under your control and you wish it had an instance method to return the
+         inverse of each operation. You could simulate the effect with the following static
+         method:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex15a" id="pch6ex15" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Switch on an enum to simulate a missing method</strong><br class="calibre7"/>
+         public static Operation inverse(Operation op) {<br class="calibre7"/>
+             switch(op) {<br class="calibre7"/>
+                 case PLUS:   return Operation.MINUS;<br class="calibre7"/>
+                 case MINUS:  return Operation.PLUS;<br class="calibre7"/>
+                 case TIMES:  return Operation.DIVIDE;<br class="calibre7"/>
+                 case DIVIDE: return Operation.TIMES;<br class="calibre7"/>
+         <br class="calibre7"/>
+                 default:  throw new AssertionError("Unknown op: " + op);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">You should also use this technique on enum types that <em class="calibre9">are</em> under your control if a method simply doesn’t belong in the enum type. The method
+         may be required for some use but is not generally useful enough to merit inclusion
+         in the enum type.
+      </p>
+      
+      <p class="indent">Enums are, generally speaking, comparable in performance to <code class="calibre12">int</code> constants. A minor performance disadvantage of enums is that there is a space and
+         time cost to load and initialize enum types, but it is unlikely to be noticeable in
+         practice.
+      </p>
+      
+      <p class="indent">So when should you use enums? <strong class="calibre11">Use enums any time you need a set of constants whose members are known at compile
+            time.</strong> Of course, this includes “natural enumerated types,” such as the planets, the days
+         of the week, and the chess pieces. But it also includes other sets for which you know
+         all the possible values at compile time, such as choices on a menu, operation codes,
+         and command line flags. <strong class="calibre11">It is not necessary that the set of constants in an enum type stay fixed for all time.</strong> The enum feature was specifically designed to allow for binary compatible evolution
+         of enum types.
+      </p>
+      
+      <p class="indent">In summary, the advantages of enum types over <code class="calibre12">int</code> constants are compelling. Enums are more readable, safer, and more powerful. Many
+         enums require no explicit constructors or members, but others benefit from associating
+         data with each constant and providing methods whose behavior is affected by this data.
+         Fewer enums benefit from associating multiple behaviors with a single method. In this
+         relatively rare case, prefer constant-specific methods to enums that switch on their
+         own values. Consider the strategy enum pattern if some, but not all, enum constants
+         share common behaviors.
+      </p>
+      
+      <h3 class="h2"><a id="lev35" class="calibre4"></a><span epub:type="pagebreak" id="page_168" class="calibre15"></span><strong class="calibre10">Item 35: Use instance fields instead of ordinals</strong></h3>
+      
+      <p class="noindent">Many enums are naturally associated with a single <code class="calibre12">int</code> value. All enums have an <code class="calibre12">ordinal</code> method, which returns the numerical position of each enum constant in its type. You
+         may be tempted to derive an associated <code class="calibre12">int</code> value from the ordinal:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex16a" id="pch6ex16" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Abuse of ordinal to derive an associated value - DON'T DO THIS</strong><br class="calibre7"/>
+         public enum Ensemble {<br class="calibre7"/>
+             SOLO,   DUET,   TRIO, QUARTET, QUINTET,<br class="calibre7"/>
+             SEXTET, SEPTET, OCTET, NONET,  DECTET;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public int numberOfMusicians() { <strong class="calibre11">return ordinal() + 1;</strong> }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">While this enum works, it is a maintenance nightmare. If the constants are reordered,
+         the <code class="calibre12">numberOfMusicians</code> method will break. If you want to add a second enum constant associated with an <code class="calibre12">int</code> value that you’ve already used, you’re out of luck. For example, it might be nice
+         to add a constant for <em class="calibre9">double quartet</em>, which, like an octet, consists of eight musicians, but there is no way to do it.
+      </p>
+      
+      <p class="indent">Also, you can’t add a constant for an <code class="calibre12">int</code> value without adding constants for all intervening <code class="calibre12">int</code> values. For example, suppose you want to add a constant representing a <em class="calibre9">triple quartet</em>, which consists of twelve musicians. There is no standard term for an ensemble consisting
+         of eleven musicians, so you are forced to add a dummy constant for the unused <code class="calibre12">int</code> value (<code class="calibre12">11</code>). At best, this is ugly. If many <code class="calibre12">int</code> values are unused, it’s impractical.
+      </p>
+      
+      <p class="indent">Luckily, there is a simple solution to these problems. <strong class="calibre11">Never derive a value associated with an enum from its ordinal; store it in an instance
+            field instead:</strong></p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex17a" id="pch6ex17" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public enum Ensemble {<br class="calibre7"/>
+             SOLO(1), DUET(2), TRIO(3), QUARTET(4), QUINTET(5),<br class="calibre7"/>
+             SEXTET(6), SEPTET(7), OCTET(8), DOUBLE_QUARTET(8),<br class="calibre7"/>
+             NONET(9), DECTET(10), TRIPLE_QUARTET(12);<br class="calibre7"/>
+         <br class="calibre7"/>
+             private final int numberOfMusicians;<br class="calibre7"/>
+             Ensemble(int size) { this.numberOfMusicians = size; }<br class="calibre7"/>
+             public int numberOfMusicians() { return numberOfMusicians; }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The <code class="calibre12">Enum</code> specification has this to say about <code class="calibre12">ordinal</code>: “Most programmers will have no use for this method. It is designed for use by general-purpose
+         enum-based data structures such as <code class="calibre12">EnumSet</code> and <code class="calibre12">EnumMap</code>.” Unless you are writing code with this character, you are best off avoiding the
+         <code class="calibre12">ordinal</code> method entirely.
+      </p>
+      
+      <h3 class="h2"><a id="lev36" class="calibre4"></a><span epub:type="pagebreak" id="page_169" class="calibre15"></span><strong class="calibre10">Item 36: Use</strong> <code class="calibre19"><strong class="calibre10">EnumSet</strong></code> <strong class="calibre10">instead of bit fields</strong></h3>
+      
+      <p class="noindent">If the elements of an enumerated type are used primarily in sets, it is traditional
+         to use the <code class="calibre12">int</code> enum pattern (<a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>), assigning a different power of 2 to each constant:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex18a" id="pch6ex18" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Bit field enumeration constants - OBSOLETE!</strong><br class="calibre7"/>
+         public class Text {<br class="calibre7"/>
+             public static final int STYLE_BOLD          = 1 &lt;&lt; 0;  // 1<br class="calibre7"/>
+             public static final int STYLE_ITALIC        = 1 &lt;&lt; 1;  // 2<br class="calibre7"/>
+             public static final int STYLE_UNDERLINE     = 1 &lt;&lt; 2;  // 4<br class="calibre7"/>
+             public static final int STYLE_STRIKETHROUGH = 1 &lt;&lt; 3;  // 8<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Parameter is bitwise OR of zero or more STYLE_ constants<br class="calibre7"/>
+             public void applyStyles(int styles) { ... }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This representation lets you use the bitwise <code class="calibre12">OR</code> operation to combine several constants into a set, known as a <em class="calibre9">bit field</em>:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex19a" id="pch6ex19" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">text.applyStyles(STYLE_BOLD | STYLE_ITALIC);</p>
+      
+      <p class="indent">The bit field representation also lets you perform set operations such as union and
+         intersection efficiently using bitwise arithmetic. But bit fields have all the disadvantages
+         of <code class="calibre12">int</code> enum constants and more. It is even harder to interpret a bit field than a simple
+         <code class="calibre12">int</code> enum constant when it is printed as a number. There is no easy way to iterate over
+         all of the elements represented by a bit field. Finally, you have to predict the maximum
+         number of bits you’ll ever need at the time you’re writing the API and choose a type
+         for the bit field (typically <code class="calibre12">int</code> or <code class="calibre12">long</code>) accordingly. Once you’ve picked a type, you can’t exceed its width (32 or 64 bits)
+         without changing the API.
+      </p>
+      
+      <p class="indent">Some programmers who use enums in preference to <code class="calibre12">int</code> constants still cling to the use of bit fields when they need to pass around sets
+         of constants. There is no reason to do this, because a better alternative exists.
+         The <code class="calibre12">java.util</code> package provides the <code class="calibre12">EnumSet</code> class to efficiently represent sets of values drawn from a single enum type. This
+         class implements the <code class="calibre12">Set</code> interface, providing all of the richness, type safety, and interoperability you get
+         with any other <code class="calibre12">Set</code> implementation. But internally, each <code class="calibre12">EnumSet</code> is represented as a bit vector. If the underlying enum type has sixty-four or fewer
+         elements—and most do—the entire <code class="calibre12">EnumSet</code> is represented with a single <code class="calibre12">long</code>, so its performance is comparable to that of a bit field. Bulk operations, such as
+         <code class="calibre12">removeAll</code> and <code class="calibre12">retainAll</code>, are implemented using bitwise <span epub:type="pagebreak" id="page_170"></span>arithmetic, just as you’d do manually for bit fields. But you are insulated from the
+         ugliness and error-proneness of manual bit twiddling: the <code class="calibre12">EnumSet</code> does the hard work for you.
+      </p>
+      
+      <p class="indent">Here is how the previous example looks when modified to use enums and enum sets instead
+         of bit fields. It is shorter, clearer, and safer:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex20a" id="pch6ex20" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// EnumSet - a modern replacement for bit fields</strong><br class="calibre7"/>
+         public class Text {<br class="calibre7"/>
+             public enum Style { BOLD, ITALIC, UNDERLINE, STRIKETHROUGH }<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Any Set could be passed in, but EnumSet is clearly best<br class="calibre7"/>
+             public void applyStyles(Set&lt;Style&gt; styles) { ... }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">Here is client code that passes an <code class="calibre12">EnumSet</code> instance to the <code class="calibre12">applyStyles</code> method. The <code class="calibre12">EnumSet</code> class provides a rich set of static factories for easy set creation, one of which
+         is illustrated in this code:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex21a" id="pch6ex21" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">text.applyStyles(<strong class="calibre11">EnumSet.of(Style.BOLD, Style.ITALIC)</strong>);
+      </p>
+      
+      <p class="indent">Note that the <code class="calibre12">applyStyles</code> method takes a <code class="calibre12">Set&lt;Style&gt;</code> rather than an <code class="calibre12">EnumSet&lt;Style&gt;</code>. While it seems likely that all clients would pass an <code class="calibre12">EnumSet</code> to the method, it is generally good practice to accept the interface type rather
+         than the implementation type (<a href="ch9.xhtml#lev64" class="calibre8">Item 64</a>). This allows for the possibility of an unusual client to pass in some other <code class="calibre12">Set</code> implementation.
+      </p>
+      
+      <p class="indent">In summary, <strong class="calibre11">just because an enumerated type will be used in sets, there is no reason to represent
+            it with bit fields.</strong> The <code class="calibre12">EnumSet</code> class combines the conciseness and performance of bit fields with all the many advantages
+         of enum types described in <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>. The one real disadvantage of <code class="calibre12">EnumSet</code> is that it is not, as of Java 9, possible to create an immutable <code class="calibre12">EnumSet</code>, but this will likely be remedied in an upcoming release. In the meantime, you can
+         wrap an <code class="calibre12">EnumSet</code> with <code class="calibre12">Collections.unmodifiableSet</code>, but conciseness and performance will suffer.
+      </p>
+      
+      <h3 class="h2"><a id="lev37" class="calibre4"></a><span epub:type="pagebreak" id="page_171" class="calibre15"></span><strong class="calibre10">Item 37: Use</strong> <code class="calibre19"><strong class="calibre10">EnumMap</strong></code> <strong class="calibre10">instead of ordinal indexing</strong></h3>
+      
+      <p class="noindent">Occasionally you may see code that uses the <code class="calibre12">ordinal</code> method (<a href="ch6.xhtml#lev35" class="calibre8">Item 35</a>) to index into an array or list. For example, consider this simplistic class meant
+         to represent a plant:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex22a" id="pch6ex22" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">class Plant {<br class="calibre7"/>
+             enum LifeCycle { ANNUAL, PERENNIAL, BIENNIAL }<br class="calibre7"/>
+         <br class="calibre7"/>
+             final String name;<br class="calibre7"/>
+             final LifeCycle lifeCycle;<br class="calibre7"/>
+             <br class="calibre7"/>
+             Plant(String name, LifeCycle lifeCycle) {<br class="calibre7"/>
+                 this.name = name;<br class="calibre7"/>
+                 this.lifeCycle = lifeCycle;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() {<br class="calibre7"/>
+                 return name;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Now suppose you have an array of plants representing a garden, and you want to list
+         these plants organized by life cycle (annual, perennial, or biennial). To do this,
+         you construct three sets, one for each life cycle, and iterate through the garden,
+         placing each plant in the appropriate set. Some programmers would do this by putting
+         the sets into an array indexed by the life cycle’s ordinal:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex23a" id="pch6ex23" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using ordinal() to index into an array - DON'T DO THIS!</strong><br class="calibre7"/>
+         Set&lt;Plant&gt;[] plantsByLifeCycle =<br class="calibre7"/>
+             <strong class="calibre11">(Set&lt;Plant&gt;[])</strong> new Set[Plant.LifeCycle.values().length];<br class="calibre7"/>
+         for (int i = 0; i &lt; plantsByLifeCycle.length; i++)<br class="calibre7"/>
+             plantsByLifeCycle[i] = new HashSet&lt;&gt;();<br class="calibre7"/>
+         <br class="calibre7"/>
+         for (Plant p : garden)<br class="calibre7"/>
+             plantsByLifeCycle<strong class="calibre11">[p.lifeCycle.ordinal()]</strong>.add(p);<br class="calibre7"/>
+         <br class="calibre7"/>
+         // Print the results<br class="calibre7"/>
+         for (int i = 0; i &lt; plantsByLifeCycle.length; i++) {<br class="calibre7"/>
+             System.out.printf("%s: %s%n",<br class="calibre7"/>
+                 Plant.LifeCycle.values()[i], plantsByLifeCycle[i]);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This technique works, but it is fraught with problems. Because arrays are not compatible
+         with generics (<a href="ch5.xhtml#lev28" class="calibre8">Item 28</a>), the program requires an unchecked cast and <span epub:type="pagebreak" id="page_172"></span>will not compile cleanly. Because the array does not know what its index represents,
+         you have to label the output manually. But the most serious problem with this technique
+         is that when you access an array that is indexed by an enum’s ordinal, it is your
+         responsibility to use the correct <code class="calibre12">int</code> value; <code class="calibre12">int</code>s do not provide the type safety of enums. If you use the wrong value, the program
+         will silently do the wrong thing or—if you’re lucky—throw an <code class="calibre12">ArrayIndexOutOfBoundsException</code>.
+      </p>
+      
+      <p class="indent">There is a much better way to achieve the same effect. The array is effectively serving
+         as a map from the enum to a value, so you might as well use a <code class="calibre12">Map</code>. More specifically, there is a very fast <code class="calibre12">Map</code> implementation designed for use with enum keys, known as <code class="calibre12">java.util.EnumMap</code>. Here is how the program looks when it is rewritten to use <code class="calibre12">EnumMap</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex24a" id="pch6ex24" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using an EnumMap to associate data with an enum</strong><br class="calibre7"/>
+         Map&lt;Plant.LifeCycle, Set&lt;Plant&gt;&gt;  plantsByLifeCycle =<br class="calibre7"/>
+             new EnumMap&lt;&gt;(Plant.LifeCycle.class);<br class="calibre7"/>
+         for (Plant.LifeCycle lc : Plant.LifeCycle.values())<br class="calibre7"/>
+             plantsByLifeCycle.put(lc, new HashSet&lt;&gt;());<br class="calibre7"/>
+         for (Plant p : garden)<br class="calibre7"/>
+             plantsByLifeCycle.get(p.lifeCycle).add(p);<br class="calibre7"/>
+         System.out.println(plantsByLifeCycle);
+      </p>
+      
+      <p class="indent">This program is shorter, clearer, safer, and comparable in speed to the original version.
+         There is no unsafe cast; no need to label the output manually because the map keys
+         are enums that know how to translate themselves to printable strings; and no possibility
+         for error in computing array indices. The reason that <code class="calibre12">EnumMap</code> is comparable in speed to an ordinal-indexed array is that <code class="calibre12">EnumMap</code> uses such an array internally, but it hides this implementation detail from the programmer,
+         combining the richness and type safety of a <code class="calibre12">Map</code> with the speed of an array. Note that the <code class="calibre12">EnumMap</code> constructor takes the <code class="calibre12">Class</code> object of the key type: this is a <em class="calibre9">bounded type token</em>, which provides runtime generic type information (<a href="ch5.xhtml#lev33" class="calibre8">Item 33</a>).
+      </p>
+      
+      <p class="indent">The previous program can be further shortened by using a stream (<a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>) to manage the map. Here is the simplest stream-based code that largely duplicates
+         the behavior of the previous example:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex25a" id="pch6ex25" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Naive stream-based approach - unlikely to produce an EnumMap!</strong><br class="calibre7"/>
+         System.out.println(Arrays.stream(garden)<br class="calibre7"/>
+                 .collect(groupingBy(p -&gt; p.lifeCycle)));
+      </p>
+      
+      <p class="noindent">The problem with this code is that it chooses its own map implementation, and in practice
+         it won’t be an <code class="calibre12">EnumMap</code>, so it won’t match the space and time performance of the version with the explicit
+         <code class="calibre12">EnumMap</code>. To rectify this problem, use the three-parameter <span epub:type="pagebreak" id="page_173"></span>form of <code class="calibre12">Collectors.groupingBy</code>, which allows the caller to specify the map implementation using the <code class="calibre12">mapFactory</code> parameter:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex26a" id="pch6ex26" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using a stream and an EnumMap to associate data with an enum</strong><br class="calibre7"/>
+         System.out.println(Arrays.stream(garden)<br class="calibre7"/>
+                 .collect(groupingBy(p -&gt; p.lifeCycle,<br class="calibre7"/>
+                     <strong class="calibre11">() -&gt; new EnumMap&lt;&gt;(LifeCycle.class)</strong>, toSet())));
+      </p>
+      
+      <p class="noindent">This optimization would not be worth doing in a toy program like this one but could
+         be critical in a program that made heavy use of the map.
+      </p>
+      
+      <p class="indent">The behavior of the stream-based versions differs slightly from that of the <code class="calibre12">EmumMap</code> version. The <code class="calibre12">EnumMap</code> version always makes a nested map for each plant lifecycle, while the stream-based
+         versions only make a nested map if the garden contains one or more plants with that
+         lifecycle. So, for example, if the garden contains annuals and perennials but no biennials,
+         the size of <code class="calibre12">plantsByLifeCycle</code> will be three in the <code class="calibre12">EnumMap</code> version and two in both of the stream-based versions.
+      </p>
+      
+      <p class="indent">You may see an array of arrays indexed (twice!) by ordinals used to represent a mapping
+         from two enum values. For example, this program uses such an array to map two phases
+         to a phase transition (liquid to solid is freezing, liquid to gas is boiling, and
+         so forth):
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex27a" id="pch6ex27" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using ordinal() to index array of arrays - DON'T DO THIS!</strong><br class="calibre7"/>
+         public enum Phase {<br class="calibre7"/>
+             SOLID, LIQUID, GAS;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public enum Transition {<br class="calibre7"/>
+                 MELT, FREEZE, BOIL, CONDENSE, SUBLIME, DEPOSIT;<br class="calibre7"/>
+         <br class="calibre7"/>
+                 // Rows indexed by from-ordinal, cols by to-ordinal<br class="calibre7"/>
+                 private static final Transition[][] TRANSITIONS = {<br class="calibre7"/>
+                     { null,    MELT,     SUBLIME },<br class="calibre7"/>
+                     { FREEZE,  null,     BOIL    },<br class="calibre7"/>
+                     { DEPOSIT, CONDENSE, null    }<br class="calibre7"/>
+                 };<br class="calibre7"/>
+         <br class="calibre7"/>
+                 // Returns the phase transition from one phase to another<br class="calibre7"/>
+                 public static Transition from(Phase from, Phase to) {<br class="calibre7"/>
+                     return TRANSITIONS[from.ordinal()][to.ordinal()];<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This program works and may even appear elegant, but appearances can be deceiving.
+         Like the simpler garden example shown earlier, the compiler has no way of knowing
+         the relationship between ordinals and array indices. If you make a <span epub:type="pagebreak" id="page_174"></span>mistake in the transition table or forget to update it when you modify the <code class="calibre12">Phase</code> or <code class="calibre12">Phase.Transition</code> enum type, your program will fail at runtime. The failure may be an <code class="calibre12">ArrayIndexOutOfBoundsException</code>, a <code class="calibre12">NullPointerException</code>, or (worse) silent erroneous behavior. And the size of the table is quadratic in
+         the number of phases, even if the number of non-null entries is smaller.
+      </p>
+      
+      <p class="indent">Again, you can do much better with <code class="calibre12">EnumMap</code>. Because each phase transition is indexed by a <em class="calibre9">pair</em> of phase enums, you are best off representing the relationship as a map from one
+         enum (the “from” phase) to a map from the second enum (the “to” phase) to the result
+         (the phase transition). The two phases associated with a phase transition are best
+         captured by associating them with the phase transition enum, which can then be used
+         to initialize the nested <code class="calibre12">EnumMap</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex28a" id="pch6ex28" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Using a nested EnumMap to associate data with enum pairs</strong><br class="calibre7"/>
+         public enum Phase {<br class="calibre7"/>
+            SOLID, LIQUID, GAS;<br class="calibre7"/>
+         <br class="calibre7"/>
+            public enum Transition {<br class="calibre7"/>
+               MELT(SOLID, LIQUID), FREEZE(LIQUID, SOLID),<br class="calibre7"/>
+               BOIL(LIQUID, GAS),   CONDENSE(GAS, LIQUID),<br class="calibre7"/>
+               SUBLIME(SOLID, GAS), DEPOSIT(GAS, SOLID);<br class="calibre7"/>
+         <br class="calibre7"/>
+               private final Phase from;<br class="calibre7"/>
+               private final Phase to;<br class="calibre7"/>
+         <br class="calibre7"/>
+               Transition(Phase from, Phase to) {<br class="calibre7"/>
+                  this.from = from;<br class="calibre7"/>
+                  this.to = to;<br class="calibre7"/>
+               }<br class="calibre7"/>
+         <br class="calibre7"/>
+               // Initialize the phase transition map<br class="calibre7"/>
+               private static final Map&lt;Phase, Map&lt;Phase, Transition&gt;&gt;<br class="calibre7"/>
+                 m = Stream.of(values()).collect(groupingBy(t -&gt; t.from,<br class="calibre7"/>
+                  () -&gt; new EnumMap&lt;&gt;(Phase.class),<br class="calibre7"/>
+                  toMap(t -&gt; t.to, t -&gt; t,<br class="calibre7"/>
+                     (x, y) -&gt; y, () -&gt; new EnumMap&lt;&gt;(Phase.class))));<br class="calibre7"/>
+         <br class="calibre7"/>
+               public static Transition from(Phase from, Phase to) {<br class="calibre7"/>
+                  return m.get(from).get(to);<br class="calibre7"/>
+               }<br class="calibre7"/>
+            }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The code to initialize the phase transition map is a bit complicated. The type of
+         the map is <code class="calibre12">Map&lt;Phase, Map&lt;Phase, Transition&gt;&gt;</code>, which means “map from (source) phase to map from (destination) phase to transition.”
+         This map-of-maps is initialized using a cascaded sequence of two collectors. The first
+         collector groups <span epub:type="pagebreak" id="page_175"></span>the transitions by source phase, and the second creates an <code class="calibre12">EnumMap</code> with mappings from destination phase to transition. The merge function in the second
+         collector (<code class="calibre12">(x, y) -&gt; y)</code>) is unused; it is required only because we need to specify a map factory in order
+         to get an <code class="calibre12">EnumMap</code>, and <code class="calibre12">Collectors</code> provides telescoping factories. The previous edition of this book used explicit iteration
+         to initialize the phase transition map. The code was more verbose but arguably easier
+         to understand.
+      </p>
+      
+      <p class="indent">Now suppose you want to add a new phase to the system: <em class="calibre9">plasma</em>, or ionized gas. There are only two transitions associated with this phase: <em class="calibre9">ionization</em>, which takes a gas to a plasma; and <em class="calibre9">deionization</em>, which takes a plasma to a gas. To update the array-based program, you would have
+         to add one new constant to <code class="calibre12">Phase</code> and two to <code class="calibre12">Phase.Transition</code>, and replace the original nine-element array of arrays with a new sixteen-element
+         version. If you add too many or too few elements to the array or place an element
+         out of order, you are out of luck: the program will compile, but it will fail at runtime.
+         To update the <code class="calibre12">EnumMap</code>-based version, all you have to do is add <code class="calibre12">PLASMA</code> to the list of phases, and <code class="calibre12">IONIZE(GAS, PLASMA)</code> and <code class="calibre12">DEIONIZE(PLASMA, GAS)</code> to the list of phase transitions:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex29a" id="pch6ex29" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Adding a new phase using the nested EnumMap implementation</strong><br class="calibre7"/>
+         public enum Phase {<br class="calibre7"/>
+             SOLID, LIQUID, GAS<strong class="calibre11">, PLASMA</strong>;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public enum Transition {<br class="calibre7"/>
+                 MELT(SOLID, LIQUID), FREEZE(LIQUID, SOLID),<br class="calibre7"/>
+                 BOIL(LIQUID, GAS),   CONDENSE(GAS, LIQUID),<br class="calibre7"/>
+                 SUBLIME(SOLID, GAS), DEPOSIT(GAS, SOLID)<strong class="calibre11">,</strong><br class="calibre7"/>
+                 <strong class="calibre11">IONIZE(GAS, PLASMA), DEIONIZE(PLASMA, GAS)</strong>;<br class="calibre7"/>
+                 ... // Remainder unchanged<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The program takes care of everything else and leaves you virtually no opportunity
+         for error. Internally, the map of maps is implemented with an array of arrays, so
+         you pay little in space or time cost for the added clarity, safety, and ease of maintenance.
+      </p>
+      
+      <p class="indent">In the interest of brevity, the above examples use <code class="calibre12">null</code> to indicate the absence of a state change (wherein <code class="calibre12">to</code> and <code class="calibre12">from</code> are identical). This is not good practice and is likely to result in a <code class="calibre12">NullPointerException</code> at runtime. Designing a clean, elegant solution to this problem is surprisingly tricky,
+         and the resulting programs are sufficiently long that they would detract from the
+         primary material in this item.
+      </p>
+      
+      <p class="indent">In summary, <strong class="calibre11">it is rarely appropriate to use ordinals to index into arrays: use</strong> <code class="calibre12"><strong class="calibre11">EnumMap</strong></code> <strong class="calibre11">instead.</strong> If the relationship you are representing is multidimensional, use <code class="calibre12">EnumMap&lt;..., EnumMap&lt;...&gt;&gt;</code>. This is a special case of the general principle that application programmers should
+         rarely, if ever, use <code class="calibre12">Enum.ordinal</code> (<a href="ch6.xhtml#lev35" class="calibre8">Item 35</a>).
+      </p>
+      
+      <h3 class="h2"><a id="lev38" class="calibre4"></a><span epub:type="pagebreak" id="page_176" class="calibre15"></span><strong class="calibre10">Item 38: Emulate extensible enums with interfaces</strong></h3>
+      
+      <p class="noindent">In almost all respects, enum types are superior to the typesafe enum pattern described
+         in the first edition of this book [<a href="ref.xhtml#rBloch01" class="calibre8">Bloch01</a>]. On the face of it, one exception concerns extensibility, which was possible under
+         the original pattern but is not supported by the language construct. In other words,
+         using the pattern, it was possible to have one enumerated type extend another; using
+         the language feature, it is not. This is no accident. For the most part, extensibility
+         of enums turns out to be a bad idea. It is confusing that elements of an extension
+         type are instances of the base type and not vice versa. There is no good way to enumerate
+         over all of the elements of a base type and its extensions. Finally, extensibility
+         would complicate many aspects of the design and implementation.
+      </p>
+      
+      <p class="indent">That said, there is at least one compelling use case for extensible enumerated types,
+         which is <em class="calibre9">operation codes,</em> also known as <em class="calibre9">opcodes.</em> An opcode is an enumerated type whose elements represent operations on some machine,
+         such as the <code class="calibre12">Operation</code> type in <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>, which represents the functions on a simple calculator. Sometimes it is desirable
+         to let the users of an API provide their own operations, effectively extending the
+         set of operations provided by the API.
+      </p>
+      
+      <p class="indent">Luckily, there is a nice way to achieve this effect using enum types. The basic idea
+         is to take advantage of the fact that enum types can implement arbitrary interfaces
+         by defining an interface for the opcode type and an enum that is the standard implementation
+         of the interface. For example, here is an extensible version of the <code class="calibre12">Operation</code> type from <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>:
+      </p>
+      
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex30a" id="pch6ex30" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Emulated extensible enum using an interface</strong><br class="calibre7"/>
+         public interface Operation {<br class="calibre7"/>
+             double apply(double x, double y);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         public enum BasicOperation implements Operation {<br class="calibre7"/>
+             PLUS("+") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x + y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             MINUS("-") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x - y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             TIMES("*") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x * y; }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             DIVIDE("/") {<br class="calibre7"/>
+                 public double apply(double x, double y) { return x / y; }<br class="calibre7"/>
+             };<br class="calibre7"/>
+         <span epub:type="pagebreak" id="page_177"></span>
+             private final String symbol;<br class="calibre7"/>
+         <br class="calibre7"/>
+             BasicOperation(String symbol) {<br class="calibre7"/>
+                 this.symbol = symbol;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() {<br class="calibre7"/>
+                 return symbol;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">While the enum type (<code class="calibre12">BasicOperation</code>) is not extensible, the interface type (<code class="calibre12">Operation</code>) is, and it is the interface type that is used to represent operations in APIs. You
+         can define another enum type that implements this interface and use instances of this
+         new type in place of the base type. For example, suppose you want to define an extension
+         to the operation type shown earlier, consisting of the exponentiation and remainder
+         operations. All you have to do is write an enum type that implements the <code class="calibre12">Operation</code> interface:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex31a" id="pch6ex31" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Emulated extension enum</strong><br class="calibre7"/>
+         public enum ExtendedOperation implements Operation {<br class="calibre7"/>
+             EXP("^") {<br class="calibre7"/>
+                 public double apply(double x, double y) {<br class="calibre7"/>
+                     return Math.pow(x, y);<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             },<br class="calibre7"/>
+             REMAINDER("%") {<br class="calibre7"/>
+                 public double apply(double x, double y) {<br class="calibre7"/>
+                     return x % y;<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             };<br class="calibre7"/>
+         <br class="calibre7"/>
+             private final String symbol;<br class="calibre7"/>
+         <br class="calibre7"/>
+             ExtendedOperation(String symbol) {<br class="calibre7"/>
+                 this.symbol = symbol;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             @Override public String toString() {<br class="calibre7"/>
+                 return symbol;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">You can now use your new operations anywhere you could use the basic operations, provided
+         that APIs are written to take the interface type (<code class="calibre12">Operation</code>), not the implementation (<code class="calibre12">BasicOperation</code>). Note that you don’t have to declare the <span epub:type="pagebreak" id="page_178"></span>abstract <code class="calibre12">apply</code> method in the enum as you do in a nonextensible enum with instance-specific method
+         implementations (page 162). This is because the abstract method (<code class="calibre12">apply</code>) is a member of the interface (<code class="calibre12">Operation</code>).
+      </p>
+      
+      <p class="indent">Not only is it possible to pass a single instance of an “extension enum” anywhere
+         a “base enum” is expected, but it is possible to pass in an entire extension enum
+         type and use its elements in addition to or instead of those of the base type. For
+         example, here is a version of the test program on page 163 that exercises all of the
+         extended operations defined previously:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex32a" id="pch6ex32" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             double x = Double.parseDouble(args[0]);<br class="calibre7"/>
+             double y = Double.parseDouble(args[1]);<br class="calibre7"/>
+             test(<strong class="calibre11">ExtendedOperation.class</strong>, x, y);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         private static <strong class="calibre11">&lt;T extends Enum&lt;T&gt; &amp; Operation&gt;</strong> void test(<br class="calibre7"/>
+                 <strong class="calibre11">Class&lt;T&gt; opEnumType</strong>, double x, double y) {<br class="calibre7"/>
+             for (Operation op : opEnumType.getEnumConstants())<br class="calibre7"/>
+                 System.out.printf("%f %s %f = %f%n",<br class="calibre7"/>
+                                   x, op, y, op.apply(x, y));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Note that the class literal for the extended operation type (<code class="calibre12">ExtendedOperation.class</code>) is passed from <code class="calibre12">main</code> to <code class="calibre12">test</code> to describe the set of extended operations. The class literal serves as a <em class="calibre9">bounded type token</em> (<a href="ch5.xhtml#lev33" class="calibre8">Item 33</a>). The admittedly complex declaration for the <code class="calibre12">opEnumType</code> parameter (<code class="calibre12">&lt;T extends Enum&lt;T&gt; &amp; Operation&gt; Class&lt;T&gt;</code>) ensures that the <code class="calibre12">Class</code> object represents both an enum and a subtype of <code class="calibre12">Operation</code>, which is exactly what is required to iterate over the elements and perform the operation
+         associated with each one.
+      </p>
+      
+      <p class="indent">A second alternative is to pass a <code class="calibre12">Collection&lt;? extends Operation&gt;</code>, which is a <em class="calibre9">bounded wildcard type</em> (<a href="ch5.xhtml#lev31" class="calibre8">Item 31</a>), instead of passing a class object:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex33a" id="pch6ex33" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             double x = Double.parseDouble(args[0]);<br class="calibre7"/>
+             double y = Double.parseDouble(args[1]);<br class="calibre7"/>
+             test(<strong class="calibre11">Arrays.asList(ExtendedOperation.values())</strong>, x, y);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         private static void test(<strong class="calibre11">Collection&lt;? extends Operation&gt; opSet</strong>,<br class="calibre7"/>
+                 double x, double y) {<br class="calibre7"/>
+             for (Operation op : opSet)<br class="calibre7"/>
+                 System.out.printf("%f %s %f = %f%n",<br class="calibre7"/>
+                                   x, op, y, op.apply(x, y));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_179"></span>The resulting code is a bit less complex, and the <code class="calibre12">test</code> method is a bit more flexible: it allows the caller to combine operations from multiple
+         implementation types. On the other hand, you forgo the ability to use <code class="calibre12">EnumSet</code> (<a href="ch6.xhtml#lev36" class="calibre8">Item 36</a>) and <code class="calibre12">EnumMap</code> (<a href="ch6.xhtml#lev37" class="calibre8">Item 37</a>) on the specified operations.
+      </p>
+      
+      <p class="indent">Both programs shown previously will produce this output when run with command line
+         arguments <code class="calibre12">4</code> and <code class="calibre12">2</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex34a" id="pch6ex34" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">4.000000 ^ 2.000000 = 16.000000<br class="calibre7"/>
+         4.000000 % 2.000000 = 0.000000
+      </p>
+      
+      <p class="indent">A minor disadvantage of the use of interfaces to emulate extensible enums is that
+         implementations cannot be inherited from one enum type to another. If the implementation
+         code does not rely on any state, it can be placed in the interface, using default
+         implementations (<a href="ch4.xhtml#lev20" class="calibre8">Item 20</a>). In the case of our <code class="calibre12">Operation</code> example, the logic to store and retrieve the symbol associated with an operation
+         must be duplicated in <code class="calibre12">BasicOperation</code> and <code class="calibre12">ExtendedOperation</code>. In this case it doesn’t matter because very little code is duplicated. If there
+         were a larger amount of shared functionality, you could encapsulate it in a helper
+         class or a static helper method to eliminate the code duplication.
+      </p>
+      
+      <p class="indent">The pattern described in this item is used in the Java libraries. For example, the
+         <code class="calibre12">java.nio.file.LinkOption</code> enum type implements the <code class="calibre12">CopyOption</code> and <code class="calibre12">OpenOption</code> interfaces.
+      </p>
+      
+      <p class="indent">In summary, <strong class="calibre11">while you cannot write an extensible enum type, you can emulate it by writing an interface
+            to accompany a basic enum type that implements the interface.</strong> This allows clients to write their own enums (or other types) that implement the
+         interface. Instances of these types can then be used wherever instances of the basic
+         enum type can be used, assuming APIs are written in terms of the interface.
+      </p>
+      
+      <h3 class="h2"><a id="lev39" class="calibre4"></a><span epub:type="pagebreak" id="page_180" class="calibre15"></span><strong class="calibre10">Item 39: Prefer annotations to naming patterns</strong></h3>
+      
+      <p class="noindent">Historically, it was common to use <em class="calibre9">naming patterns</em> to indicate that some program elements demanded special treatment by a tool or framework.
+         For example, prior to release 4, the JUnit testing framework required its users to
+         designate test methods by beginning their names with the characters <code class="calibre12">test</code> [<a href="ref.xhtml#rBeck04" class="calibre8">Beck04</a>]. This technique works, but it has several big disadvantages. First, typographical
+         errors result in silent failures. For example, suppose you accidentally named a test
+         method <code class="calibre12">tsetSafetyOverride</code> instead of <code class="calibre12">testSafetyOverride</code>. JUnit 3 wouldn’t complain, but it wouldn’t execute the test either, leading to a
+         false sense of security.
+      </p>
+      
+      <p class="indent">A second disadvantage of naming patterns is that there is no way to ensure that they
+         are used only on appropriate program elements. For example, suppose you called a class
+         <code class="calibre12">TestSafetyMechanisms</code> in hopes that JUnit 3 would automatically test all of its methods, regardless of
+         their names. Again, JUnit 3 wouldn’t complain, but it wouldn’t execute the tests either.
+      </p>
+      
+      <p class="indent">A third disadvantage of naming patterns is that they provide no good way to associate
+         parameter values with program elements. For example, suppose you want to support a
+         category of test that succeeds only if it throws a particular exception. The exception
+         type is essentially a parameter of the test. You could encode the exception type name
+         into the test method name using some elaborate naming pattern, but this would be ugly
+         and fragile (<a href="ch9.xhtml#lev62" class="calibre8">Item 62</a>). The compiler would have no way of knowing to check that the string that was supposed
+         to name an exception actually did. If the named class didn’t exist or wasn’t an exception,
+         you wouldn’t find out until you tried to run the test.
+      </p>
+      
+      <p class="indent">Annotations [JLS, 9.7] solve all of these problems nicely, and JUnit adopted them
+         starting with release 4. In this item, we’ll write our own toy testing framework to
+         show how annotations work. Suppose you want to define an annotation type to designate
+         simple tests that are run automatically and fail if they throw an exception. Here’s
+         how such an annotation type, named <code class="calibre12">Test</code>, might look:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex35a" id="pch6ex35" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Marker annotation type declaration</strong><br class="calibre7"/>
+         import java.lang.annotation.*;<br class="calibre7"/>
+         <br class="calibre7"/>
+         /**<br class="calibre7"/>
+          * Indicates that the annotated method is a test method.<br class="calibre7"/>
+          * Use only on parameterless static methods.<br class="calibre7"/>
+          */<br class="calibre7"/>
+         @Retention(RetentionPolicy.RUNTIME)<br class="calibre7"/>
+         @Target(ElementType.METHOD)<br class="calibre7"/>
+         public @interface Test {<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_181"></span>The declaration for the <code class="calibre12">Test</code> annotation type is itself annotated with <code class="calibre12">Retention</code> and <code class="calibre12">Target</code> annotations. Such annotations on annotation type declarations are known as <em class="calibre9">meta-annotations</em>. The <code class="calibre12">@Retention(RetentionPolicy.RUNTIME)</code> meta-annotation indicates that <code class="calibre12">Test</code> annotations should be retained at runtime. Without it, <code class="calibre12">Test</code> annotations would be invisible to the test tool. The <code class="calibre12">@Target.get(ElementType.METHOD)</code> meta-annotation indicates that the <code class="calibre12">Test</code> annotation is legal only on method declarations: it cannot be applied to class declarations,
+         field declarations, or other program elements.
+      </p>
+      
+      <p class="indent">The comment before the <code class="calibre12">Test</code> annotation declaration says, “Use only on parameterless static methods.” It would
+         be nice if the compiler could enforce this, but it can’t, unless you write an <em class="calibre9">annotation processor</em> to do so. For more on this topic, see the documentation for <code class="calibre12">javax.annotation.processing</code>. In the absence of such an annotation processor, if you put a <code class="calibre12">Test</code> annotation on the declaration of an instance method or on a method with one or more
+         parameters, the test program will still compile, leaving it to the testing tool to
+         deal with the problem at runtime.
+      </p>
+      
+      <p class="indent">Here is how the <code class="calibre12">Test</code> annotation looks in practice. It is called a <em class="calibre9">marker annotation</em> because it has no parameters but simply “marks” the annotated element. If the programmer
+         were to misspell <code class="calibre12">Test</code> or to apply the <code class="calibre12">Test</code> annotation to a program element other than a method declaration, the program wouldn’t
+         compile:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex36a" id="pch6ex36" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Program containing marker annotations</strong><br class="calibre7"/>
+         public class Sample {<br class="calibre7"/>
+             <strong class="calibre11">@Test</strong> public static void m1() { }  // Test should pass<br class="calibre7"/>
+             public static void m2() { }<br class="calibre7"/>
+             <strong class="calibre11">@Test</strong> public static void m3() {     // Test should fail<br class="calibre7"/>
+                 throw new RuntimeException("Boom");<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public static void m4() { }<br class="calibre7"/>
+             <strong class="calibre11">@Test</strong> public void m5() { } <strong class="calibre11">// INVALID USE: nonstatic method</strong><br class="calibre7"/>
+             public static void m6() { }<br class="calibre7"/>
+             <strong class="calibre11">@Test</strong> public static void m7() {    // Test should fail<br class="calibre7"/>
+                 throw new RuntimeException("Crash");<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public static void m8() { }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The <code class="calibre12">Sample</code> class has seven static methods, four of which are annotated as tests. Two of these,
+         <code class="calibre12">m3</code> and <code class="calibre12">m7</code>, throw exceptions, and two, <code class="calibre12">m1</code> and <code class="calibre12">m5</code>, do not. But one of the annotated methods that does not throw an exception, <code class="calibre12">m5</code>, is an instance method, so it is not a valid use of the annotation. In sum, <code class="calibre12">Sample</code> contains four tests: one will pass, two will fail, and one is invalid. The four methods
+         that are not annotated with the <code class="calibre12">Test</code> annotation will be ignored by the testing tool.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_182"></span>The <code class="calibre12">Test</code> annotations have no direct effect on the semantics of the <code class="calibre12">Sample</code> class. They serve only to provide information for use by interested programs. More
+         generally, annotations don’t change the semantics of the annotated code but enable
+         it for special treatment by tools such as this simple test runner:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex37a" id="pch6ex37" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Program to process marker annotations</strong><br class="calibre7"/>
+         import java.lang.reflect.*;<br class="calibre7"/>
+         <br class="calibre7"/>
+         public class RunTests {<br class="calibre7"/>
+             public static void main(String[] args) throws Exception {<br class="calibre7"/>
+                 int tests = 0;<br class="calibre7"/>
+                 int passed = 0;<br class="calibre7"/>
+                 Class&lt;?&gt; testClass = Class.forName(args[0]);<br class="calibre7"/>
+                 for (Method m : testClass.getDeclaredMethods()) {<br class="calibre7"/>
+                     if (<strong class="calibre11">m.isAnnotationPresent(Test.class)</strong>) {<br class="calibre7"/>
+                         tests++;<br class="calibre7"/>
+                         try {<br class="calibre7"/>
+                             m.invoke(null);<br class="calibre7"/>
+                             passed++;<br class="calibre7"/>
+                         } catch (InvocationTargetException wrappedExc) {<br class="calibre7"/>
+                             Throwable exc = wrappedExc.getCause();<br class="calibre7"/>
+                             System.out.println(m + " failed: " + exc);<br class="calibre7"/>
+                         } catch (Exception exc) {<br class="calibre7"/>
+                             System.out.println("Invalid @Test: " + m);<br class="calibre7"/>
+                         }<br class="calibre7"/>
+                     }<br class="calibre7"/>
+                 }<br class="calibre7"/>
+                 System.out.printf("Passed: %d, Failed: %d%n",<br class="calibre7"/>
+                                   passed, tests - passed);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The test runner tool takes a fully qualified class name on the command line and runs
+         all of the class’s <code class="calibre12">Test</code>-annotated methods reflectively, by calling <code class="calibre12">Method.invoke</code>. The <code class="calibre12">isAnnotationPresent</code> method tells the tool which methods to run. If a test method throws an exception,
+         the reflection facility wraps it in an <code class="calibre12">InvocationTargetException</code>. The tool catches this exception and prints a failure report containing the original
+         exception thrown by the test method, which is extracted from the <code class="calibre12">InvocationTargetException</code> with the <code class="calibre12">getCause</code> method.
+      </p>
+      
+      <p class="indent">If an attempt to invoke a test method by reflection throws any exception other than
+         <code class="calibre12">InvocationTargetException</code>, it indicates an invalid use of the <code class="calibre12">Test</code> annotation that was not caught at compile time. Such uses include annotation of an
+         instance method, of a method with one or more parameters, or of an inaccessible method.
+         The second catch block in the test runner catches these <code class="calibre12">Test</code> usage errors <span epub:type="pagebreak" id="page_183"></span>and prints an appropriate error message. Here is the output that is printed if <code class="calibre12">RunTests</code> is run on <code class="calibre12">Sample</code>:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex38a" id="pch6ex38" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void Sample.m3() failed: RuntimeException: Boom<br class="calibre7"/>
+         Invalid @Test: public void Sample.m5()<br class="calibre7"/>
+         public static void Sample.m7() failed: RuntimeException: Crash<br class="calibre7"/>
+         Passed: 1, Failed: 3
+      </p>
+      
+      <p class="indent">Now let’s add support for tests that succeed only if they throw a particular exception.
+         We’ll need a new annotation type for this:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex39a" id="pch6ex39" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Annotation type with a parameter</strong><br class="calibre7"/>
+         import java.lang.annotation.*;<br class="calibre7"/>
+         /**<br class="calibre7"/>
+          * Indicates that the annotated method is a test method that<br class="calibre7"/>
+          * must throw the designated exception to succeed.<br class="calibre7"/>
+          */<br class="calibre7"/>
+         @Retention(RetentionPolicy.RUNTIME)<br class="calibre7"/>
+         @Target(ElementType.METHOD)<br class="calibre7"/>
+         public @interface ExceptionTest {<br class="calibre7"/>
+             <strong class="calibre11">Class&lt;? extends Throwable&gt; value();</strong><br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The type of the parameter for this annotation is <code class="calibre12">Class&lt;? extends Throwable&gt;</code>. This wildcard type is, admittedly, a mouthful. In English, it means “the <code class="calibre12">Class</code> object for some class that extends <code class="calibre12">Throwable</code>,” and it allows the user of the annotation to specify any exception (or error) type.
+         This usage is an example of a <em class="calibre9">bounded type token</em> (<a href="ch5.xhtml#lev33" class="calibre8">Item 33</a>). Here’s how the annotation looks in practice. Note that class literals are used
+         as the values for the annotation parameter:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex40a" id="pch6ex40" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Program containing annotations with a parameter</strong><br class="calibre7"/>
+         public class Sample2 {<br class="calibre7"/>
+             <strong class="calibre11">@ExceptionTest(ArithmeticException.class)</strong><br class="calibre7"/>
+             public static void m1() {  // Test should pass<br class="calibre7"/>
+                 int i = 0;<br class="calibre7"/>
+                 i = i / i;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             <strong class="calibre11">@ExceptionTest(ArithmeticException.class)</strong><br class="calibre7"/>
+             public static void m2() {  // Should fail (wrong exception)<br class="calibre7"/>
+                 int[] a = new int[0];<br class="calibre7"/>
+                 int i = a[1];<br class="calibre7"/>
+             }<br class="calibre7"/>
+             <strong class="calibre11">@ExceptionTest(ArithmeticException.class)</strong><br class="calibre7"/>
+             public static void m3() { }  // Should fail (no exception)<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_184"></span>Now let’s modify the test runner tool to process the new annotation. Doing so consists
+         of adding the following code to the <code class="calibre12">main</code> method:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex41a" id="pch6ex41" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">if (m.isAnnotationPresent(ExceptionTest.class)) {<br class="calibre7"/>
+             tests++;<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 m.invoke(null);<br class="calibre7"/>
+                 System.out.printf("Test %s failed: no exception%n", m);<br class="calibre7"/>
+             } catch (InvocationTargetException wrappedEx) {<br class="calibre7"/>
+                 Throwable exc = wrappedEx.getCause();<br class="calibre7"/>
+                 <strong class="calibre11">Class&lt;? extends Throwable&gt; excType =</strong><br class="calibre7"/>
+                     <strong class="calibre11">m.getAnnotation(ExceptionTest.class).value();</strong><br class="calibre7"/>
+                 <strong class="calibre11">if (excType.isInstance(exc)) {</strong><br class="calibre7"/>
+                     <strong class="calibre11">passed++;</strong><br class="calibre7"/>
+                 } else {<br class="calibre7"/>
+                     System.out.printf(<br class="calibre7"/>
+                         "Test %s failed: expected %s, got %s%n",<br class="calibre7"/>
+                         m, excType.getName(), exc);<br class="calibre7"/>
+                 }<br class="calibre7"/>
+             } catch (Exception exc) {<br class="calibre7"/>
+                 System.out.println("Invalid @Test: " + m);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This code is similar to the code we used to process <code class="calibre12">Test</code> annotations, with one exception: this code extracts the value of the annotation parameter
+         and uses it to check if the exception thrown by the test is of the right type. There
+         are no explicit casts, and hence no danger of a <code class="calibre12">ClassCastException</code>. The fact that the test program compiled guarantees that its annotation parameters
+         represent valid exception types, with one caveat: if the annotation parameters were
+         valid at compile time but the class file representing a specified exception type is
+         no longer present at runtime, the test runner will throw <code class="calibre12">TypeNotPresentException</code>.
+      </p>
+      
+      <p class="indent">Taking our exception testing example one step further, it is possible to envision
+         a test that passes if it throws any one of several specified exceptions. The annotation
+         mechanism has a facility that makes it easy to support this usage. Suppose we change
+         the parameter type of the <code class="calibre12">ExceptionTest</code> annotation to be an array of <code class="calibre12">Class</code> objects:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex42a" id="pch6ex42" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Annotation type with an array parameter</strong><br class="calibre7"/>
+         @Retention(RetentionPolicy.RUNTIME)<br class="calibre7"/>
+         @Target(ElementType.METHOD)<br class="calibre7"/>
+         public @interface ExceptionTest {<br class="calibre7"/>
+             Class&lt;? extends Exception&gt;<strong class="calibre11">[]</strong> value();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_185"></span>The syntax for array parameters in annotations is flexible. It is optimized for single-element
+         arrays. All of the previous <code class="calibre12">ExceptionTest</code> annotations are still valid with the new array-parameter version of <code class="calibre12">ExceptionTest</code> and result in single-element arrays. To specify a multiple-element array, surround
+         the elements with curly braces and separate them with commas:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex43a" id="pch6ex43" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Code containing an annotation with an array parameter</strong><br class="calibre7"/>
+         @ExceptionTest(<strong class="calibre11">{ IndexOutOfBoundsException.class,</strong><br class="calibre7"/>
+                          <strong class="calibre11">NullPointerException.class }</strong>)<br class="calibre7"/>
+         public static void doublyBad() {<br class="calibre7"/>
+             List&lt;String&gt; list = new ArrayList&lt;&gt;();<br class="calibre7"/>
+         <br class="calibre7"/>
+             // The spec permits this method to throw either<br class="calibre7"/>
+             // IndexOutOfBoundsException or NullPointerException<br class="calibre7"/>
+             list.addAll(5, null);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">It is reasonably straightforward to modify the test runner tool to process the new
+         version of <code class="calibre12">ExceptionTest</code>. This code replaces the original version:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex44a" id="pch6ex44" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">if (m.isAnnotationPresent(ExceptionTest.class)) {<br class="calibre7"/>
+             tests++;<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 m.invoke(null);<br class="calibre7"/>
+                 System.out.printf("Test %s failed: no exception%n", m);<br class="calibre7"/>
+             } catch (Throwable wrappedExc) {<br class="calibre7"/>
+                 Throwable exc = wrappedExc.getCause();<br class="calibre7"/>
+                 <strong class="calibre11">int oldPassed = passed;</strong><br class="calibre7"/>
+                 <strong class="calibre11">Class&lt;? extends Exception&gt;[] excTypes =</strong><br class="calibre7"/>
+                     <strong class="calibre11">m.getAnnotation(ExceptionTest.class).value();</strong><br class="calibre7"/>
+                 <strong class="calibre11">for (Class&lt;? extends Exception&gt; excType : excTypes) {</strong><br class="calibre7"/>
+                     <strong class="calibre11">if (excType.isInstance(exc)) {</strong><br class="calibre7"/>
+                         <strong class="calibre11">passed++;</strong><br class="calibre7"/>
+                         <strong class="calibre11">break;</strong><br class="calibre7"/>
+                     <strong class="calibre11">}</strong><br class="calibre7"/>
+                 <strong class="calibre11">}</strong><br class="calibre7"/>
+                 <strong class="calibre11">if (passed == oldPassed)</strong><br class="calibre7"/>
+                     <strong class="calibre11">System.out.printf("Test %s failed: %s %n", m, exc);</strong><br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">As of Java 8, there is another way to do multivalued annotations. Instead of declaring
+         an annotation type with an array parameter, you can annotate the declaration of an
+         annotation with the <code class="calibre12">@Repeatable</code> meta-annotation, to indicate that the annotation may be applied repeatedly to a single
+         element. This meta-annotation <span epub:type="pagebreak" id="page_186"></span>takes a single parameter, which is the class object of a <em class="calibre9">containing annotation type</em>, whose sole parameter is an array of the annotation type [JLS, 9.6.3]. Here’s how
+         the annotation declarations look if we take this approach with our <code class="calibre12">ExceptionTest</code> annotation. Note that the containing annotation type must be annotated with an appropriate
+         retention policy and target, or the declarations won’t compile:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex45a" id="pch6ex45" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Repeatable annotation type</strong><br class="calibre7"/>
+         @Retention(RetentionPolicy.RUNTIME)<br class="calibre7"/>
+         @Target(ElementType.METHOD)<br class="calibre7"/>
+         @Repeatable(ExceptionTestContainer.class)<br class="calibre7"/>
+         public @interface ExceptionTest {<br class="calibre7"/>
+             Class&lt;? extends Exception&gt; value();<br class="calibre7"/>
+         }<br class="calibre7"/>
+         <br class="calibre7"/>
+         @Retention(RetentionPolicy.RUNTIME)<br class="calibre7"/>
+         @Target(ElementType.METHOD)<br class="calibre7"/>
+         public @interface ExceptionTestContainer {<br class="calibre7"/>
+             ExceptionTest[] value();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Here’s how our <code class="calibre12">doublyBad</code> test looks with a repeated annotation in place of an array-valued annotation:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex46a" id="pch6ex46" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Code containing a repeated annotation</strong><br class="calibre7"/>
+         @ExceptionTest(IndexOutOfBoundsException.class)<br class="calibre7"/>
+         @ExceptionTest(NullPointerException.class)<br class="calibre7"/>
+         public static void doublyBad() { ... }
+      </p>
+      
+      <p class="indent">Processing repeatable annotations requires care. A repeated annotation generates a
+         synthetic annotation of the containing annotation type. The <code class="calibre12">getAnnotationsByType</code> method glosses over this fact, and can be used to access both repeated and non-repeated
+         annotations of a repeatable annotation type. But <code class="calibre12">isAnnotationPresent</code> makes it explicit that repeated annotations are not of the annotation type, but of
+         the containing annotation type. If an element has a repeated annotation of some type
+         and you use the <code class="calibre12">isAnnotationPresent</code> method to check if the element has an annotation of that type, you’ll find that it
+         does not. Using this method to check for the presence of an annotation type will therefore
+         cause your program to silently ignore repeated annotations. Similarly, using this
+         method to check for the containing annotation type will cause the program to silently
+         ignore non-repeated annotations. To detect repeated and non-repeated annotations with
+         <code class="calibre12">isAnnotationPresent</code>, you much check for both the annotation type and its containing annotation type.
+         Here’s how the relevant part of our <span epub:type="pagebreak" id="page_187"></span><code class="calibre12">RunTests</code> program looks when modified to use the repeatable version of the <code class="calibre12">ExceptionTest</code> annotation:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex47a" id="pch6ex47" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Processing repeatable annotations</strong><br class="calibre7"/>
+         <strong class="calibre11">if (m.isAnnotationPresent(ExceptionTest.class)</strong><br class="calibre7"/>
+             <strong class="calibre11">|| m.isAnnotationPresent(ExceptionTestContainer.class)) {</strong><br class="calibre7"/>
+             tests++;<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 m.invoke(null);<br class="calibre7"/>
+                 System.out.printf("Test %s failed: no exception%n", m);<br class="calibre7"/>
+             } catch (Throwable wrappedExc) {<br class="calibre7"/>
+                 Throwable exc = wrappedExc.getCause();<br class="calibre7"/>
+                 int oldPassed = passed;<br class="calibre7"/>
+                 <strong class="calibre11">ExceptionTest[] excTests =</strong><br class="calibre7"/>
+                         <strong class="calibre11">m.getAnnotationsByType(ExceptionTest.class);</strong><br class="calibre7"/>
+                 <strong class="calibre11">for (ExceptionTest excTest : excTests) {</strong><br class="calibre7"/>
+                     if (<strong class="calibre11">excTest.value()</strong>.isInstance(exc)) {<br class="calibre7"/>
+                         passed++;<br class="calibre7"/>
+                         break;<br class="calibre7"/>
+                     }<br class="calibre7"/>
+                 }<br class="calibre7"/>
+                 if (passed == oldPassed)<br class="calibre7"/>
+                     System.out.printf("Test %s failed: %s %n", m, exc);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Repeatable annotations were added to improve the readability of source code that logically
+         applies multiple instances of the same annotation type to a given program element.
+         If you feel they enhance the readability of your source code, use them, but remember
+         that there is more boilerplate in declaring and processing repeatable annotations,
+         and that processing repeatable annotations is error-prone.
+      </p>
+      
+      <p class="indent">The testing framework in this item is just a toy, but it clearly demonstrates the
+         superiority of annotations over naming patterns, and it only scratches the surface
+         of what you can do with them. If you write a tool that requires programmers to add
+         information to source code, define appropriate annotation types. <strong class="calibre11">There is simply no reason to use naming patterns when you can use annotations instead.</strong></p>
+      
+      <p class="indent">That said, with the exception of toolsmiths, most programmers will have no need to
+         define annotation types. But <strong class="calibre11">all programmers should use the predefined annotation types that Java provides</strong> (<a href="ch6.xhtml#lev40" class="calibre8">Items 40</a>, <a href="ch5.xhtml#lev27" class="calibre8">27</a>). Also, consider using the annotations provided by your IDE or static analysis tools.
+         Such annotations can improve the quality of the diagnostic information provided by
+         these tools. Note, however, that these annotations have yet to be standardized, so
+         you may have some work to do if you switch tools or if a standard emerges.
+      </p>
+      
+      <h3 class="h2"><a id="lev40" class="calibre4"></a><span epub:type="pagebreak" id="page_188" class="calibre15"></span><strong class="calibre10">Item 40: Consistently use the</strong> <code class="calibre19"><strong class="calibre10">Override</strong></code> <strong class="calibre10">annotation</strong></h3>
+      
+      <p class="noindent">The Java libraries contain several annotation types. For the typical programmer, the
+         most important of these is <code class="calibre12">@Override</code>. This annotation can be used only on method declarations, and it indicates that the
+         annotated method declaration overrides a declaration in a supertype. If you consistently
+         use this annotation, it will protect you from a large class of nefarious bugs. Consider
+         this program, in which the class <code class="calibre12">Bigram</code> represents a <em class="calibre9">bigram</em>, or ordered pair of letters:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex48a" id="pch6ex48" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Can you spot the bug?</strong><br class="calibre7"/>
+         public class Bigram {<br class="calibre7"/>
+             private final char first;<br class="calibre7"/>
+             private final char second;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public Bigram(char first, char second) {<br class="calibre7"/>
+                 this.first  = first;<br class="calibre7"/>
+                 this.second = second;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public boolean equals(Bigram b) {<br class="calibre7"/>
+                 return b.first == first &amp;&amp; b.second == second;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             public int hashCode() {<br class="calibre7"/>
+                 return 31 * first + second;<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public static void main(String[] args) {<br class="calibre7"/>
+                 Set&lt;Bigram&gt; s = new HashSet&lt;&gt;();<br class="calibre7"/>
+                 for (int i = 0; i &lt; 10; i++)<br class="calibre7"/>
+                     for (char ch = 'a'; ch &lt;= 'z'; ch++)<br class="calibre7"/>
+                         s.add(new Bigram(ch, ch));<br class="calibre7"/>
+                 System.out.println(s.size());<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The main program repeatedly adds twenty-six bigrams, each consisting of two identical
+         lowercase letters, to a set. Then it prints the size of the set. You might expect
+         the program to print <code class="calibre12">26</code>, as sets cannot contain duplicates. If you try running the program, you’ll find that
+         it prints not <code class="calibre12">26</code> but <code class="calibre12">260</code>. What is wrong with it?
+      </p>
+      
+      <p class="indent">Clearly, the author of the <code class="calibre12">Bigram</code> class intended to override the <code class="calibre12">equals</code> method (<a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>) and even remembered to override <code class="calibre12">hashCode</code> in tandem (<a href="ch3.xhtml#lev11" class="calibre8">Item 11</a>). Unfortunately, our hapless programmer failed to override <code class="calibre12">equals</code>, overloading it instead (<a href="ch8.xhtml#lev52" class="calibre8">Item 52</a>). To override <code class="calibre12">Object.equals</code>, you must define an <code class="calibre12">equals</code> method whose parameter is of type <code class="calibre12">Object</code>, but the parameter of <code class="calibre12">Bigram</code>’s <span epub:type="pagebreak" id="page_189"></span><code class="calibre12">equals</code> method is not of type <code class="calibre12">Object</code>, so <code class="calibre12">Bigram</code> inherits the <code class="calibre12">equals</code> method from <code class="calibre12">Object</code>. This <code class="calibre12">equals</code> method tests for object <em class="calibre9">identity</em>, just like the <code class="calibre12">==</code> operator. Each of the ten copies of each bigram is distinct from the other nine,
+         so they are deemed unequal by <code class="calibre12">Object.equals</code>, which explains why the program prints <code class="calibre12">260</code>.
+      </p>
+      
+      <p class="indent">Luckily, the compiler can help you find this error, but only if you help it by telling
+         it that you intend to override <code class="calibre12">Object.equals</code>. To do this, annotate <code class="calibre12">Bigram.equals</code> with <code class="calibre12">@Override</code>, as shown here:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex49a" id="pch6ex49" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">@Override public boolean equals(Bigram b) {<br class="calibre7"/>
+             return b.first == first &amp;&amp; b.second == second;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">If you insert this annotation and try to recompile the program, the compiler will
+         generate an error message like this:
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex50a" id="pch6ex50" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Bigram.java:10: method does not override or implement a method<br class="calibre7"/>
+         from a supertype<br class="calibre7"/>
+             @Override public boolean equals(Bigram b) {<br class="calibre7"/>
+             ^
+      </p>
+      
+      <p class="noindent">You will immediately realize what you did wrong, slap yourself on the forehead, and
+         replace the broken <code class="calibre12">equals</code> implementation with a correct one (<a href="ch3.xhtml#lev10" class="calibre8">Item 10</a>):
+      </p>
+      
+      <p class="codelink"><a href="ch6_images.xhtml#pch6ex51a" id="pch6ex51" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">@Override public boolean equals(<strong class="calibre11">Object o</strong>) {<br class="calibre7"/>
+             <strong class="calibre11">if (!(o instanceof Bigram))</strong><br class="calibre7"/>
+                 <strong class="calibre11">return false;</strong><br class="calibre7"/>
+             <strong class="calibre11">Bigram b = (Bigram) o;</strong><br class="calibre7"/>
+             return b.first == first &amp;&amp; b.second == second;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Therefore, you should <strong class="calibre11">use the</strong> <code class="calibre12"><strong class="calibre11">Override</strong></code> <strong class="calibre11">annotation on every method declaration that you believe to override a superclass declaration.</strong> There is one minor exception to this rule. If you are writing a class that is not
+         labeled abstract and you believe that it overrides an abstract method in its superclass,
+         you needn’t bother putting the <code class="calibre12">Override</code> annotation on that method. In a class that is not declared abstract, the compiler
+         will emit an error message if you fail to override an abstract superclass method.
+         However, you might wish to draw attention to all of the methods in your class that
+         override superclass methods, in which case you should feel free to annotate these
+         methods too. Most IDEs can be set to insert <code class="calibre12">Override</code> annotations automatically when you elect to override a method.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_190"></span>Most IDEs provide another reason to use the <code class="calibre12">Override</code> annotation consistently. If you enable the appropriate check, the IDE will generate
+         a warning if you have a method that doesn’t have an <code class="calibre12">Override</code> annotation but does override a superclass method. If you use the <code class="calibre12">Override</code> annotation consistently, these warnings will alert you to unintentional overriding.
+         They complement the compiler’s error messages, which alert you to unintentional failure
+         to override. Between the IDE and the compiler, you can be sure that you’re overriding
+         methods everywhere you want to and nowhere else.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">Override</code> annotation may be used on method declarations that override declarations from interfaces
+         as well as classes. With the advent of default methods, it is good practice to use
+         <code class="calibre12">Override</code> on concrete implementations of interface methods to ensure that the signature is
+         correct. If you know that an interface does not have default methods, you may choose
+         to omit <code class="calibre12">Override</code> annotations on concrete implementations of interface methods to reduce clutter.
+      </p>
+      
+      <p class="indent">In an abstract class or an interface, however, it <em class="calibre9">is</em> worth annotating <em class="calibre9">all</em> methods that you believe to override superclass or superinterface methods, whether
+         concrete or abstract. For example, the <code class="calibre12">Set</code> interface adds no new methods to the <code class="calibre12">Collection</code> interface, so it should include <code class="calibre12">Override</code> annotations on all of its method declarations to ensure that it does not accidentally
+         add any new methods to the <code class="calibre12">Collection</code> interface.
+      </p>
+      
+      <p class="indent">In summary, the compiler can protect you from a great many errors if you use the <code class="calibre12">Override</code> annotation on every method declaration that you believe to override a supertype declaration,
+         with one exception. In concrete classes, you need not annotate methods that you believe
+         to override abstract method declarations (though it is not harmful to do so).
+      </p>
+      
+      <h3 class="h2"><a id="lev41" class="calibre4"></a><span epub:type="pagebreak" id="page_191" class="calibre15"></span><strong class="calibre10">Item 41: Use marker interfaces to define types</strong></h3>
+      
+      <p class="noindent">A <em class="calibre9">marker interface</em> is an interface that contains no method declarations but merely designates (or “marks”)
+         a class that implements the interface as having some property. For example, consider
+         the <code class="calibre12">Serializable</code> interface (<a href="ch12.xhtml#ch12" class="calibre8">Chapter 12</a>). By implementing this interface, a class indicates that its instances can be written
+         to an <code class="calibre12">ObjectOutputStream</code> (or “serialized”).
+      </p>
+      
+      <p class="indent">You may hear it said that marker annotations (<a href="ch6.xhtml#lev39" class="calibre8">Item 39</a>) make marker interfaces obsolete. This assertion is incorrect. Marker interfaces
+         have two advantages over marker annotations. First and foremost, <strong class="calibre11">marker interfaces define a type that is implemented by instances of the marked class;
+            marker annotations do not.</strong> The existence of a marker interface type allows you to catch errors at compile time
+         that you couldn’t catch until runtime if you used a marker annotation.
+      </p>
+      
+      <p class="indent">Java’s serialization facility (<a href="ch6.xhtml#ch6" class="calibre8">Chapter 6</a>) uses the <code class="calibre12">Serializable</code> marker interface to indicate that a type is serializable. The <code class="calibre12">ObjectOutputStream.writeObject</code> method, which serializes the object that is passed to it, requires that its argument
+         be serializable. Had the argument of this method been of type <code class="calibre12">Serializable</code>, an attempt to serialize an inappropriate object would have been detected at compile
+         time (by type checking). Compile-time error detection is the intent of marker interfaces,
+         but unfortunately, the <code class="calibre12">ObjectOutputStream.write</code> API does not take advantage of the <code class="calibre12">Serializable</code> interface: its argument is declared to be of type <code class="calibre12">Object</code>, so attempts to serialize an unserializable object won’t fail until runtime.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Another advantage of marker interfaces over marker annotations is that they can be
+            targeted more precisely.</strong> If an annotation type is declared with target <code class="calibre12">ElementType.TYPE</code>, it can be applied to <em class="calibre9">any</em> class or interface. Suppose you have a marker that is applicable only to implementations
+         of a particular interface. If you define it as a marker interface, you can have it
+         extend the sole interface to which it is applicable, guaranteeing that all marked
+         types are also subtypes of the sole interface to which it is applicable.
+      </p>
+      
+      <p class="indent">Arguably, the <code class="calibre12">Set</code> interface is just such a <em class="calibre9">restricted marker interface</em>. It is applicable only to <code class="calibre12">Collection</code> subtypes, but it adds no methods beyond those defined by <code class="calibre12">Collection</code>. It is not generally considered to be a marker interface because it refines the contracts
+         of several <code class="calibre12">Collection</code> methods, including <code class="calibre12">add</code>, <code class="calibre12">equals</code>, and <code class="calibre12">hashCode</code>. But it is easy to imagine a marker interface that is applicable only to subtypes
+         of some particular interface and does <em class="calibre9">not</em> refine the contracts of any of the interface’s methods. Such a marker interface might
+         describe some invariant of the entire object or indicate that instances are eligible
+         for processing <span epub:type="pagebreak" id="page_192"></span>by a method of some other class (in the way that the <code class="calibre12">Serializable</code> interface indicates that instances are eligible for processing by <code class="calibre12">ObjectOutputStream</code>).
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The chief advantage of marker annotations over marker interfaces is that they are
+            part of the larger annotation facility.</strong> Therefore, marker annotations allow for consistency in annotation-based frameworks.
+      </p>
+      
+      <p class="indent">So when should you use a marker annotation and when should you use a marker interface?
+         Clearly you must use an annotation if the marker applies to any program element other
+         than a class or interface, because only classes and interfaces can be made to implement
+         or extend an interface. If the marker applies only to classes and interfaces, ask
+         yourself the question “Might I want to write one or more methods that accept only
+         objects that have this marking?” If so, you should use a marker interface in preference
+         to an annotation. This will make it possible for you to use the interface as a parameter
+         type for the methods in question, which will result in the benefit of compile-time
+         type checking. If you can convince yourself that you’ll never want to write a method
+         that accepts only objects with the marking, then you’re probably better off using
+         a marker annotation. If, additionally, the marking is part of a framework that makes
+         heavy use of annotations, then a marker annotation is the clear choice.
+      </p>
+      
+      <p class="indent">In summary, marker interfaces and marker annotations both have their uses. If you
+         want to define a type that does not have any new methods associated with it, a marker
+         interface is the way to go. If you want to mark program elements other than classes
+         and interfaces or to fit the marker into a framework that already makes heavy use
+         of annotation types, then a marker annotation is the correct choice. <strong class="calibre11">If you find yourself writing a marker annotation type whose target is</strong> <code class="calibre12"><strong class="calibre11">ElementType.TYPE</strong></code><strong class="calibre11">, take the time to figure out whether it really should be an annotation type or whether
+            a marker interface would be more appropriate.</strong></p>
+      
+      <p class="indent">In a sense, this item is the inverse of <a href="ch4.xhtml#lev22" class="calibre8">Item 22</a>, which says, “If you don’t want to define a type, don’t use an interface.” To a first
+         approximation, this item says, “If you do want to define a type, do use an interface.”
+      </p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="ch5.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch7.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

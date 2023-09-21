@@ -1,0 +1,604 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Preface</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="foreword.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="acknowledgments.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h2f" id="preface"><a id="page_xiii" class="calibre4"></a><strong class="calibre10">Preface</strong></h2>
+      
+      <h3 class="h3a"><strong class="calibre10">Preface to the Third Edition</strong></h3>
+      
+      <p class="noindent"><strong class="calibre11">I</strong><small class="calibre13">N</small> 1997, when Java was new, James Gosling (the father of Java), described it as a “blue
+         collar language” that was “pretty simple” [<a href="ref.xhtml#rGosling97" class="calibre8">Gosling97</a>]. At about the same time, Bjarne Stroustrup (the father of C++) described C++ as
+         a “multi-paradigm language” that “deliberately differs from languages designed to
+         support a single way of writing programs” [<a href="ref.xhtml#rStroustrup95" class="calibre8">Stroustrup95</a>]. Stroustrup warned:
+      </p>
+      
+      <p class="bq">Much of the relative simplicity of Java is—like for most new languages—partly an illusion
+         and partly a function of its incompleteness. As time passes, Java will grow significantly
+         in size and complexity. It will double or triple in size and grow implementation-dependent
+         extensions or libraries. [<a href="ref.xhtml#rStroustrup" class="calibre8">Stroustrup</a>]
+      </p>
+      
+      <p class="noindent">Now, twenty years later, it’s fair to say that Gosling and Stroustrup were both right.
+         Java is now large and complex, with multiple abstractions for many things, from parallel
+         execution, to iteration, to the representation of dates and times.
+      </p>
+      
+      <p class="indent">I still like Java, though my ardor has cooled a bit as the platform has grown. Given
+         its increased size and complexity, the need for an up-to-date best-practices guide
+         is all the more critical. With this third edition of <em class="calibre9">Effective Java</em>, I did my best to provide you with one. I hope this edition continues to satisfy
+         the need, while staying true to the spirit of the first two editions.
+      </p>
+      
+      <p class="indent">Small is beautiful, but simple ain’t easy.</p>
+      
+      <p class="right"><em class="calibre9">San Jose, California<br class="calibre7"/>November 2017</em></p>
+      
+      <p class="noindentt">P.S. I would be remiss if I failed to mention an industry-wide best practice that
+         has occupied a fair amount of my time lately. Since the birth of our field in the
+         1950’s, we have freely reimplemented each others’ APIs. This practice was critical
+         to the meteoric success of computer technology. I am active in the effort to preserve
+         this freedom [<a href="ref.xhtml#rCompSci17" class="calibre8">CompSci17</a>], and I encourage you to join me. It is crucial to the continued health of our profession
+         that we retain the right to reimplement each others’ APIs.
+      </p>
+      
+      <h3 class="h3a"><a id="page_xiv" class="calibre4"></a><strong class="calibre10">Preface to the Second Edition</strong></h3>
+      
+      <p class="noindent">A lot has happened to the Java platform since I wrote the first edition of this book
+         in 2001, and it’s high time for a second edition. The most significant set of changes
+         was the addition of generics, enum types, annotations, autoboxing, and the for-each
+         loop in Java 5. A close second was the addition of the new concurrency library, <code class="calibre12">java.util.concurrent</code>, also released in Java 5. With Gilad Bracha, I had the good fortune to lead the teams
+         that designed the new language features. I also had the good fortune to serve on the
+         team that designed and developed the concurrency library, which was led by Doug Lea.
+      </p>
+      
+      <p class="indent">The other big change in the platform is the widespread adoption of modern Integrated
+         Development Environments (IDEs), such as Eclipse, IntelliJ IDEA, and NetBeans, and
+         of static analysis tools, such as FindBugs. While I have not been involved in these
+         efforts, I’ve benefited from them immensely and learned how they affect the Java development
+         experience.
+      </p>
+      
+      <p class="indent">In 2004, I moved from Sun to Google, but I’ve continued my involvement in the development
+         of the Java platform over the past four years, contributing to the concurrency and
+         collections APIs through the good offices of Google and the Java Community Process.
+         I’ve also had the pleasure of using the Java platform to develop libraries for use
+         within Google. Now I know what it feels like to be a user.
+      </p>
+      
+      <p class="indent">As was the case in 2001 when I wrote the first edition, my primary goal is to share
+         my experience with you so that you can imitate my successes while avoiding my failures.
+         The new material continues to make liberal use of real-world examples from the Java
+         platform libraries.
+      </p>
+      
+      <p class="indent">The first edition succeeded beyond my wildest expectations, and I’ve done my best
+         to stay true to its spirit while covering all of the new material that was required
+         to bring the book up to date. It was inevitable that the book would grow, and grow
+         it did, from fifty-seven items to seventy-eight. Not only did I add twenty-three items,
+         but I thoroughly revised all the original material and retired a few items whose better
+         days had passed. In the Appendix, you can see how the material in this edition relates
+         to the material in the first edition.
+      </p>
+      
+      <p class="indent">In the Preface to the First Edition, I wrote that the Java programming language and
+         its libraries were immensely conducive to quality and productivity, and a joy to work
+         with. The changes in releases 5 and 6 have taken a good thing and made it better.
+         The platform is much bigger now than it was in 2001 and more complex, but once you
+         learn the patterns and idioms for using the new features, they make your programs
+         better and your life easier. I hope this edition captures my continued <a id="page_xv" class="calibre8"></a>enthusiasm for the platform and helps make your use of the platform and its new features
+         more effective and enjoyable.
+      </p>
+      
+      <p class="right"><em class="calibre9">San Jose, California<br class="calibre7"/>April 2008</em></p>
+      
+      <h3 class="h3a"><strong class="calibre10">Preface to the First Edition</strong></h3>
+      
+      <p class="noindent">In 1996 I pulled up stakes and headed west to work for JavaSoft, as it was then known,
+         because it was clear that that was where the action was. In the intervening five years
+         I’ve served as Java platform libraries architect. I’ve designed, implemented, and
+         maintained many of the libraries and served as a consultant for many others. Presiding
+         over these libraries as the Java platform matured was a once-in-a-lifetime opportunity.
+         It is no exaggeration to say that I had the privilege to work with some of the great
+         software engineers of our generation. In the process, I learned a lot about the Java
+         programming language—what works, what doesn’t, and how to use the language and its
+         libraries to best effect.
+      </p>
+      
+      <p class="indent">This book is my attempt to share my experience with you so that you can imitate my
+         successes while avoiding my failures. I borrowed the format from Scott Meyers’s <em class="calibre9">Effective C++</em>, which consists of fifty items, each conveying one specific rule for improving your
+         programs and designs. I found the format to be singularly effective, and I hope you
+         do too.
+      </p>
+      
+      <p class="indent">In many cases, I took the liberty of illustrating the items with real-world examples
+         from the Java platform libraries. When describing something that could have been done
+         better, I tried to pick on code that I wrote myself, but occasionally I pick on something
+         written by a colleague. I sincerely apologize if, despite my best efforts, I’ve offended
+         anyone. Negative examples are cited not to cast blame but in the spirit of cooperation,
+         so that all of us can benefit from the experience of those who’ve gone before.
+      </p>
+      
+      <p class="indent">While this book is not targeted solely at developers of reusable components, it is
+         inevitably colored by my experience writing such components over the past two decades.
+         I naturally think in terms of exported APIs (Application Programming Interfaces),
+         and I encourage you to do likewise. Even if you aren’t developing reusable components,
+         thinking in these terms tends to improve the quality of the software you write. Furthermore,
+         it’s not uncommon to write a reusable component <a id="page_xvi" class="calibre8"></a>without knowing it: You write something useful, share it with your buddy across the
+         hall, and before long you have half a dozen users. At this point, you no longer have
+         the flexibility to change the API at will and are thankful for all the effort that
+         you put into designing the API when you first wrote the software.
+      </p>
+      
+      <p class="indent">My focus on API design may seem a bit unnatural to devotees of the new lightweight
+         software development methodologies, such as <em class="calibre9">Extreme Programming</em>. These methodologies emphasize writing the simplest program that could possibly work.
+         If you’re using one of these methodologies, you’ll find that a focus on API design
+         serves you well in the <em class="calibre9">refactoring</em> process. The fundamental goals of refactoring are the improvement of system structure
+         and the avoidance of code duplication. These goals are impossible to achieve in the
+         absence of well-designed APIs for the components of the system.
+      </p>
+      
+      <p class="indent">No language is perfect, but some are excellent. I have found the Java programming
+         language and its libraries to be immensely conducive to quality and productivity,
+         and a joy to work with. I hope this book captures my enthusiasm and helps make your
+         use of the language more effective and enjoyable.
+      </p>
+      
+      <p class="right"><em class="calibre9">Cupertino, California<br class="calibre7"/>April 2001</em></p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="foreword.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="acknowledgments.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

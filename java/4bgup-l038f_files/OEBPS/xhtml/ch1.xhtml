@@ -1,0 +1,840 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 1 Introduction</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="acknowledgments.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch2.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch1"><span epub:type="pagebreak" id="page_1" class="calibre15"></span>Chapter 1. Introduction
+      </h2>
+      
+      <p class="noindent"><strong class="calibre11">T</strong><small class="calibre13">HIS</small> book is designed to help you make effective use of the Java programming language
+         and its fundamental libraries: <code class="calibre12">java.lang</code>, <code class="calibre12">java.util</code>, and <code class="calibre12">java.io</code>, and subpackages such as <code class="calibre12">java.util.concurrent</code> and <code class="calibre12">java.util.function</code>. Other libraries are discussed from time to time.
+      </p>
+      
+      <p class="indent">This book consists of ninety items, each of which conveys one rule. The rules capture
+         practices generally held to be beneficial by the best and most experienced programmers.
+         The items are loosely grouped into eleven chapters, each covering one broad aspect
+         of software design. The book is not intended to be read from cover to cover: each
+         item stands on its own, more or less. The items are heavily cross-referenced so you
+         can easily plot your own course through the book.
+      </p>
+      
+      <p class="indentb">Many new features were added to the platform since the last edition of this book was
+         published. Most of the items in this book use these features in some way. This table
+         shows you where to go for primary coverage of key features:
+      </p>
+      
+      <table class="tablewidth">
+         
+         <tbody class="calibre16">
+            
+            <tr class="calibre17">
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Feature</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Items</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Release</strong></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Lambdas</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><a href="ch7.xhtml#lev42" class="calibre8">Items 42</a>–<a href="ch7.xhtml#lev44" class="calibre8">44</a></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 8</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Streams</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><a href="ch7.xhtml#lev45" class="calibre8">Items 45</a>–<a href="ch7.xhtml#lev48" class="calibre8">48</a></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 8</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Optionals</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><a href="ch8.xhtml#lev55" class="calibre8">Item 55</a></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 8</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Default methods in interfaces</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><a href="ch4.xhtml#lev21" class="calibre8">Item 21</a></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 8</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">try</code>-with-resources
+                  </p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><a href="ch2.xhtml#lev9" class="calibre8">Item 9</a></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 7</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">@SafeVarargs</code></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><a href="ch5.xhtml#lev32" class="calibre8">Item 32</a></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 7</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="table1">
+                  <p class="noindent1">Modules</p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><a href="ch4.xhtml#lev15" class="calibre8">Item 15</a></p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1">Java 9</p>
+               </td>
+               
+            </tr>
+            
+         </tbody>
+         
+      </table>
+      
+      <p class="indentt"><span epub:type="pagebreak" id="page_2"></span>Most items are illustrated with program examples. A key feature of this book is that
+         it contains code examples illustrating many design patterns and idioms. Where appropriate,
+         they are cross-referenced to the standard reference work in this area [<a href="ref.xhtml#rGamma95" class="calibre8">Gamma95</a>].
+      </p>
+      
+      <p class="indent">Many items contain one or more program examples illustrating some practice to be avoided.
+         Such examples, sometimes known as <em class="calibre9">antipatterns,</em> are clearly labeled with a comment such as <code class="calibre12"><strong class="calibre11">// Never do this!</strong></code>. In each case, the item explains why the example is bad and suggests an alternative
+         approach.
+      </p>
+      
+      <p class="indent">This book is not for beginners: it assumes that you are already comfortable with Java.
+         If you are not, consider one of the many fine introductory texts, such as Peter Sestoft’s
+         <em class="calibre9">Java Precisely</em> [<a href="ref.xhtml#rSestoft16" class="calibre8">Sestoft16</a>]. While <em class="calibre9">Effective Java</em> is designed to be accessible to anyone with a working knowledge of the language,
+         it should provide food for thought even for advanced programmers.
+      </p>
+      
+      <p class="indent">Most of the rules in this book derive from a few fundamental principles. Clarity and
+         simplicity are of paramount importance. The user of a component should never be surprised
+         by its behavior. Components should be as small as possible but no smaller. (As used
+         in this book, the term <em class="calibre9">component</em> refers to any reusable software element, from an individual method to a complex framework
+         consisting of multiple packages.) Code should be reused rather than copied. The dependencies
+         between components should be kept to a minimum. Errors should be detected as soon
+         as possible after they are made, ideally at compile time.
+      </p>
+      
+      <p class="indent">While the rules in this book do not apply 100 percent of the time, they do characterize
+         best programming practices in the great majority of cases. You should not slavishly
+         follow these rules, but violate them only occasionally and with good reason. Learning
+         the art of programming, like most other disciplines, consists of first learning the
+         rules and then learning when to break them.
+      </p>
+      
+      <p class="indent">For the most part, this book is not about performance. It is about writing programs
+         that are clear, correct, usable, robust, flexible, and maintainable. If you can do
+         that, it’s usually a relatively simple matter to get the performance you need (<a href="ch9.xhtml#lev67" class="calibre8">Item 67</a>). Some items do discuss performance concerns, and a few of these items provide performance
+         numbers. These numbers, which are introduced with the phrase “On my machine,” should
+         be regarded as approximate at best.
+      </p>
+      
+      <p class="indent">For what it’s worth, my machine is an aging homebuilt 3.5GHz quad-core Intel Core
+         i7-4770K with 16 gigabytes of DDR3-1866 CL9 RAM, running Azul’s Zulu 9.0.0.15 release
+         of OpenJDK, atop Microsoft Windows 7 Professional SP1 (64-bit).
+      </p>
+      
+      <p class="indentb"><span epub:type="pagebreak" id="page_3"></span>When discussing features of the Java programming language and its libraries, it is
+         sometimes necessary to refer to specific releases. For convenience, this book uses
+         nicknames in preference to official release names. This table shows the mapping between
+         release names and nicknames:
+      </p>
+      
+      <table class="tablewidth">
+         
+         <tbody class="calibre16">
+            
+            <tr class="calibre17">
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Official Release Name</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Nickname</strong></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">JDK 1.0.<em class="calibre9">x</em></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 1.0</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">JDK 1.1.<em class="calibre9">x</em></p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 1.1</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 2 Platform, Standard Edition, v1.2</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 2</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 2 Platform, Standard Edition, v1.3</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 3</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 2 Platform, Standard Edition, v1.4</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 4</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 2 Platform, Standard Edition, v5.0</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 5</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java Platform, Standard Edition 6</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 6</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java Platform, Standard Edition 7</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 7</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java Platform, Standard Edition 8</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1">Java 8</p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="table1">
+                  <p class="noindent1">Java Platform, Standard Edition 9</p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1">Java 9</p>
+               </td>
+               
+            </tr>
+            
+         </tbody>
+         
+      </table>
+      
+      <p class="indentt">The examples are reasonably complete, but favor readability over completeness. They
+         freely use classes from packages <code class="calibre12">java.util</code> and <code class="calibre12">java.io</code>. In order to compile examples, you may have to add one or more import declarations,
+         or other such boilerplate. The book’s website, <code class="calibre12"><a href="http://joshbloch.com/effectivejava" class="calibre8">http://joshbloch.com/effectivejava</a></code>, contains an expanded version of each example, which you can compile and run.
+      </p>
+      
+      <p class="indent">For the most part, this book uses technical terms as they are defined in <em class="calibre9">The Java Language Specification, Java SE 8 Edition</em> [<a href="ref.xhtml#rJLS" class="calibre8">JLS</a>]. A few terms deserve special mention. The language supports four kinds of types:
+         <em class="calibre9">interfaces</em> (including <em class="calibre9">annotations</em>), <em class="calibre9">classes</em> (including <em class="calibre9">enums</em>), <em class="calibre9">arrays</em>, and <em class="calibre9">primitives</em>. The first three are known as <em class="calibre9">reference types</em>. Class instances and arrays are <em class="calibre9">objects</em>; primitive values are not. A class’s <em class="calibre9">members</em> consist of its <em class="calibre9">fields</em>, <em class="calibre9">methods</em>, <em class="calibre9">member classes</em>, and <em class="calibre9">member interfaces.</em> A method’s <em class="calibre9">signature</em> consists of its name and the types of its formal parameters; the signature does <em class="calibre9">not</em> include the method’s return type.
+      </p>
+      
+      <p class="indent">This book uses a few terms differently from <em class="calibre9">The Java Language Specification</em>. Unlike <em class="calibre9">The Java Language Specification</em>, this book uses <em class="calibre9">inheritance</em> as a synonym for <em class="calibre9">subclassing</em>. Instead of using the term inheritance for interfaces, this book <span epub:type="pagebreak" id="page_4"></span>simply states that a class <em class="calibre9">implements</em> an interface or that one interface <em class="calibre9">extends</em> another. To describe the access level that applies when none is specified, this book
+         uses the traditional <em class="calibre9">package-private</em> instead of the technically correct <em class="calibre9">package access</em> [JLS, 6.6.1].
+      </p>
+      
+      <p class="indent">This book uses a few technical terms that are not defined in <em class="calibre9">The Java Language Specification</em>. The term <em class="calibre9">exported API</em>, or simply <em class="calibre9">API</em>, refers to the classes, interfaces, constructors, members, and serialized forms by
+         which a programmer accesses a class, interface, or package. (The term <em class="calibre9">API</em>, which is short for <em class="calibre9">application programming interface</em>, is used in preference to the otherwise preferable term <em class="calibre9">interface</em> to avoid confusion with the language construct of that name.) A programmer who writes
+         a program that uses an API is referred to as a <em class="calibre9">user</em> of the API. A class whose implementation uses an API is a <em class="calibre9">client</em> of the API.
+      </p>
+      
+      <p class="indent">Classes, interfaces, constructors, members, and serialized forms are collectively
+         known as <em class="calibre9">API elements</em>. An exported API consists of the API elements that are accessible outside of the
+         package that defines the API. These are the API elements that any client can use and
+         the author of the API commits to support. Not coincidentally, they are also the elements
+         for which the Javadoc utility generates documentation in its default mode of operation.
+         Loosely speaking, the exported API of a package consists of the public and protected
+         members and constructors of every public class or interface in the package.
+      </p>
+      
+      <p class="indent">In Java 9, a <em class="calibre9">module system</em> was added to the platform. If a library makes use of the module system, its exported
+         API is the union of the exported APIs of all the packages exported by the library’s
+         module declaration.
+      </p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="acknowledgments.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch2.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>

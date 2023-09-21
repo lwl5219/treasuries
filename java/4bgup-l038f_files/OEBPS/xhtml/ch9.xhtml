@@ -1,0 +1,1960 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops">
+<head>
+
+    <title>Chapter 9 General Programming</title>
+    <meta content="urn:uuid:232c2138-be82-42d4-8a6b-b460372314a4" name="Adept.expected.resource"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link href="../../stylesheet.css" rel="stylesheet" type="text/css"/>
+<link href="../../page_styles.css" rel="stylesheet" type="text/css"/>
+
+  
+
+
+<link href="../../calibreHtmlOutBasicCss.css" type="text/css" rel="stylesheet" />
+
+</head>
+<body>
+
+<div class="calibreMeta">
+  <div class="calibreMetaTitle">
+  
+  
+    
+    <h1>
+      <a href="../../../4bgup-l038f.html">Effective Java, Third Edition
+</a>
+    </h1>
+    
+    
+  
+  </div>
+  <div class="calibreMetaAuthor">
+    Joshua Bloch
+
+  </div>
+</div>
+
+<div class="calibreMain">
+
+  <div class="calibreEbookContent">
+    
+      <div class="calibreEbNavTop">
+        
+          <a href="ch8.xhtml" class="calibreAPrev">previous page
+</a>
+        
+
+        
+          <a href="ch10.xhtml" class="calibreANext">next page
+</a>
+        
+      </div>
+    
+
+    
+      
+      <h2 class="h1" id="ch9"><span epub:type="pagebreak" id="page_261" class="calibre15"></span>Chapter 9. General Programming
+      </h2>
+      
+      <p class="noindent"><strong class="calibre11">T</strong><small class="calibre13">HIS</small> chapter is devoted to the nuts and bolts of the language. It discusses local variables,
+         control structures, libraries, data types, and two extralinguistic facilities: <em class="calibre9">reflection</em> and <em class="calibre9">native methods</em>. Finally, it discusses optimization and naming conventions.
+      </p>
+      
+      <h3 class="h2"><a id="lev57" class="calibre4"></a><strong class="calibre10">Item 57: Minimize the scope of local variables</strong></h3>
+      
+      <p class="noindent">This item is similar in nature to <a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>, “Minimize the accessibility of classes and members.” By minimizing the scope of
+         local variables, you increase the readability and maintainability of your code and
+         reduce the likelihood of error.
+      </p>
+      
+      <p class="indent">Older programming languages, such as C, mandated that local variables must be declared
+         at the head of a block, and some programmers continue to do this out of habit. It’s
+         a habit worth breaking. As a gentle reminder, Java lets you declare variables anywhere
+         a statement is legal (as does C, since C99).
+      </p>
+      
+      <p class="indent"><strong class="calibre11">The most powerful technique for minimizing the scope of a local variable is to declare
+            it where it is first used.</strong> If a variable is declared before it is used, it’s just clutter—one more thing to
+         distract the reader who is trying to figure out what the program does. By the time
+         the variable is used, the reader might not remember the variable’s type or initial
+         value.
+      </p>
+      
+      <p class="indent">Declaring a local variable prematurely can cause its scope not only to begin too early
+         but also to end too late. The scope of a local variable extends from the point where
+         it is declared to the end of the enclosing block. If a variable is declared outside
+         of the block in which it is used, it remains visible after the program exits that
+         block. If a variable is used accidentally before or after its region of intended use,
+         the consequences can be disastrous.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Nearly every local variable declaration should contain an initializer.</strong> If you don’t yet have enough information to initialize a variable sensibly, you should
+         <span epub:type="pagebreak" id="page_262"></span>postpone the declaration until you do. One exception to this rule concerns <code class="calibre12">try-catch</code> statements. If a variable is initialized to an expression whose evaluation can throw
+         a checked exception, the variable must be initialized inside a <code class="calibre12">try</code> block (unless the enclosing method can propagate the exception). If the value must
+         be used outside of the <code class="calibre12">try</code> block, then it must be declared before the <code class="calibre12">try</code> block, where it cannot yet be “sensibly initialized.” For an example, see page 283.
+      </p>
+      
+      <p class="indent">Loops present a special opportunity to minimize the scope of variables. The <code class="calibre12">for</code> loop, in both its traditional and for-each forms, allows you to declare <em class="calibre9">loop variables</em>, limiting their scope to the exact region where they’re needed. (This region consists
+         of the body of the loop and the code in parentheses between the <code class="calibre12">for</code> keyword and the body.) Therefore, <strong class="calibre11">prefer</strong> <code class="calibre12"><strong class="calibre11">for</strong></code> <strong class="calibre11">loops to</strong> <code class="calibre12"><strong class="calibre11">while</strong></code> <strong class="calibre11">loops</strong>, assuming the contents of the loop variable aren’t needed after the loop terminates.
+      </p>
+      
+      <p class="indent">For example, here is the preferred idiom for iterating over a collection (<a href="ch9.xhtml#lev58" class="calibre8">Item 58</a>):
+      </p>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex1a" id="pch9ex1" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Preferred idiom for iterating over a collection or array</strong><br class="calibre7"/>
+         for (Element e : c) {<br class="calibre7"/>
+             ... // Do Something with e<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If you need access to the iterator, perhaps to call its <code class="calibre12">remove</code> method, the preferred idiom uses a traditional <code class="calibre12">for</code> loop in place of the for-each loop:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex2a" id="pch9ex2" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Idiom for iterating when you need the iterator</strong><br class="calibre7"/>
+         for (Iterator&lt;Element&gt; i = c.iterator(); i.hasNext(); ) {<br class="calibre7"/>
+             Element e = i.next();<br class="calibre7"/>
+             ... // Do something with e and i<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">To see why these <code class="calibre12">for</code> loops are preferable to a <code class="calibre12">while</code> loop, consider the following code fragment, which contains two <code class="calibre12">while</code> loops and one bug:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex3a" id="pch9ex3" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Iterator&lt;Element&gt; i = c.iterator();<br class="calibre7"/>
+         while (i.hasNext()) {<br class="calibre7"/>
+             doSomething(i.next());<br class="calibre7"/>
+         }<br class="calibre7"/>
+         ...<br class="calibre7"/>
+         Iterator&lt;Element&gt; i2 = c2.iterator();<br class="calibre7"/>
+         while (<strong class="calibre11">i</strong>.hasNext()) {             <strong class="calibre11">// BUG!</strong><br class="calibre7"/>
+             doSomethingElse(i2.next());<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The second loop contains a copy-and-paste error: it initializes a new loop variable,
+         <code class="calibre12">i2</code>, but uses the old one, <code class="calibre12">i</code>, which is, unfortunately, still in scope. The resulting <span epub:type="pagebreak" id="page_263"></span>code compiles without error and runs without throwing an exception, but it does the
+         wrong thing. Instead of iterating over <code class="calibre12">c2</code>, the second loop terminates immediately, giving the false impression that <code class="calibre12">c2</code> is empty. Because the program errs silently, the error can remain undetected for
+         a long time.
+      </p>
+      
+      <p class="indent">If a similar copy-and-paste error were made in conjunction with either of the <code class="calibre12">for</code> loops (for-each or traditional), the resulting code wouldn’t even compile. The element
+         (or iterator) variable from the first loop would not be in scope in the second loop.
+         Here’s how it looks with the traditional <code class="calibre12">for</code> loop:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex4a" id="pch9ex4" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">for (Iterator&lt;Element&gt; i = c.iterator(); i.hasNext(); ) {<br class="calibre7"/>
+             Element e = i.next();<br class="calibre7"/>
+             ... // Do something with e and i<br class="calibre7"/>
+         }<br class="calibre7"/>
+         ...<br class="calibre7"/>
+         <br class="calibre7"/>
+         <strong class="calibre11">// Compile-time error - cannot find symbol i</strong><br class="calibre7"/>
+         for (Iterator&lt;Element&gt; i2 = c2.iterator(); <strong class="calibre11">i</strong>.hasNext(); ) {<br class="calibre7"/>
+             Element e2 = i2.next();<br class="calibre7"/>
+             ... // Do something with e2 and i2<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">Moreover, if you use a <code class="calibre12">for</code> loop, it’s much less likely that you’ll make the copy-and-paste error because there’s
+         no incentive to use different variable names in the two loops. The loops are completely
+         independent, so there’s no harm in reusing the element (or iterator) variable name.
+         In fact, it’s often stylish to do so.
+      </p>
+      
+      <p class="indent">The <code class="calibre12">for</code> loop has one more advantage over the <code class="calibre12">while</code> loop: it is shorter, which enhances readability.
+      </p>
+      
+      <p class="indent">Here is another loop idiom that minimizes the scope of local variables:</p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex5a" id="pch9ex5" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">for (int i = 0, n = expensiveComputation(); i &lt; n; i++) {<br class="calibre7"/>
+             ... // Do something with i;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">The important thing to notice about this idiom is that it has <em class="calibre9">two</em> loop variables, <code class="calibre12">i</code> and <code class="calibre12">n</code>, both of which have exactly the right scope. The second variable, <code class="calibre12">n</code>, is used to store the limit of the first, thus avoiding the cost of a redundant computation
+         in every iteration. As a rule, you should use this idiom if the loop test involves
+         a method invocation that is guaranteed to return the same result on each iteration.
+      </p>
+      
+      <p class="indent">A final technique to minimize the scope of local variables is to <strong class="calibre11">keep methods small and focused.</strong> If you combine two activities in the same method, local variables relevant to one
+         activity may be in the scope of the code performing the other activity. To prevent
+         this from happening, simply separate the method into two: one for each activity.
+      </p>
+      
+      <h3 class="h2"><a id="lev58" class="calibre4"></a><span epub:type="pagebreak" id="page_264" class="calibre15"></span><strong class="calibre10">Item 58: Prefer for-each loops to traditional</strong> <code class="calibre19"><strong class="calibre10">for</strong></code> <strong class="calibre10">loops</strong></h3>
+      
+      <p class="noindent">As discussed in <a href="ch7.xhtml#lev45" class="calibre8">Item 45</a>, some tasks are best accomplished with streams, others with iteration. Here is a
+         traditional <code class="calibre12">for</code> loop to iterate over a collection:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex6a" id="pch9ex6" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Not the best way to iterate over a collection!</strong><br class="calibre7"/>
+         for (Iterator&lt;Element&gt; i = c.iterator(); i.hasNext(); ) {<br class="calibre7"/>
+             Element e = i.next();<br class="calibre7"/>
+             ... // Do something with e<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">and here is a traditional <code class="calibre12">for</code> loop to iterate over an array:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex7a" id="pch9ex7" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Not the best way to iterate over an array!</strong><br class="calibre7"/>
+         for (int i = 0; i &lt; a.length; i++) {<br class="calibre7"/>
+             ... // Do something with a[i]<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">These idioms are better than <code class="calibre12">while</code> loops (<a href="ch9.xhtml#lev57" class="calibre8">Item 57</a>), but they aren’t perfect. The iterator and the index variables are both just clutter—all
+         you need are the elements. Furthermore, they represent opportunities for error. The
+         iterator occurs three times in each loop and the index variable four, which gives
+         you many chances to use the wrong variable. If you do, there is no guarantee that
+         the compiler will catch the problem. Finally, the two loops are quite different, drawing
+         unnecessary attention to the type of the container and adding a (minor) hassle to
+         changing that type.
+      </p>
+      
+      <p class="indent">The for-each loop (officially known as the “enhanced <code class="calibre12">for</code> statement”) solves all of these problems. It gets rid of the clutter and the opportunity
+         for error by hiding the iterator or index variable. The resulting idiom applies equally
+         to collections and arrays, easing the process of switching the implementation type
+         of a container from one to the other:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex8a" id="pch9ex8" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// The preferred idiom for iterating over collections and arrays</strong><br class="calibre7"/>
+         for (Element e : elements) {<br class="calibre7"/>
+             ... // Do something with e<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">When you see the colon (<code class="calibre12">:</code>), read it as “in.” Thus, the loop above reads as “for each element <em class="calibre9">e</em> in <em class="calibre9">elements</em>.” There is no performance penalty for using for-each loops, even for arrays: the
+         code they generate is essentially identical to the code you would write by hand.
+      </p>
+      
+      <p class="indent">The advantages of the for-each loop over the traditional <code class="calibre12">for</code> loop are even greater when it comes to nested iteration. Here is a common mistake
+         that people make when doing nested iteration:
+      </p>
+      <span epub:type="pagebreak" id="page_265"></span>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex9a" id="pch9ex9" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Can you spot the bug?</strong><br class="calibre7"/>
+         enum Suit { CLUB, DIAMOND, HEART, SPADE }<br class="calibre7"/>
+         enum Rank { ACE, DEUCE, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT,<br class="calibre7"/>
+                     NINE, TEN, JACK, QUEEN, KING }<br class="calibre7"/>
+         ...<br class="calibre7"/>
+         static Collection&lt;Suit&gt; suits = Arrays.asList(Suit.values());<br class="calibre7"/>
+         static Collection&lt;Rank&gt; ranks = Arrays.asList(Rank.values());<br class="calibre7"/>
+         <br class="calibre7"/>
+         List&lt;Card&gt; deck = new ArrayList&lt;&gt;();<br class="calibre7"/>
+         for (Iterator&lt;Suit&gt; i = suits.iterator(); i.hasNext(); )<br class="calibre7"/>
+             for (Iterator&lt;Rank&gt; j = ranks.iterator(); j.hasNext(); )<br class="calibre7"/>
+                 deck.add(new Card(i.next(), j.next()));
+      </p>
+      
+      <p class="indent">Don’t feel bad if you didn’t spot the bug. Many expert programmers have made this
+         mistake at one time or another. The problem is that the <code class="calibre12">next</code> method is called too many times on the iterator for the outer collection (<code class="calibre12">suits</code>). It should be called from the outer loop so that it is called once per suit, but
+         instead it is called from the inner loop, so it is called once per card. After you
+         run out of suits, the loop throws a <code class="calibre12">NoSuchElementException</code>.
+      </p>
+      
+      <p class="indent">If you’re really unlucky and the size of the outer collection is a multiple of the
+         size of the inner collection—perhaps because they’re the same collection—the loop
+         will terminate normally, but it won’t do what you want. For example, consider this
+         ill-conceived attempt to print all the possible rolls of a pair of dice:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex10a" id="pch9ex10" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Same bug, different symptom!</strong><br class="calibre7"/>
+         enum Face { ONE, TWO, THREE, FOUR, FIVE, SIX }<br class="calibre7"/>
+         ...<br class="calibre7"/>
+         Collection&lt;Face&gt; faces = EnumSet.allOf(Face.class);<br class="calibre7"/>
+         <br class="calibre7"/>
+         for (Iterator&lt;Face&gt; i = faces.iterator(); i.hasNext(); )<br class="calibre7"/>
+             for (Iterator&lt;Face&gt; j = faces.iterator(); j.hasNext(); )<br class="calibre7"/>
+                 System.out.println(i.next() + " " + j.next());
+      </p>
+      
+      <p class="noindent">The program doesn’t throw an exception, but it prints only the six “doubles” (from
+         “<code class="calibre12">ONE ONE</code>” to “<code class="calibre12">SIX SIX</code>”), instead of the expected thirty-six combinations.
+      </p>
+      
+      <p class="indent">To fix the bugs in these examples, you must add a variable in the scope of the outer
+         loop to hold the outer element:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex11a" id="pch9ex11" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Fixed, but ugly - you can do better!</strong><br class="calibre7"/>
+         for (Iterator&lt;Suit&gt; i = suits.iterator(); i.hasNext(); ) {<br class="calibre7"/>
+             Suit suit = i.next();<br class="calibre7"/>
+             for (Iterator&lt;Rank&gt; j = ranks.iterator(); j.hasNext(); )<br class="calibre7"/>
+                 deck.add(new Card(suit, j.next()));<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_266"></span>If instead you use a nested for-each loop, the problem simply disappears. The resulting
+         code is as succinct as you could wish for:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex12a" id="pch9ex12" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Preferred idiom for nested iteration on collections and arrays</strong><br class="calibre7"/>
+         for (Suit suit : suits)<br class="calibre7"/>
+             for (Rank rank : ranks)<br class="calibre7"/>
+                 deck.add(new Card(suit, rank));
+      </p>
+      
+      <p class="indentb">Unfortunately, there are three common situations where you <em class="calibre9">can’t</em> use for-each:
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">Destructive filtering</strong>—If you need to traverse a collection removing selected elements, then you need to
+         use an explicit iterator so that you can call its <code class="calibre12">remove</code> method. You can often avoid explicit traversal by using <code class="calibre12">Collection</code>’s <code class="calibre12">removeIf</code> method, added in Java 8.
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">Transforming</strong>—If you need to traverse a list or array and replace some or all of the values of
+         its elements, then you need the list iterator or array index in order to replace the
+         value of an element.
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">Parallel iteration</strong>—If you need to traverse multiple collections in parallel, then you need explicit
+         control over the iterator or index variable so that all iterators or index variables
+         can be advanced in lockstep (as demonstrated unintentionally in the buggy card and
+         dice examples above).
+      </p>
+      
+      <p class="noindent">If you find yourself in any of these situations, use an ordinary <code class="calibre12">for</code> loop and be wary of the traps mentioned in this item.
+      </p>
+      
+      <p class="indent">Not only does the for-each loop let you iterate over collections and arrays, it lets
+         you iterate over any object that implements the <code class="calibre12">Iterable</code> interface, which consists of a single method. Here is how the interface looks:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex13a" id="pch9ex13" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public interface Iterable&lt;E&gt; {<br class="calibre7"/>
+             // Returns an iterator over the elements in this iterable<br class="calibre7"/>
+             Iterator&lt;E&gt; iterator();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">It is a bit tricky to implement <code class="calibre12">Iterable</code> if you have to write your own <code class="calibre12">Iterator</code> implementation from scratch, but if you are writing a type that represents a group
+         of elements, you should strongly consider having it implement <code class="calibre12">Iterable</code>, even if you choose not to have it implement <code class="calibre12">Collection</code>. This will allow your users to iterate over your type using the for-each loop, and
+         they will be forever grateful.
+      </p>
+      
+      <p class="indent">In summary, the for-each loop provides compelling advantages over the traditional
+         <code class="calibre12">for</code> loop in clarity, flexibility, and bug prevention, with no performance penalty. Use
+         for-each loops in preference to <code class="calibre12">for</code> loops wherever you can.
+      </p>
+      
+      <h3 class="h2"><a id="lev59" class="calibre4"></a><span epub:type="pagebreak" id="page_267" class="calibre15"></span><strong class="calibre10">Item 59: Know and use the libraries</strong></h3>
+      
+      <p class="noindent">Suppose you want to generate random integers between zero and some upper bound. Faced
+         with this common task, many programmers would write a little method that looks something
+         like this:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex14a" id="pch9ex14" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Common but deeply flawed!</strong><br class="calibre7"/>
+         static Random rnd = new Random();<br class="calibre7"/>
+         <br class="calibre7"/>
+         static int random(int n) {<br class="calibre7"/>
+             return Math.abs(rnd.nextInt()) % n;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This method may look good, but it has three flaws. The first is that if <code class="calibre12">n</code> is a small power of two, the sequence of random numbers will repeat itself after
+         a fairly short period. The second flaw is that if <code class="calibre12">n</code> is not a power of two, some numbers will, on average, be returned more frequently
+         than others. If <code class="calibre12">n</code> is large, this effect can be quite pronounced. This is powerfully demonstrated by
+         the following program, which generates a million random numbers in a carefully chosen
+         range and then prints out how many of the numbers fell in the lower half of the range:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex15a" id="pch9ex15" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             int n = 2 * (Integer.MAX_VALUE / 3);<br class="calibre7"/>
+             int low = 0;<br class="calibre7"/>
+             for (int i = 0; i &lt; 1000000; i++)<br class="calibre7"/>
+                 if (random(n) &lt; n/2)<br class="calibre7"/>
+                     low++;<br class="calibre7"/>
+             System.out.println(low);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">If the <code class="calibre12">random</code> method worked properly, the program would print a number close to half a million,
+         but if you run it, you’ll find that it prints a number close to 666,666. Two-thirds
+         of the numbers generated by the <code class="calibre12">random</code> method fall in the lower half of its range!
+      </p>
+      
+      <p class="indent">The third flaw in the <code class="calibre12">random</code> method is that it can, on rare occasions, fail catastrophically, returning a number
+         outside the specified range. This is so because the method attempts to map the value
+         returned by <code class="calibre12">rnd.nextInt()</code> to a non-negative <code class="calibre12">int</code> by calling <code class="calibre12">Math.abs</code>. If <code class="calibre12">nextInt()</code> returns <code class="calibre12">Integer.MIN_VALUE</code>, <code class="calibre12">Math.abs</code> will also return <code class="calibre12">Integer.MIN_VALUE</code>, and the remainder operator (<code class="calibre12">%</code>) will return a negative number, assuming <code class="calibre12">n</code> is not a power of two. This will almost certainly cause your program to fail, and
+         the failure may be difficult to reproduce.
+      </p>
+      
+      <p class="indent">To write a version of the <code class="calibre12">random</code> method that corrects these flaws, you’d have to know a fair amount about pseudorandom
+         number generators, number theory, <span epub:type="pagebreak" id="page_268"></span>and two’s complement arithmetic. Luckily, you don’t have to do this—it’s been done
+         for you. It’s called <code class="calibre12">Random.nextInt(int)</code>. You needn’t concern yourself with the details of how it does its job (although you
+         can study the documentation or the source code if you’re curious). A senior engineer
+         with a background in algorithms spent a good deal of time designing, implementing,
+         and testing this method and then showed it to several experts in the field to make
+         sure it was right. Then the library was beta tested, released, and used extensively
+         by millions of programmers for almost two decades. No flaws have yet been found in
+         the method, but if a flaw were to be discovered, it would be fixed in the next release.
+         <strong class="calibre11">By using a standard library, you take advantage of the knowledge of the experts who
+            wrote it and the experience of those who used it before you.</strong></p>
+      
+      <p class="indent">As of Java 7, you should no longer use <code class="calibre12">Random</code>. For most uses, <strong class="calibre11">the random number generator of choice is now</strong> <code class="calibre12"><strong class="calibre11">ThreadLocalRandom</strong></code><strong class="calibre11">.</strong> It produces higher quality random numbers, and it’s very fast. On my machine, it
+         is 3.6 times faster than <code class="calibre12">Random</code>. For fork join pools and parallel streams, use <code class="calibre12">SplittableRandom</code>.
+      </p>
+      
+      <p class="indent">A second advantage of using the libraries is that you don’t have to waste your time
+         writing ad hoc solutions to problems that are only marginally related to your work.
+         If you are like most programmers, you’d rather spend your time working on your application
+         than on the underlying plumbing.
+      </p>
+      
+      <p class="indent">A third advantage of using standard libraries is that their performance tends to improve
+         over time, with no effort on your part. Because many people use them and because they’re
+         used in industry-standard benchmarks, the organizations that supply these libraries
+         have a strong incentive to make them run faster. Many of the Java platform libraries
+         have been rewritten over the years, sometimes repeatedly, resulting in dramatic performance
+         improvements.
+      </p>
+      
+      <p class="indent">A fourth advantage of using libraries is that they tend to gain functionality over
+         time. If a library is missing something, the developer community will make it known,
+         and the missing functionality may get added in a subsequent release.
+      </p>
+      
+      <p class="indent">A final advantage of using the standard libraries is that you place your code in the
+         mainstream. Such code is more easily readable, maintainable, and reusable by the multitude
+         of developers.
+      </p>
+      
+      <p class="indent">Given all these advantages, it seems only logical to use library facilities in preference
+         to ad hoc implementations, yet many programmers don’t. Why not? Perhaps they don’t
+         know the library facilities exist. <strong class="calibre11">Numerous features are added to the libraries in every major release, and it pays to
+            keep abreast of these additions.</strong> Each time there is a major release of the Java platform, a web page is published
+         describing its new features. These pages are well worth reading [Java8-feat, Java9-feat].
+         To reinforce this point, suppose you wanted to write a <span epub:type="pagebreak" id="page_269"></span>program to print the contents of a URL specified on the command line (which is roughly
+         what the Linux <code class="calibre12">curl</code> command does). Prior to Java 9, this code was a bit tedious, but in Java 9 the <code class="calibre12">transferTo</code> method was added to <code class="calibre12">InputStream</code>. Here is a complete program to perform this task using this new method:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex16a" id="pch9ex16" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Printing the contents of a URL with transferTo, added in Java 9</strong><br class="calibre7"/>
+         public static void main(String[] args) throws IOException {<br class="calibre7"/>
+             try (InputStream in = new URL(args[0]).openStream()) {<br class="calibre7"/>
+                 in.<strong class="calibre11">transferTo</strong>(System.out);<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The libraries are too big to study all the documentation [<a href="ref.xhtml#rJava9-api" class="calibre8">Java9-api</a>], but <strong class="calibre11">every programmer should be familiar with the basics of</strong> <code class="calibre12"><strong class="calibre11">java.lang</strong></code><strong class="calibre11">,</strong> <code class="calibre12"><strong class="calibre11">java.util</strong></code><strong class="calibre11">, and</strong> <code class="calibre12"><strong class="calibre11">java.io</strong></code><strong class="calibre11">, and their subpackages.</strong> Knowledge of other libraries can be acquired on an as-needed basis. It is beyond
+         the scope of this item to summarize the facilities in the libraries, which have grown
+         immense over the years.
+      </p>
+      
+      <p class="indent">Several libraries bear special mention. The collections framework and the streams
+         library (<a href="ch7.xhtml#lev45" class="calibre8">Items 45</a>–<a href="ch7.xhtml#lev48" class="calibre8">48</a>) should be part of every programmer’s basic toolkit, as should parts of the concurrency
+         utilities in <code class="calibre12">java.util.concurrent</code>. This package contains both high-level utilities to simplify the task of multithreaded
+         programming and low-level primitives to allow experts to write their own higher-level
+         concurrent abstractions. The high-level parts of <code class="calibre12">java.util.concurrent</code> are discussed in Items 80 and 81.
+      </p>
+      
+      <p class="indent">Occasionally, a library facility can fail to meet your needs. The more specialized
+         your needs, the more likely this is to happen. While your first impulse should be
+         to use the libraries, if you’ve looked at what they have to offer in some area and
+         it doesn’t meet your needs, then use an alternate implementation. There will always
+         be holes in the functionality provided by any finite set of libraries. If you can’t
+         find what you need in Java platform libraries, your next choice should be to look
+         in high-quality third-party libraries, such as Google’s excellent, open source Guava
+         library [<a href="ref.xhtml#rGuava" class="calibre8">Guava</a>]. If you can’t find the functionality that you need in any appropriate library, you
+         may have no choice but to implement it yourself.
+      </p>
+      
+      <p class="indent">To summarize, don’t reinvent the wheel. If you need to do something that seems like
+         it should be reasonably common, there may already be a facility in the libraries that
+         does what you want. If there is, use it; if you don’t know, check. Generally speaking,
+         library code is likely to be better than code that you’d write yourself and is likely
+         to improve over time. This is no reflection on your abilities as a programmer. Economies
+         of scale dictate that library code receives far more attention than most developers
+         could afford to devote to the same functionality.
+      </p>
+      
+      <h3 class="h2"><a id="lev60" class="calibre4"></a><span epub:type="pagebreak" id="page_270" class="calibre15"></span><strong class="calibre10">Item 60: Avoid</strong> <code class="calibre19"><strong class="calibre10">float</strong></code> <strong class="calibre10">and</strong> <code class="calibre19"><strong class="calibre10">double</strong></code> <strong class="calibre10">if exact answers are required</strong></h3>
+      
+      <p class="noindent">The <code class="calibre12">float</code> and <code class="calibre12">double</code> types are designed primarily for scientific and engineering calculations. They perform
+         <em class="calibre9">binary floating-point arithmetic</em>, which was carefully designed to furnish accurate approximations quickly over a broad
+         range of magnitudes. They do not, however, provide exact results and should not be
+         used where exact results are required. <strong class="calibre11">The</strong> <code class="calibre12"><strong class="calibre11">float</strong></code> <strong class="calibre11">and</strong> <code class="calibre12"><strong class="calibre11">double</strong></code> <strong class="calibre11">types are particularly ill-suited for monetary calculations</strong> because it is impossible to represent 0.1 (or any other negative power of ten) as
+         a <code class="calibre12">float</code> or <code class="calibre12">double</code> exactly.
+      </p>
+      
+      <p class="indent">For example, suppose you have $1.03 in your pocket, and you spend 42¢. How much money
+         do you have left? Here’s a naive program fragment that attempts to answer this question:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex17a" id="pch9ex17" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">System.out.println(1.03 - 0.42);</p>
+      
+      <p class="noindent">Unfortunately, it prints out <code class="calibre12">0.6100000000000001</code>. This is not an isolated case. Suppose you have a dollar in your pocket, and you
+         buy nine washers priced at ten cents each. How much change do you get?
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex18a" id="pch9ex18" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">System.out.println(1.00 - 9 * 0.10);</p>
+      
+      <p class="noindent">According to this program fragment, you get $<code class="calibre12">0.09999999999999998</code>.
+      </p>
+      
+      <p class="indent">You might think that the problem could be solved merely by rounding results prior
+         to printing, but unfortunately this does not always work. For example, suppose you
+         have a dollar in your pocket, and you see a shelf with a row of delicious candies
+         priced at 10¢, 20¢, 30¢, and so forth, up to a dollar. You buy one of each candy,
+         starting with the one that costs 10¢, until you can’t afford to buy the next candy
+         on the shelf. How many candies do you buy, and how much change do you get? Here’s
+         a naive program designed to solve this problem:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex19a" id="pch9ex19" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - uses floating point for monetary calculation!</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             double funds = 1.00;<br class="calibre7"/>
+             int itemsBought = 0;<br class="calibre7"/>
+             for (double price = 0.10; funds &gt;= price; price += 0.10) {<br class="calibre7"/>
+                 funds -= price;<br class="calibre7"/>
+                 itemsBought++;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             System.out.println(itemsBought + " items bought.");<br class="calibre7"/>
+             System.out.println("Change: $" + funds);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent"><span epub:type="pagebreak" id="page_271"></span>If you run the program, you’ll find that you can afford three pieces of candy, and
+         you have <code class="calibre12">$0.3999999999999999</code> left. This is the wrong answer! The right way to solve this problem is to <strong class="calibre11">use</strong> <code class="calibre12"><strong class="calibre11">BigDecimal</strong></code><strong class="calibre11">,</strong> <code class="calibre12"><strong class="calibre11">int</strong></code><strong class="calibre11">, or</strong> <code class="calibre12"><strong class="calibre11">long</strong></code> <strong class="calibre11">for monetary calculations</strong>.
+      </p>
+      
+      <p class="indent">Here’s a straightforward transformation of the previous program to use the <code class="calibre12">BigDecimal</code> type in place of <code class="calibre12">double</code>. Note that <code class="calibre12">BigDecimal</code><code class="calibre12">’s String</code> constructor is used rather than its <code class="calibre12">double</code> constructor. This is required in order to avoid introducing inaccurate values into
+         the computation [Bloch05, Puzzle 2]:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex20a" id="pch9ex20" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             final BigDecimal TEN_CENTS = new BigDecimal(".10");<br class="calibre7"/>
+             int itemsBought = 0;<br class="calibre7"/>
+             BigDecimal funds = <strong class="calibre11">new BigDecimal("1.00")</strong>;<br class="calibre7"/>
+             for (BigDecimal price = TEN_CENTS;<br class="calibre7"/>
+                     funds.compareTo(price) &gt;= 0;<br class="calibre7"/>
+                     price = price.add(TEN_CENTS)) {<br class="calibre7"/>
+                 funds = funds.subtract(price);<br class="calibre7"/>
+                 itemsBought++;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             System.out.println(itemsBought + " items bought.");<br class="calibre7"/>
+             System.out.println("Money left over: $" + funds);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">If you run the revised program, you’ll find that you can afford four pieces of candy,
+         with <code class="calibre12">$0.00</code> left over. This is the correct answer.
+      </p>
+      
+      <p class="indent">There are, however, two disadvantages to using <code class="calibre12">BigDecimal</code>: it’s a lot less convenient than using a primitive arithmetic type, and it’s a lot
+         slower. The latter disadvantage is irrelevant if you’re solving a single short problem,
+         but the former may annoy you.
+      </p>
+      
+      <p class="indent">An alternative to using <code class="calibre12">BigDecimal</code> is to use <code class="calibre12">int</code> or <code class="calibre12">long</code>, depending on the amounts involved, and to keep track of the decimal point yourself.
+         In this example, the obvious approach is to do all computation in cents instead of
+         dollars. Here’s a straightforward transformation that takes this approach:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex21a" id="pch9ex21" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public static void main(String[] args) {<br class="calibre7"/>
+             int itemsBought = 0;<br class="calibre7"/>
+             int funds = 100;<br class="calibre7"/>
+             for (int price = 10; funds &gt;= price; price += 10) {<br class="calibre7"/>
+                 funds -= price;<br class="calibre7"/>
+                 itemsBought++;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             System.out.println(itemsBought + " items bought.");<br class="calibre7"/>
+             System.out.println("Cash left over: " + funds + " cents");<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_272"></span>In summary, don’t use <code class="calibre12">float</code> or <code class="calibre12">double</code> for any calculations that require an exact answer. Use <code class="calibre12">BigDecimal</code> if you want the system to keep track of the decimal point and you don’t mind the
+         inconvenience and cost of not using a primitive type. Using <code class="calibre12">BigDecimal</code> has the added advantage that it gives you full control over rounding, letting you
+         select from eight rounding modes whenever an operation that entails rounding is performed.
+         This comes in handy if you’re performing business calculations with legally mandated
+         rounding behavior. If performance is of the essence, you don’t mind keeping track
+         of the decimal point yourself, and the quantities aren’t too big, use <code class="calibre12">int</code> or <code class="calibre12">long</code>. If the quantities don’t exceed nine decimal digits, you can use <code class="calibre12">int</code>; if they don’t exceed eighteen digits, you can use <code class="calibre12">long</code>. If the quantities might exceed eighteen digits, use <code class="calibre12">BigDecimal</code>.
+      </p>
+      
+      <h3 class="h2"><a id="lev61" class="calibre4"></a><span epub:type="pagebreak" id="page_273" class="calibre15"></span><strong class="calibre10">Item 61: Prefer primitive types to boxed primitives</strong></h3>
+      
+      <p class="noindent">Java has a two-part type system, consisting of <em class="calibre9">primitives</em>, such as <code class="calibre12">int</code>, <code class="calibre12">double</code>, and <code class="calibre12">boolean</code>, and <em class="calibre9">reference types</em>, such as <code class="calibre12">String</code> and <code class="calibre12">List</code>. Every primitive type has a corresponding reference type, called a <em class="calibre9">boxed primitive</em>. The boxed primitives corresponding to <code class="calibre12">int</code>, <code class="calibre12">double</code>, and <code class="calibre12">boolean</code> are <code class="calibre12">Integer</code>, <code class="calibre12">Double</code>, and <code class="calibre12">Boolean</code>.
+      </p>
+      
+      <p class="indent">As mentioned in <a href="ch2.xhtml#lev6" class="calibre8">Item 6</a>, autoboxing and auto-unboxing blur but do not erase the distinction between the primitive
+         and boxed primitive types. There are real differences between the two, and it’s important
+         that you remain aware of which you are using and that you choose carefully between
+         them.
+      </p>
+      
+      <p class="indent">There are three major differences between primitives and boxed primitives. First,
+         primitives have only their values, whereas boxed primitives have identities distinct
+         from their values. In other words, two boxed primitive instances can have the same
+         value and different identities. Second, primitive types have only fully functional
+         values, whereas each boxed primitive type has one nonfunctional value, which is <code class="calibre12">null</code>, in addition to all the functional values of the corresponding primitive type. Last,
+         primitives are more time- and space-efficient than boxed primitives. All three of
+         these differences can get you into real trouble if you aren’t careful.
+      </p>
+      
+      <p class="indent">Consider the following comparator, which is designed to represent ascending numerical
+         order on <code class="calibre12">Integer</code> values. (Recall that a comparator’s <code class="calibre12">compare</code> method returns a number that is negative, zero, or positive, depending on whether
+         its first argument is less than, equal to, or greater than its second.) You wouldn’t
+         need to write this comparator in practice because it implements the natural ordering
+         on <code class="calibre12">Integer</code>, but it makes for an interesting example:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex22a" id="pch9ex22" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken comparator - can you spot the flaw?</strong><br class="calibre7"/>
+         Comparator&lt;Integer&gt; naturalOrder =<br class="calibre7"/>
+             (i, j) -&gt; (i &lt; j) ? -1 : (i == j ? 0 : 1);
+      </p>
+      
+      <p class="indent">This comparator looks like it ought to work, and it will pass many tests. For example,
+         it can be used with <code class="calibre12">Collections.sort</code> to correctly sort a million-element list, whether or not the list contains duplicate
+         elements. But the comparator is deeply flawed. To convince yourself of this, merely
+         print the value of <code class="calibre12">naturalOrder.compare(new Integer(42), new Integer(42))</code>. Both <code class="calibre12">Integer</code> instances represent the same value (42), so the value of this expression should be
+         0, but it’s 1, which indicates that the first <code class="calibre12">Integer</code> value is greater than the second!
+      </p>
+      
+      <p class="indent">So what’s the problem? The first test in <code class="calibre12">naturalOrder</code> works fine. Evaluating the expression <code class="calibre12">i &lt; j</code> causes the <code class="calibre12">Integer</code> instances referred to by <code class="calibre12">i</code> and <code class="calibre12">j</code> to be <em class="calibre9">auto-unboxed</em>; that is, it extracts their primitive values. The evaluation proceeds to <span epub:type="pagebreak" id="page_274"></span>check if the first of the resulting <code class="calibre12">int</code> values is less than the second. But suppose it is not. Then the next test evaluates
+         the expression <code class="calibre12">i==j</code>, which performs an <em class="calibre9">identity comparison</em> on the two object references. If <code class="calibre12">i</code> and <code class="calibre12">j</code> refer to distinct <code class="calibre12">Integer</code> instances that represent the same <code class="calibre12">int</code> value, this comparison will return <code class="calibre12">false</code>, and the comparator will incorrectly return 1, indicating that the first <code class="calibre12">Integer</code> value is greater than the second. <strong class="calibre11">Applying the</strong> <code class="calibre12"><strong class="calibre11">==</strong></code> <strong class="calibre11">operator to boxed primitives is almost always wrong.</strong></p>
+      
+      <p class="indent">In practice, if you need a comparator to describe a type’s natural order, you should
+         simply call <code class="calibre12">Comparator.naturalOrder()</code>, and if you write a comparator yourself, you should use the comparator construction
+         methods, or the static compare methods on primitive types (<a href="ch3.xhtml#lev14" class="calibre8">Item 14</a>). That said, you could fix the problem in the broken comparator by adding two local
+         variables to store the primitive <code class="calibre12">int</code> values corresponding to the boxed <code class="calibre12">Integer</code> parameters, and performing all of the comparisons on these variables. This avoids
+         the erroneous identity comparison:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex23a" id="pch9ex23" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Comparator&lt;Integer&gt; naturalOrder = (iBoxed, jBoxed) -&gt; {<br class="calibre7"/>
+             int i = iBoxed, j = jBoxed; // Auto-unboxing<br class="calibre7"/>
+             return i &lt; j ? -1 : (i == j ? 0 : 1);<br class="calibre7"/>
+         };
+      </p>
+      
+      <p class="noindent">Next, consider this delightful little program:</p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex24a" id="pch9ex24" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class Unbelievable {<br class="calibre7"/>
+             static Integer i;<br class="calibre7"/>
+         <br class="calibre7"/>
+             public static void main(String[] args) {<br class="calibre7"/>
+                 if (i == 42)<br class="calibre7"/>
+                     System.out.println("Unbelievable");<br class="calibre7"/>
+             }<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">No, it doesn’t print <code class="calibre12">Unbelievable</code>—but what it does is almost as strange. It throws a <code class="calibre12">NullPointerException</code> when evaluating the expression <code class="calibre12">i==42</code>. The problem is that <code class="calibre12">i</code> is an <code class="calibre12">Integer</code>, not an <code class="calibre12">int</code>, and like all nonconstant object reference fields, its initial value is <code class="calibre12">null</code>. When the program evaluates the expression <code class="calibre12">i==42</code>, it is comparing an <code class="calibre12">Integer</code> to an <code class="calibre12">int</code>. In nearly every case <strong class="calibre11">when you mix primitives and boxed primitives in an operation, the boxed primitive
+            is auto-unboxed.</strong> If a null object reference is auto-unboxed, you get a <code class="calibre12">NullPointerException</code>. As this program demonstrates, it can happen almost anywhere. Fixing the problem
+         is as simple as declaring <code class="calibre12">i</code> to be an <code class="calibre12">int</code> instead of an <code class="calibre12">Integer</code>.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_275"></span>Finally, consider the program from page 24 in <a href="ch2.xhtml#lev6" class="calibre8">Item 6</a>:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex25a" id="pch9ex25" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Hideously slow program! Can you spot the object creation?</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             Long sum = 0L;<br class="calibre7"/>
+             for (long i = 0; i &lt; Integer.MAX_VALUE; i++) {<br class="calibre7"/>
+                 sum += i;<br class="calibre7"/>
+             }<br class="calibre7"/>
+             System.out.println(sum);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="noindent">This program is much slower than it should be because it accidentally declares a local
+         variable (<code class="calibre12">sum</code>) to be of the boxed primitive type <code class="calibre12">Long</code> instead of the primitive type <code class="calibre12">long</code>. The program compiles without error or warning, and the variable is repeatedly boxed
+         and unboxed, causing the observed performance degradation.
+      </p>
+      
+      <p class="indent">In all three of the programs discussed in this item, the problem was the same: the
+         programmer ignored the distinction between primitives and boxed primitives and suffered
+         the consequences. In the first two programs, the consequences were outright failure;
+         in the third, severe performance problems.
+      </p>
+      
+      <p class="indent">So when should you use boxed primitives? They have several legitimate uses. The first
+         is as elements, keys, and values in collections. You can’t put primitives in collections,
+         so you’re forced to use boxed primitives. This is a special case of a more general
+         one. You must use boxed primitives as type parameters in parameterized types and methods
+         (<a href="ch5.xhtml#ch5" class="calibre8">Chapter 5</a>), because the language does not permit you to use primitives. For example, you cannot
+         declare a variable to be of type <code class="calibre12">ThreadLocal&lt;int&gt;</code>, so you must use <code class="calibre12">ThreadLocal&lt;Integer&gt;</code> instead. Finally, you must use boxed primitives when making reflective method invocations
+         (<a href="ch9.xhtml#lev65" class="calibre8">Item 65</a>).
+      </p>
+      
+      <p class="indent">In summary, use primitives in preference to boxed primitives whenever you have the
+         choice. Primitive types are simpler and faster. If you must use boxed primitives,
+         be careful! <strong class="calibre11">Autoboxing reduces the verbosity, but not the danger, of using boxed primitives.</strong> When your program compares two boxed primitives with the <code class="calibre12">==</code> operator, it does an identity comparison, which is almost certainly <em class="calibre9">not</em> what you want. When your program does mixed-type computations involving boxed and
+         unboxed primitives, it does unboxing, and <strong class="calibre11">when your program does unboxing, it can throw a</strong> <code class="calibre12"><strong class="calibre11">NullPointerException</strong></code><strong class="calibre11">.</strong> Finally, when your program boxes primitive values, it can result in costly and unnecessary
+         object creations.
+      </p>
+      
+      <h3 class="h2"><a id="lev62" class="calibre4"></a><span epub:type="pagebreak" id="page_276" class="calibre15"></span><strong class="calibre10">Item 62: Avoid strings where other types are more appropriate</strong></h3>
+      
+      <p class="noindent">Strings are designed to represent text, and they do a fine job of it. Because strings
+         are so common and so well supported by the language, there is a natural tendency to
+         use strings for purposes other than those for which they were designed. This item
+         discusses a few things that you shouldn’t do with strings.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Strings are poor substitutes for other value types.</strong> When a piece of data comes into a program from a file, from the network, or from
+         keyboard input, it is often in string form. There is a natural tendency to leave it
+         that way, but this tendency is justified only if the data really is textual in nature.
+         If it’s numeric, it should be translated into the appropriate numeric type, such as
+         <code class="calibre12">int</code>, <code class="calibre12">float</code>, or <code class="calibre12">BigInteger</code>. If it’s the answer to a yes-or-no question, it should be translated into an appropriate
+         enum type or a <code class="calibre12">boolean</code>. More generally, if there’s an appropriate value type, whether primitive or object
+         reference, you should use it; if there isn’t, you should write one. While this advice
+         may seem obvious, it is often violated.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Strings are poor substitutes for enum types.</strong> As discussed in <a href="ch6.xhtml#lev34" class="calibre8">Item 34</a>, enums make far better enumerated type constants than strings.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Strings are poor substitutes for aggregate types.</strong> If an entity has multiple components, it is usually a bad idea to represent it as
+         a single string. For example, here’s a line of code that comes from a real system—identifier
+         names have been changed to protect the guilty:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex26a" id="pch9ex26" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Inappropriate use of string as aggregate type</strong><br class="calibre7"/>
+         String compoundKey = className + "#" + i.next();
+      </p>
+      
+      <p class="indent">This approach has many disadvantages. If the character used to separate fields occurs
+         in one of the fields, chaos may result. To access individual fields, you have to parse
+         the string, which is slow, tedious, and error-prone. You can’t provide <code class="calibre12">equals</code>, <code class="calibre12">toString</code>, or <code class="calibre12">compareTo</code> methods but are forced to accept the behavior that <code class="calibre12">String</code> provides. A better approach is simply to write a class to represent the aggregate,
+         often a private static member class (<a href="ch4.xhtml#lev24" class="calibre8">Item 24</a>).
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Strings are poor substitutes for capabilities.</strong> Occasionally, strings are used to grant access to some functionality. For example,
+         consider the design of a thread-local variable facility. Such a facility provides
+         variables for which each thread has its own value. The Java libraries have had a thread-local
+         variable facility since release 1.2, but prior to that, programmers had to roll their
+         own. When confronted with the task of designing such a facility many years ago, several
+         <span epub:type="pagebreak" id="page_277"></span>people independently came up with the same design, in which client-provided string
+         keys are used to identify each thread-local variable:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex27a" id="pch9ex27" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Broken - inappropriate use of string as capability!</strong><br class="calibre7"/>
+         public class ThreadLocal {<br class="calibre7"/>
+             private ThreadLocal() { } // Noninstantiable<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Sets the current thread's value for the named variable.<br class="calibre7"/>
+             public static void set(String key, Object value);<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Returns the current thread's value for the named variable.<br class="calibre7"/>
+             public static Object get(String key);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The problem with this approach is that the string keys represent a shared global namespace
+         for thread-local variables. In order for the approach to work, the client-provided
+         string keys have to be unique: if two clients independently decide to use the same
+         name for their thread-local variable, they unintentionally share a single variable,
+         which will generally cause both clients to fail. Also, the security is poor. A malicious
+         client could intentionally use the same string key as another client to gain illicit
+         access to the other client’s data.
+      </p>
+      
+      <p class="indent">This API can be fixed by replacing the string with an unforgeable key (sometimes called
+         a <em class="calibre9">capability</em>):
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex28a" id="pch9ex28" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public class ThreadLocal {<br class="calibre7"/>
+             private ThreadLocal() { }    // Noninstantiable<br class="calibre7"/>
+         <br class="calibre7"/>
+             public static class Key {    // (Capability)<br class="calibre7"/>
+                 Key() { }<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             // Generates a unique, unforgeable key<br class="calibre7"/>
+             public static Key getKey() {<br class="calibre7"/>
+                 return new Key();<br class="calibre7"/>
+             }<br class="calibre7"/>
+         <br class="calibre7"/>
+             public static void set(Key key, Object value);<br class="calibre7"/>
+             public static Object get(Key key);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">While this solves both of the problems with the string-based API, you can do much
+         better. You don’t really need the static methods anymore. They can instead become
+         instance methods on the key, at which point the key is no longer a key for a thread-local
+         variable: it <em class="calibre9">is</em> a thread-local variable. At this point, the top-level <span epub:type="pagebreak" id="page_278"></span>class isn’t doing anything for you anymore, so you might as well get rid of it and
+         rename the nested class to <code class="calibre12">ThreadLocal</code>:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex29a" id="pch9ex29" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public final class ThreadLocal {<br class="calibre7"/>
+             public ThreadLocal();<br class="calibre7"/>
+             public void set(Object value);<br class="calibre7"/>
+             public Object get();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This API isn’t typesafe, because you have to cast the value from <code class="calibre12">Object</code> to its actual type when you retrieve it from a thread-local variable. It is impossible
+         to make the original <code class="calibre12">String</code>-based API typesafe and difficult to make the <code class="calibre12">Key</code>-based API typesafe, but it is a simple matter to make this API typesafe by making
+         <code class="calibre12">ThreadLocal</code> a parameterized class (<a href="ch5.xhtml#lev29" class="calibre8">Item 29</a>):
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex30a" id="pch9ex30" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public final class ThreadLocal&lt;T&gt; {<br class="calibre7"/>
+             public ThreadLocal();<br class="calibre7"/>
+             public void set(T value);<br class="calibre7"/>
+             public T get();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">This is, roughly speaking, the API that <code class="calibre12">java.lang.ThreadLocal</code> provides. In addition to solving the problems with the string-based API, it is faster
+         and more elegant than either of the key-based APIs.
+      </p>
+      
+      <p class="indent">To summarize, avoid the natural tendency to represent objects as strings when better
+         data types exist or can be written. Used inappropriately, strings are more cumbersome,
+         less flexible, slower, and more error-prone than other types. Types for which strings
+         are commonly misused include primitive types, enums, and aggregate types.
+      </p>
+      
+      <h3 class="h2"><a id="lev63" class="calibre4"></a><span epub:type="pagebreak" id="page_279" class="calibre15"></span><strong class="calibre10">Item 63: Beware the performance of string concatenation</strong></h3>
+      
+      <p class="noindent">The string concatenation operator (<code class="calibre12">+</code>) is a convenient way to combine a few strings into one. It is fine for generating
+         a single line of output or constructing the string representation of a small, fixed-size
+         object, but it does not scale. <strong class="calibre11">Using the string concatenation operator repeatedly to concatenate</strong> <em class="calibre9"><strong class="calibre11">n</strong></em> <strong class="calibre11">strings requires time quadratic in</strong> <em class="calibre9"><strong class="calibre11">n</strong></em><strong class="calibre11">.</strong> This is an unfortunate consequence of the fact that strings are <em class="calibre9">immutable</em> (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>). When two strings are concatenated, the contents of both are copied.
+      </p>
+      
+      <p class="indent">For example, consider this method, which constructs the string representation of a
+         billing statement by repeatedly concatenating a line for each item:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex31a" id="pch9ex31" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Inappropriate use of string concatenation - Performs poorly!</strong><br class="calibre7"/>
+         public String statement() {<br class="calibre7"/>
+             String result = "";<br class="calibre7"/>
+             for (int i = 0; i &lt; numItems(); i++)<br class="calibre7"/>
+                 result += lineForItem(i);  // String concatenation<br class="calibre7"/>
+             return result;<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">The method performs abysmally if the number of items is large. <strong class="calibre11">To achieve acceptable performance, use a</strong> <code class="calibre12"><strong class="calibre11">StringBuilder</strong></code> <strong class="calibre11">in place of a</strong> <code class="calibre12"><strong class="calibre11">String</strong></code> to store the statement under construction:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex32a" id="pch9ex32" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">public String statement() {<br class="calibre7"/>
+             StringBuilder b = new StringBuilder(numItems() * LINE_WIDTH);<br class="calibre7"/>
+             for (int i = 0; i &lt; numItems(); i++)<br class="calibre7"/>
+                 b.append(lineForItem(i));<br class="calibre7"/>
+             return b.toString();<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent">A lot of work has gone into making string concatenation faster since Java 6, but the
+         difference in the performance of the two methods is still dramatic: If <code class="calibre12">numItems</code> returns 100 and <code class="calibre12">lineForItem</code> returns an 80-character string, the second method runs 6.5 times faster than the
+         first on my machine. Because the first method is quadratic in the number of items
+         and the second is linear, the performance difference gets much larger as the number
+         of items grows. Note that the second method preallocates a <code class="calibre12">StringBuilder</code> large enough to hold the entire result, eliminating the need for automatic growth.
+         Even if it is detuned to use a default-sized <code class="calibre12">StringBuilder</code>, it is still 5.5 times faster than the first method.
+      </p>
+      
+      <p class="indent">The moral is simple: <strong class="calibre11">Don’t use the string concatenation operator to combine more than a few strings</strong> unless performance is irrelevant. Use <code class="calibre12">StringBuilder</code>’s <code class="calibre12">append</code> method instead. Alternatively, use a character array, or process the strings one
+         at a time instead of combining them.
+      </p>
+      
+      <h3 class="h2"><a id="lev64" class="calibre4"></a><span epub:type="pagebreak" id="page_280" class="calibre15"></span><strong class="calibre10">Item 64: Refer to objects by their interfaces</strong></h3>
+      
+      <p class="noindent">Item 51 says that you should use interfaces rather than classes as parameter types.
+         More generally, you should favor the use of interfaces over classes to refer to objects.
+         <strong class="calibre11">If appropriate interface types exist, then parameters, return values, variables, and
+            fields should all be declared using interface types.</strong> The only time you really need to refer to an object’s class is when you’re creating
+         it with a constructor. To make this concrete, consider the case of <code class="calibre12">LinkedHashSet</code>, which is an implementation of the <code class="calibre12">Set</code> interface. Get in the habit of typing this:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex33a" id="pch9ex33" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Good - uses interface as type</strong><br class="calibre7"/>
+         <strong class="calibre11">Set&lt;</strong>Son&gt; sonSet = new LinkedHashSet&lt;&gt;();
+      </p>
+      
+      <p class="noindent">not this:</p>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex34a" id="pch9ex34" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Bad - uses class as type!</strong><br class="calibre7"/>
+         <strong class="calibre11">LinkedHashSet</strong>&lt;Son&gt; sonSet = new LinkedHashSet&lt;&gt;();
+      </p>
+      
+      <p class="indent"><strong class="calibre11">If you get into the habit of using interfaces as types, your program will be much
+            more flexible.</strong> If you decide that you want to switch implementations, all you have to do is change
+         the class name in the constructor (or use a different static factory). For example,
+         the first declaration could be changed to read:
+      </p>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex35a" id="pch9ex35" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">Set&lt;Son&gt; sonSet = new HashSet&lt;&gt;();</p>
+      
+      <p class="noindent">and all of the surrounding code would continue to work. The surrounding code was unaware
+         of the old implementation type, so it would be oblivious to the change.
+      </p>
+      
+      <p class="indent">There is one caveat: if the original implementation offered some special functionality
+         not required by the general contract of the interface and the code depended on that
+         functionality, then it is critical that the new implementation provide the same functionality.
+         For example, if the code surrounding the first declaration depended on <code class="calibre12">LinkedHashSet</code>’s ordering policy, then it would be incorrect to substitute <code class="calibre12">HashSet</code> for <code class="calibre12">LinkedHashSet</code> in the declaration, because <code class="calibre12">HashSet</code> makes no guarantee concerning iteration order.
+      </p>
+      
+      <p class="indent">So why would you want to change an implementation type? Because the second implementation
+         offers better performance than the original, or because it offers desirable functionality
+         that the original implementation lacks. For example, suppose a field contains a <code class="calibre12">HashMap</code> instance. Changing it to an <code class="calibre12">EnumMap</code> will provide better performance and iteration order consistent with the natural order
+         of the keys, but you can only use an <code class="calibre12">EnumMap</code> if the key type is an enum type. <span epub:type="pagebreak" id="page_281"></span>Changing the <code class="calibre12">HashMap</code> to a <code class="calibre12">LinkedHashMap</code> will provide predictable iteration order with performance comparable to that of <code class="calibre12">HashMap</code>, without making any special demands on the key type.
+      </p>
+      
+      <p class="indent">You might think it’s OK to declare a variable using its implementation type, because
+         you can change the declaration type and the implementation type at the same time,
+         but there is no guarantee that this change will result in a program that compiles.
+         If the client code used methods on the original implementation type that are not also
+         present on its replacement or if the client code passed the instance to a method that
+         requires the original implementation type, then the code will no longer compile after
+         making this change. Declaring the variable with the interface type keeps you honest.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">It is entirely appropriate to refer to an object by a class rather than an interface
+            if no appropriate interface exists.</strong> For example, consider <em class="calibre9">value classes,</em> such as <code class="calibre12">String</code> and <code class="calibre12">BigInteger</code>. Value classes are rarely written with multiple implementations in mind. They are
+         often final and rarely have corresponding interfaces. It is perfectly appropriate
+         to use such a value class as a parameter, variable, field, or return type.
+      </p>
+      
+      <p class="indent">A second case in which there is no appropriate interface type is that of objects belonging
+         to a framework whose fundamental types are classes rather than interfaces. If an object
+         belongs to such a <em class="calibre9">class-based framework</em>, it is preferable to refer to it by the relevant <em class="calibre9">base class</em>, which is often abstract, rather than by its implementation class. Many <code class="calibre12">java.io</code> classes such as <code class="calibre12">OutputStream</code> fall into this category.
+      </p>
+      
+      <p class="indent">A final case in which there is no appropriate interface type is that of classes that
+         implement an interface but also provide extra methods not found in the interface—for
+         example, <code class="calibre12">PriorityQueue</code> has a <code class="calibre12">comparator</code> method that is not present on the <code class="calibre12">Queue</code> interface. Such a class should be used to refer to its instances <em class="calibre9">only</em> if the program relies on the extra methods, and this should be very rare.
+      </p>
+      
+      <p class="indent">These three cases are not meant to be exhaustive but merely to convey the flavor of
+         situations where it is appropriate to refer to an object by its class. In practice,
+         it should be apparent whether a given object has an appropriate interface. If it does,
+         your program will be more flexible and stylish if you use the interface to refer to
+         the object. <strong class="calibre11">If there is no appropriate interface, just use the least specific class in the class
+            hierarchy that provides the required functionality.</strong></p>
+      
+      <h3 class="h2"><a id="lev65" class="calibre4"></a><span epub:type="pagebreak" id="page_282" class="calibre15"></span><strong class="calibre10">Item 65: Prefer interfaces to reflection</strong></h3>
+      
+      <p class="noindent">The <em class="calibre9">core reflection facility</em>, <code class="calibre12">java.lang.reflect</code>, offers programmatic access to arbitrary classes. Given a <code class="calibre12">Class</code> object, you can obtain <code class="calibre12">Constructor</code>, <code class="calibre12">Method</code>, and <code class="calibre12">Field</code> instances representing the constructors, methods, and fields of the class represented
+         by the <code class="calibre12">Class</code> instance. These objects provide programmatic access to the class’s member names,
+         field types, method signatures, and so on.
+      </p>
+      
+      <p class="indentb">Moreover, <code class="calibre12">Constructor</code>, <code class="calibre12">Method</code>, and <code class="calibre12">Field</code> instances let you manipulate their underlying counterparts <em class="calibre9">reflectively</em>: you can construct instances, invoke methods, and access fields of the underlying
+         class by invoking methods on the <code class="calibre12">Constructor</code>, <code class="calibre12">Method</code>, and <code class="calibre12">Field</code> instances. For example, <code class="calibre12">Method.invoke</code> lets you invoke any method on any object of any class (subject to the usual security
+         constraints). Reflection allows one class to use another, even if the latter class
+         did not exist when the former was compiled. This power, however, comes at a price:
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">You lose all the benefits of compile-time type checking,</strong> including exception checking. If a program attempts to invoke a nonexistent or inaccessible
+         method reflectively, it will fail at runtime unless you’ve taken special precautions.
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">The code required to perform reflective access is clumsy and verbose.</strong> It is tedious to write and difficult to read.
+      </p>
+      
+      <p class="bullb">• <strong class="calibre11">Performance suffers.</strong> Reflective method invocation is much slower than normal method invocation. Exactly
+         how much slower is hard to say, as there are many factors at work. On my machine,
+         invoking a method with no input parameters and an <code class="calibre12">int</code> return was eleven times slower when done reflectively.
+      </p>
+      
+      <p class="indent">There are a few sophisticated applications that require reflection. Examples include
+         code analysis tools and dependency injection frameworks. Even such tools have been
+         moving away from reflection of late, as its disadvantages become clearer. If you have
+         any doubts as to whether your application requires reflection, it probably doesn’t.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">You can obtain many of the benefits of reflection while incurring few of its costs
+            by using it only in a very limited form.</strong> For many programs that must use a class that is unavailable at compile time, there
+         exists at compile time an appropriate interface or superclass by which to refer to
+         the class (<a href="ch9.xhtml#lev64" class="calibre8">Item 64</a>). If this is the case, you can <strong class="calibre11">create instances reflectively and access them normally via their interface or superclass.</strong></p>
+      
+      <p class="indent">For example, here is a program that creates a <code class="calibre12">Set&lt;String&gt;</code> instance whose class is specified by the first command line argument. The program
+         inserts the <span epub:type="pagebreak" id="page_283"></span>remaining command line arguments into the set and prints it. Regardless of the first
+         argument, the program prints the remaining arguments with duplicates eliminated. The
+         order in which these arguments are printed, however, depends on the class specified
+         in the first argument. If you specify <code class="calibre12">java.util.HashSet</code>, they’re printed in apparently random order; if you specify <code class="calibre12">java.util.TreeSet</code>, they’re printed in alphabetical order because the elements in a <code class="calibre12">TreeSet</code> are sorted:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex36a" id="pch9ex36" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre"><strong class="calibre11">// Reflective instantiation with interface access</strong><br class="calibre7"/>
+         public static void main(String[] args) {<br class="calibre7"/>
+             // Translate the class name into a Class object<br class="calibre7"/>
+             Class&lt;? extends Set&lt;String&gt;&gt; cl = null;<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 cl = (Class&lt;? extends Set&lt;String&gt;&gt;)  // Unchecked cast!<br class="calibre7"/>
+                         Class.forName(args[0]);<br class="calibre7"/>
+             } catch (ClassNotFoundException e) {<br class="calibre7"/>
+                 fatalError("Class not found.");<br class="calibre7"/>
+             }<br class="calibre7"/>
+             // Get the constructor<br class="calibre7"/>
+             Constructor&lt;? extends Set&lt;String&gt;&gt; cons = null;<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 cons = cl.getDeclaredConstructor();<br class="calibre7"/>
+             } catch (NoSuchMethodException e) {<br class="calibre7"/>
+                 fatalError("No parameterless constructor");<br class="calibre7"/>
+             }<br class="calibre7"/>
+             // Instantiate the set<br class="calibre7"/>
+             Set&lt;String&gt; s = null;<br class="calibre7"/>
+             try {<br class="calibre7"/>
+                 s = cons.newInstance();<br class="calibre7"/>
+             } catch (IllegalAccessException e) {<br class="calibre7"/>
+                 fatalError("Constructor not accessible");<br class="calibre7"/>
+             } catch (InstantiationException e) {<br class="calibre7"/>
+                 fatalError("Class not instantiable.");<br class="calibre7"/>
+             } catch (InvocationTargetException e) {<br class="calibre7"/>
+                 fatalError("Constructor threw " + e.getCause());<br class="calibre7"/>
+             } catch (ClassCastException e) {<br class="calibre7"/>
+                 fatalError("Class doesn't implement Set");<br class="calibre7"/>
+             }<br class="calibre7"/>
+             // Exercise the set<br class="calibre7"/>
+             s.addAll(Arrays.asList(args).subList(1, args.length));<br class="calibre7"/>
+             System.out.println(s);<br class="calibre7"/>
+         }<br class="calibre7"/>
+         private static void fatalError(String msg) {<br class="calibre7"/>
+             System.err.println(msg);<br class="calibre7"/>
+             System.exit(1);<br class="calibre7"/>
+         }
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_284"></span>While this program is just a toy, the technique it demonstrates is quite powerful.
+         The toy program could easily be turned into a generic set tester that validates the
+         specified <code class="calibre12">Set</code> implementation by aggressively manipulating one or more instances and checking that
+         they obey the <code class="calibre12">Set</code> contract. Similarly, it could be turned into a generic set performance analysis tool.
+         In fact, this technique is sufficiently powerful to implement a full-blown <em class="calibre9">service provider framework</em> (<a href="ch2.xhtml#lev1" class="calibre8">Item 1</a>). Usually, this technique is all that you need in the way of reflection.
+      </p>
+      
+      <p class="indent">This example demonstrates two disadvantages of reflection. First, the example can
+         generate six different exceptions at runtime, all of which would have been compile-time
+         errors if reflective instantiation were not used. (For fun, you can cause the program
+         to generate each of the six exceptions by passing in appropriate command line arguments.)
+         The second disadvantage is that it takes twenty-five lines of tedious code to generate
+         an instance of the class from its name, whereas a constructor invocation would fit
+         neatly on a single line. The length of the program could be reduced by catching <code class="calibre12">ReflectiveOperationException</code>, a superclass of the various reflective exceptions that was introduced in Java 7.
+         Both disadvantages are restricted to the part of the program that instantiates the
+         object. Once instantiated, the set is indistinguishable from any other <code class="calibre12">Set</code> instance. In a real program, the great bulk of the code is thus unaffected by this
+         limited use of reflection.
+      </p>
+      
+      <p class="indent">If you compile this program, you’ll get an unchecked cast warning. This warning is
+         legitimate, in that the cast to <code class="calibre12">Class&lt;? extends Set&lt;String&gt;&gt;</code> will succeed even if the named class is not a <code class="calibre12">Set</code> implementation, in which case the program with throw a <code class="calibre12">ClassCastException</code> when it instantiates the class. To learn about suppressing the warning, read <a href="ch5.xhtml#lev27" class="calibre8">Item 27</a>.
+      </p>
+      
+      <p class="indent">A legitimate, if rare, use of reflection is to manage a class’s dependencies on other
+         classes, methods, or fields that may be absent at runtime. This can be useful if you
+         are writing a package that must run against multiple versions of some other package.
+         The technique is to compile your package against the minimal environment required
+         to support it, typically the oldest version, and to access any newer classes or methods
+         reflectively. To make this work, you have to take appropriate action if a newer class
+         or method that you are attempting to access does not exist at runtime. Appropriate
+         action might consist of using some alternate means to accomplish the same goal or
+         operating with reduced functionality.
+      </p>
+      
+      <p class="indent">In summary, reflection is a powerful facility that is required for certain sophisticated
+         system programming tasks, but it has many disadvantages. If you are writing a program
+         that has to work with classes unknown at compile time, you should, if at all possible,
+         use reflection only to instantiate objects, and access the objects using some interface
+         or superclass that is known at compile time.
+      </p>
+      
+      <h3 class="h2"><a id="lev66" class="calibre4"></a><span epub:type="pagebreak" id="page_285" class="calibre15"></span><strong class="calibre10">Item 66: Use native methods judiciously</strong></h3>
+      
+      <p class="noindent">The Java Native Interface (JNI) allows Java programs to call <em class="calibre9">native methods</em>, which are methods written in <em class="calibre9">native programming languages</em> such as C or C++. Historically, native methods have had three main uses. They provide
+         access to platform-specific facilities such as registries. They provide access to
+         existing libraries of native code, including legacy libraries that provide access
+         to legacy data. Finally, native methods are used to write performance-critical parts
+         of applications in native languages for improved performance.
+      </p>
+      
+      <p class="indent">It is legitimate to use native methods to access platform-specific facilities, but
+         it is seldom necessary: as the Java platform matured, it provided access to many features
+         previously found only in host platforms. For example, the process API, added in Java
+         9, provides access to OS processes. It is also legitimate to use native methods to
+         use native libraries when no equivalent libraries are available in Java.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">It is rarely advisable to use native methods for improved performance.</strong> In early releases (prior to Java 3), it was often necessary, but JVMs have gotten
+         <em class="calibre9">much</em> faster since then. For most tasks, it is now possible to obtain comparable performance
+         in Java. For example, when <code class="calibre12">java.math</code> was added in release 1.1, <code class="calibre12">BigInteger</code> relied on a then-fast multiprecision arithmetic library written in C. In Java 3,
+         <code class="calibre12">BigInteger</code> was reimplemented in Java, and carefully tuned to the point where it ran faster than
+         the original native implementation.
+      </p>
+      
+      <p class="indent">A sad coda to this story is that <code class="calibre12">BigInteger</code> has changed little since then, with the exception of faster multiplication for large
+         numbers in Java 8. In that time, work continued apace on native libraries, notably
+         GNU Multiple Precision arithmetic library (GMP). Java programmers in need of truly
+         high-performance multiprecision arithmetic are now justified in using GMP via native
+         methods [<a href="ref.xhtml#rBlum14" class="calibre8">Blum14</a>].
+      </p>
+      
+      <p class="indent">The use of native methods has <em class="calibre9">serious</em> disadvantages. Because native languages are not <em class="calibre9">safe</em> (<a href="ch8.xhtml#lev50" class="calibre8">Item 50</a>), applications using native methods are no longer immune to memory corruption errors.
+         Because native languages are more platform-dependent than Java, programs using native
+         methods are less portable. They are also harder to debug. If you aren’t careful, native
+         methods can <em class="calibre9">decrease</em> performance because the garbage collector can’t automate, or even track, native memory
+         usage (<a href="ch2.xhtml#lev8" class="calibre8">Item 8</a>), and there is a cost associated with going into and out of native code. Finally,
+         native methods require “glue code” that is difficult to read and tedious to write.
+      </p>
+      
+      <p class="indent">In summary, think twice before using native methods. It is rare that you need to use
+         them for improved performance. If you must use native methods to access low-level
+         resources or native libraries, use as little native code as possible and test it thoroughly.
+         A single bug in the native code can corrupt your entire application.
+      </p>
+      
+      <h3 class="h2"><a id="lev67" class="calibre4"></a><span epub:type="pagebreak" id="page_286" class="calibre15"></span><strong class="calibre10">Item 67: Optimize judiciously</strong></h3>
+      
+      <p class="noindent">There are three aphorisms concerning optimization that everyone should know:</p>
+      
+      <p class="bq">More computing sins are committed in the name of efficiency (without necessarily achieving
+         it) than for any other single reason—including blind stupidity.
+      </p>
+      
+      <p class="bqr">—William A. Wulf [<a href="ref.xhtml#rWulf72" class="calibre8">Wulf72</a>]
+      </p>
+      
+      <p class="bq">We <em class="calibre9">should</em> forget about small efficiencies, say about 97% of the time: premature optimization
+         is the root of all evil.
+      </p>
+      
+      <p class="bqr">—Donald E. Knuth [<a href="ref.xhtml#rKnuth74" class="calibre8">Knuth74</a>]
+      </p>
+      
+      <p class="bq">We follow two rules in the matter of optimization:</p>
+      
+      <p class="bq1">Rule 1. Don’t do it.</p>
+      
+      <p class="bq1">Rule 2 (for experts only). Don’t do it yet—that is, not until you have a perfectly
+         clear and unoptimized solution.
+      </p>
+      
+      <p class="bqr">—M. A. Jackson [<a href="ref.xhtml#rJackson75" class="calibre8">Jackson75</a>]
+      </p>
+      
+      <p class="indentt">All of these aphorisms predate the Java programming language by two decades. They
+         tell a deep truth about optimization: it is easy to do more harm than good, especially
+         if you optimize prematurely. In the process, you may produce software that is neither
+         fast nor correct and cannot easily be fixed.
+      </p>
+      
+      <p class="indent">Don’t sacrifice sound architectural principles for performance. <strong class="calibre11">Strive to write good programs rather than fast ones.</strong> If a good program is not fast enough, its architecture will allow it to be optimized.
+         Good programs embody the principle of <em class="calibre9">information hiding</em>: where possible, they localize design decisions within individual components, so
+         individual decisions can be changed without affecting the remainder of the system
+         (<a href="ch4.xhtml#lev15" class="calibre8">Item 15</a>).
+      </p>
+      
+      <p class="indent">This does <em class="calibre9">not</em> mean that you can ignore performance concerns until your program is complete. Implementation
+         problems can be fixed by later optimization, but pervasive architectural flaws that
+         limit performance can be impossible to fix without rewriting the system. Changing
+         a fundamental facet of your design after the fact can result in an ill-structured
+         system that is difficult to maintain and evolve. Therefore you must think about performance
+         during the design process.
+      </p>
+      
+      <p class="indent"><strong class="calibre11">Strive to avoid design decisions that limit performance.</strong> The components of a design that are most difficult to change after the fact are those
+         specifying interactions between components and with the outside world. Chief among
+         these design components are APIs, wire-level protocols, and persistent data formats.
+         Not only are these design components difficult or impossible to change after the fact,
+         but all of them can place significant limitations on the performance that a system
+         can ever achieve.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_287"></span><strong class="calibre11">Consider the performance consequences of your API design decisions.</strong> Making a public type mutable may require a lot of needless defensive copying (<a href="ch8.xhtml#lev50" class="calibre8">Item 50</a>). Similarly, using inheritance in a public class where composition would have been
+         appropriate ties the class forever to its superclass, which can place artificial limits
+         on the performance of the subclass (<a href="ch4.xhtml#lev18" class="calibre8">Item 18</a>). As a final example, using an implementation type rather than an interface in an
+         API ties you to a specific implementation, even though faster implementations may
+         be written in the future (<a href="ch9.xhtml#lev64" class="calibre8">Item 64</a>).
+      </p>
+      
+      <p class="indent">The effects of API design on performance are very real. Consider the <code class="calibre12">getSize</code> method in the <code class="calibre12">java.awt.Component</code> class. The decision that this performance-critical method was to return a <code class="calibre12">Dimension</code> instance, coupled with the decision that <code class="calibre12">Dimension</code> instances are mutable, forces any implementation of this method to allocate a new
+         <code class="calibre12">Dimension</code> instance on every invocation. Even though allocating small objects is inexpensive
+         on a modern VM, allocating millions of objects needlessly can do real harm to performance.
+      </p>
+      
+      <p class="indent">Several API design alternatives existed. Ideally, <code class="calibre12">Dimension</code> should have been immutable (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>); alternatively, <code class="calibre12">getSize</code> could have been replaced by two methods returning the individual primitive components
+         of a <code class="calibre12">Dimension</code> object. In fact, two such methods were added to <code class="calibre12">Component</code> in Java 2 for performance reasons. Preexisting client code, however, still uses the
+         <code class="calibre12">getSize</code> method and still suffers the performance consequences of the original API design
+         decisions.
+      </p>
+      
+      <p class="indent">Luckily, it is generally the case that good API design is consistent with good performance.
+         <strong class="calibre11">It is a very bad idea to warp an API to achieve good performance.</strong> The performance issue that caused you to warp the API may go away in a future release
+         of the platform or other underlying software, but the warped API and the support headaches
+         that come with it will be with you forever.
+      </p>
+      
+      <p class="indent">Once you’ve carefully designed your program and produced a clear, concise, and well-structured
+         implementation, <em class="calibre9">then</em> it may be time to consider optimization, assuming you’re not already satisfied with
+         the performance of the program.
+      </p>
+      
+      <p class="indent">Recall that Jackson’s two rules of optimization were “Don’t do it,” and “(for experts
+         only). Don’t do it yet.” He could have added one more: <strong class="calibre11">measure performance before and after each attempted optimization.</strong> You may be surprised by what you find. Often, attempted optimizations have no measurable
+         effect on performance; sometimes, they make it worse. The main reason is that it’s
+         difficult to guess where your program is spending its time. The part of the program
+         that you think is slow may not be at fault, in which case you’d be wasting your time
+         trying to optimize it. Common wisdom says that programs spend 90 percent of their
+         time in 10 percent of their code.
+      </p>
+      
+      <p class="indent"><span epub:type="pagebreak" id="page_288"></span>Profiling tools can help you decide where to focus your optimization efforts. These
+         tools give you runtime information, such as roughly how much time each method is consuming
+         and how many times it is invoked. In addition to focusing your tuning efforts, this
+         can alert you to the need for algorithmic changes. If a quadratic (or worse) algorithm
+         lurks inside your program, no amount of tuning will fix the problem. You must replace
+         the algorithm with one that is more efficient. The more code in the system, the more
+         important it is to use a profiler. It’s like looking for a needle in a haystack: the
+         bigger the haystack, the more useful it is to have a metal detector. Another tool
+         that deserves special mention is jmh, which is not a profiler but a <em class="calibre9">microbenchmarking framework</em> that provides unparalleled visibility into the detailed performance of Java code
+         [<a href="ref.xhtml#rJMH" class="calibre8">JMH</a>].
+      </p>
+      
+      <p class="indent">The need to measure the effects of attempted optimization is even greater in Java
+         than in more traditional languages such as C and C++, because Java has a weaker <em class="calibre9">performance model</em>: The relative cost of the various primitive operations is less well defined. The
+         “abstraction gap” between what the programmer writes and what the CPU executes is
+         greater, which makes it even more difficult to reliably predict the performance consequences
+         of optimizations. There are plenty of performance myths floating around that turn
+         out to be half-truths or outright lies.
+      </p>
+      
+      <p class="indent">Not only is Java’s performance model ill-defined, but it varies from implementation
+         to implementation, from release to release, and from processor to processor. If you
+         will be running your program on multiple implementations or multiple hardware platforms,
+         it is important that you measure the effects of your optimization on each. Occasionally
+         you may be forced to make trade-offs between performance on different implementations
+         or hardware platforms.
+      </p>
+      
+      <p class="indent">In the nearly two decades since this item was first written, every component of the
+         Java software stack has grown in complexity, from processors to VMs to libraries,
+         and the variety of hardware on which Java runs has grown immensely. All of this has
+         combined to make the performance of Java programs even less predictable now than it
+         was in 2001, with a corresponding increase in the need to measure it.
+      </p>
+      
+      <p class="indent">To summarize, do not strive to write fast programs—strive to write good ones; speed
+         will follow. But do think about performance while you’re designing systems, especially
+         while you’re designing APIs, wire-level protocols, and persistent data formats. When
+         you’ve finished building the system, measure its performance. If it’s fast enough,
+         you’re done. If not, locate the source of the problem with the aid of a profiler and
+         go to work optimizing the relevant parts of the system. The first step is to examine
+         your choice of algorithms: no amount of low-level optimization can make up for a poor
+         choice of algorithm. Repeat this process as necessary, measuring the performance after
+         every change, until you’re satisfied.
+      </p>
+      
+      <h3 class="h2"><a id="lev68" class="calibre4"></a><span epub:type="pagebreak" id="page_289" class="calibre15"></span><strong class="calibre10">Item 68: Adhere to generally accepted naming conventions</strong></h3>
+      
+      <p class="noindent">The Java platform has a well-established set of <em class="calibre9">naming conventions</em>, many of which are contained in <em class="calibre9">The Java Language Specification</em> [JLS, 6.1]. Loosely speaking, naming conventions fall into two categories: typographical
+         and grammatical.
+      </p>
+      
+      <p class="indent">There are only a handful of typographical naming conventions, covering packages, classes,
+         interfaces, methods, fields, and type variables. You should rarely violate them and
+         never without a very good reason. If an API violates these conventions, it may be
+         difficult to use. If an implementation violates them, it may be difficult to maintain.
+         In both cases, violations have the potential to confuse and irritate other programmers
+         who work with the code and can cause faulty assumptions that lead to errors. The conventions
+         are summarized in this item.
+      </p>
+      
+      <p class="indent">Package and module names should be hierarchical with the components separated by periods.
+         Components should consist of lowercase alphabetic characters and, rarely, digits.
+         The name of any package that will be used outside your organization should begin with
+         your organization’s Internet domain name with the components reversed, for example,
+         <code class="calibre12">edu.cmu</code>, <code class="calibre12">com.google</code>, <code class="calibre12">org.eff</code>. The standard libraries and optional packages, whose names begin with <code class="calibre12">java</code> and <code class="calibre12">javax</code>, are exceptions to this rule. Users must not create packages or modules whose names
+         begin with <code class="calibre12">java</code> or <code class="calibre12">javax</code>. Detailed rules for converting Internet domain names to package name prefixes can
+         be found in the JLS [JLS, 6.1].
+      </p>
+      
+      <p class="indent">The remainder of a package name should consist of one or more components describing
+         the package. Components should be short, generally eight or fewer characters. Meaningful
+         abbreviations are encouraged, for example, <code class="calibre12">util</code> rather than <code class="calibre12">utilities</code>. Acronyms are acceptable, for example, <code class="calibre12">awt</code>. Components should generally consist of a single word or abbreviation.
+      </p>
+      
+      <p class="indent">Many packages have names with just one component in addition to the Internet domain
+         name. Additional components are appropriate for large facilities whose size demands
+         that they be broken up into an informal hierarchy. For example, the <code class="calibre12">javax.util</code> package has a rich hierarchy of packages with names such as <code class="calibre12">java.util.concurrent.atomic</code>. Such packages are known as <em class="calibre9">subpackages</em>, although there is almost no linguistic support for package hierarchies.
+      </p>
+      
+      <p class="indent">Class and interface names, including enum and annotation type names, should consist
+         of one or more words, with the first letter of each word capitalized, for example,
+         <code class="calibre12">List</code> or <code class="calibre12">FutureTask</code>. Abbreviations are to be avoided, except for acronyms and certain common abbreviations
+         like <code class="calibre12">max</code> and <code class="calibre12">min</code>. There is some disagreement as to whether acronyms should be uppercase or have only
+         their first letter capitalized. While some programmers still use uppercase, a strong
+         argument <span epub:type="pagebreak" id="page_290"></span>can be made in favor of capitalizing only the first letter: even if multiple acronyms
+         occur back-to-back, you can still tell where one word starts and the next word ends.
+         Which class name would you rather see, <code class="calibre12">HTTPURL</code> or <code class="calibre12">HttpUrl</code>?
+      </p>
+      
+      <p class="indent">Method and field names follow the same typographical conventions as class and interface
+         names, except that the first letter of a method or field name should be lowercase,
+         for example, <code class="calibre12">remove</code> or <code class="calibre12">ensureCapacity</code>. If an acronym occurs as the first word of a method or field name, it should be lowercase.
+      </p>
+      
+      <p class="indent">The sole exception to the previous rule concerns “constant fields,” whose names should
+         consist of one or more uppercase words separated by the underscore character, for
+         example, <code class="calibre12">VALUES</code> or <code class="calibre12">NEGATIVE_INFINITY</code>. A constant field is a static final field whose value is immutable. If a static final
+         field has a primitive type or an immutable reference type (<a href="ch4.xhtml#lev17" class="calibre8">Item 17</a>), then it is a constant field. For example, enum constants are constant fields. If
+         a static final field has a mutable reference type, it can still be a constant field
+         if the referenced object is immutable. Note that constant fields constitute the <em class="calibre9">only</em> recommended use of underscores.
+      </p>
+      
+      <p class="indent">Local variable names have similar typographical naming conventions to member names,
+         except that abbreviations are permitted, as are individual characters and short sequences
+         of characters whose meaning depends on the context in which they occur, for example,
+         <code class="calibre12">i</code>, <code class="calibre12">denom</code>, <code class="calibre12">houseNum</code>. Input parameters are a special kind of local variable. They should be named much
+         more carefully than ordinary local variables, as their names are an integral part
+         of their method’s documentation.
+      </p>
+      
+      <p class="indent">Type parameter names usually consist of a single letter. Most commonly it is one of
+         these five: <code class="calibre12">T</code> for an arbitrary type, <code class="calibre12">E</code> for the element type of a collection, <code class="calibre12">K</code> and <code class="calibre12">V</code> for the key and value types of a map, and <code class="calibre12">X</code> for an exception. The return type of a function is usually <code class="calibre12">R</code>. A sequence of arbitrary types can be <code class="calibre12">T</code>, <code class="calibre12">U</code>, <code class="calibre12">V</code> or <code class="calibre12">T1</code>, <code class="calibre12">T2</code>, <code class="calibre12">T3</code>.
+      </p>
+      
+      <p class="indentb">For quick reference, the following table shows examples of typographical conventions.</p>
+      
+      <table class="tablewidth">
+         
+         <tbody class="calibre16">
+            
+            <tr class="calibre17">
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Identifier Type</strong></p>
+               </td>
+               
+               <td class="table">
+                  <p class="noindent-t"><strong class="calibre11">Examples</strong></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Package or module</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">org.junit.jupiter.api</code>, <code class="calibre12">com.google.common.collect</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Class or Interface</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">Stream</code>, <code class="calibre12">FutureTask</code>, <code class="calibre12">LinkedHashMap</code>, <code class="calibre12">HttpClient</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Method or Field</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">remove</code>, <code class="calibre12">groupingBy</code>, <code class="calibre12">getCrc</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Constant Field</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">MIN_VALUE</code>, <code class="calibre12">NEGATIVE_INFINITY</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="calibre18">
+                  <p class="noindent1">Local Variable</p>
+               </td>
+               
+               <td class="calibre18">
+                  <p class="noindent1"><code class="calibre12">i</code>, <code class="calibre12">denom</code>, <code class="calibre12">houseNum</code></p>
+               </td>
+               
+            </tr>
+            
+            <tr class="calibre17">
+               
+               <td class="table1">
+                  <p class="noindent1">Type Parameter</p>
+               </td>
+               
+               <td class="table1">
+                  <p class="noindent1"><code class="calibre12">T</code>, <code class="calibre12">E</code>, <code class="calibre12">K</code>, <code class="calibre12">V</code>, <code class="calibre12">X</code>, <code class="calibre12">R</code>, <code class="calibre12">U</code>, <code class="calibre12">V, T1, T2</code></p>
+               </td>
+               
+            </tr>
+            
+         </tbody>
+         
+      </table>
+      
+      <p class="indentt"><span epub:type="pagebreak" id="page_291"></span>Grammatical naming conventions are more flexible and more controversial than typographical
+         conventions. There are no grammatical naming conventions to speak of for packages.
+         Instantiable classes, including enum types, are generally named with a singular noun
+         or noun phrase, such as <code class="calibre12">Thread</code>, <code class="calibre12">PriorityQueue</code>, or <code class="calibre12">ChessPiece</code>. Non-instantiable utility classes (<a href="ch2.xhtml#lev4" class="calibre8">Item 4</a>) are often named with a plural noun, such as <code class="calibre12">Collectors</code> or <code class="calibre12">Collections</code>. Interfaces are named like classes, for example, <code class="calibre12">Collection</code> or <code class="calibre12">Comparator</code>, or with an adjective ending in <code class="calibre12">able</code> or <code class="calibre12">ible</code>, for example, <code class="calibre12">Runnable</code>, <code class="calibre12">Iterable</code>, or <code class="calibre12">Accessible</code>. Because annotation types have so many uses, no part of speech predominates. Nouns,
+         verbs, prepositions, and adjectives are all common, for example, <code class="calibre12">BindingAnnotation</code>, <code class="calibre12">Inject</code>, <code class="calibre12">ImplementedBy</code>, or <code class="calibre12">Singleton</code>.
+      </p>
+      
+      <p class="indent">Methods that perform some action are generally named with a verb or verb phrase (including
+         object), for example, <code class="calibre12">append</code> or <code class="calibre12">drawImage</code>. Methods that return a <code class="calibre12">boolean</code> value usually have names that begin with the word <code class="calibre12">is</code> or, less commonly, <code class="calibre12">has</code>, followed by a noun, noun phrase, or any word or phrase that functions as an adjective,
+         for example, <code class="calibre12">isDigit</code>, <code class="calibre12">isProbablePrime</code>, <code class="calibre12">isEmpty</code>, <code class="calibre12">isEnabled</code>, or <code class="calibre12">hasSiblings</code>.
+      </p>
+      
+      <p class="indent">Methods that return a non-<code class="calibre12">boolean</code> function or attribute of the object on which they’re invoked are usually named with
+         a noun, a noun phrase, or a verb phrase beginning with the verb <code class="calibre12">get</code>, for example, <code class="calibre12">size</code>, <code class="calibre12">hashCode</code>, or <code class="calibre12">getTime</code>. There is a vocal contingent that claims that only the third form (beginning with
+         <code class="calibre12">get</code>) is acceptable, but there is little basis for this claim. The first two forms usually
+         lead to more readable code, for example:
+      </p>
+      <br class="calibre7"/>
+      
+      <p class="codelink"><a href="ch9_images.xhtml#pch9ex37a" id="pch9ex37" class="calibre8">Click here to view code image</a></p>
+      
+      <p class="pre">if (car.speed() &gt; 2 * SPEED_LIMIT)<br class="calibre7"/>
+             generateAudibleAlert("Watch out for cops!");
+      </p>
+      
+      <p class="noindent">The form beginning with <code class="calibre12">get</code> has its roots in the largely obsolete <em class="calibre9">Java Beans</em> specification, which formed the basis of an early reusable component architecture.
+         There are modern tools that continue to rely on the Beans naming convention, and you
+         should feel free to use it in any code that is to be used in conjunction with these
+         tools. There is also a strong precedent for following this naming convention if a
+         class contains both a setter and a getter for the same attribute. In this case, the
+         two methods are typically named <code class="calibre12">get<em class="calibre9">Attribute</em> and set</code><em class="calibre9">Attribute</em>.
+      </p>
+      
+      <p class="indent">A few method names deserve special mention. Instance methods that convert the type
+         of an object, returning an independent object of a different type, are often called
+         <code class="calibre12">to<em class="calibre9">Type</em>, for example, toString</code> or <code class="calibre12">toArray</code>. Methods that return a <em class="calibre9">view</em> (<a href="ch2.xhtml#lev6" class="calibre8">Item 6</a>) whose type differs from that of the receiving object are often called <span epub:type="pagebreak" id="page_292"></span><code class="calibre12">as<em class="calibre9">Type</em>, for example, asList</code>. Methods that return a primitive with the same value as the object on which they’re
+         invoked are often called <em class="calibre9">type</em><code class="calibre12">Value</code>, for example, <code class="calibre12">intValue</code>. Common names for static factories include <code class="calibre12">from</code>, <code class="calibre12">of</code>, <code class="calibre12">valueOf</code>, <code class="calibre12">instance</code>, <code class="calibre12">getInstance</code>, <code class="calibre12">newInstance</code>, <code class="calibre12">get<em class="calibre9">Type</em>, and new</code><em class="calibre9">Type</em> (<a href="ch2.xhtml#lev1" class="calibre8">Item 1</a>, page 9).
+      </p>
+      
+      <p class="indent">Grammatical conventions for field names are less well established and less important
+         than those for class, interface, and method names because well-designed APIs contain
+         few if any exposed fields. Fields of type <code class="calibre12">boolean</code> are often named like <code class="calibre12">boolean</code> accessor methods with the initial <code class="calibre12">is</code> omitted, for example, <code class="calibre12">initialized</code>, <code class="calibre12">composite</code>. Fields of other types are usually named with nouns or noun phrases, such as <code class="calibre12">height</code>, <code class="calibre12">digits</code>, or <code class="calibre12">bodyStyle</code>. Grammatical conventions for local variables are similar to those for fields but
+         even weaker.
+      </p>
+      
+      <p class="indent">To summarize, internalize the standard naming conventions and learn to use them as
+         second nature. The typographical conventions are straightforward and largely unambiguous;
+         the grammatical conventions are more complex and looser. To quote from <em class="calibre9">The Java Language Specification</em> [JLS, 6.1], “These conventions should not be followed slavishly if long-held conventional
+         usage dictates otherwise.” Use common sense.
+      </p>
+      
+   
+   
+
+
+  </div>
+
+  
+  <div class="calibreToc">
+    <h2><a href="../../../4bgup-l038f.html">Table of contents
+</a></h2>
+    <div>
+  <ul>
+    <li>
+      <a href="cover.xhtml">Cover Page</a>
+    </li>
+    <li>
+      <a href="pref00.xhtml">About This E-Book</a>
+    </li>
+    <li>
+      <a href="title.xhtml">Title Page</a>
+    </li>
+    <li>
+      <a href="copy.xhtml">Copyright Page</a>
+    </li>
+    <li>
+      <a href="ded.xhtml">Dedication</a>
+    </li>
+    <li>
+      <a href="contents.xhtml">Contents</a>
+    </li>
+    <li>
+      <a href="foreword.xhtml#foreword">Foreword</a>
+    </li>
+    <li>
+      <a href="preface.xhtml#preface">Preface</a>
+    </li>
+    <li>
+      <a href="acknowledgments.xhtml#acknowledgments">Acknowledgments</a>
+    </li>
+    <li>
+      <a href="ch1.xhtml#ch1">1 Introduction</a>
+    </li>
+    <li>
+      <a href="ch2.xhtml#ch2">2 Creating and Destroying Objects</a>
+      <ul>
+        <li>
+          <a href="ch2.xhtml#lev1">Item 1: Consider static factory methods instead of constructors</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev2">Item 2: Consider a builder when faced with many constructor parameters</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev3">Item 3: Enforce the singleton property with a private constructor or an enum type</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev4">Item 4: Enforce noninstantiability with a private constructor</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev5">Item 5: Prefer dependency injection to hardwiring resources</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev6">Item 6: Avoid creating unnecessary objects</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev7">Item 7: Eliminate obsolete object references</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev8">Item 8: Avoid finalizers and cleaners</a>
+        </li>
+        <li>
+          <a href="ch2.xhtml#lev9">Item 9: Prefer try-with-resources to try-finally</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch3.xhtml#ch3">3 Methods Common to All Objects</a>
+      <ul>
+        <li>
+          <a href="ch3.xhtml#lev10">Item 10: Obey the general contract when overriding equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev11">Item 11: Always override hashCode when you override equals</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev12">Item 12: Always override toString</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev13">Item 13: Override clone judiciously</a>
+        </li>
+        <li>
+          <a href="ch3.xhtml#lev14">Item 14: Consider implementing Comparable</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch4.xhtml#ch4">4 Classes and Interfaces</a>
+      <ul>
+        <li>
+          <a href="ch4.xhtml#lev15">Item 15: Minimize the accessibility of classes and members</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev16">Item 16: In public classes, use accessor methods, not public fields</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev17">Item 17: Minimize mutability</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev18">Item 18: Favor composition over inheritance</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev19">Item 19: Design and document for inheritance or else prohibit it</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev20">Item 20: Prefer interfaces to abstract classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev21">Item 21: Design interfaces for posterity</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev22">Item 22: Use interfaces only to define types</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev23">Item 23: Prefer class hierarchies to tagged classes</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev24">Item 24: Favor static member classes over nonstatic</a>
+        </li>
+        <li>
+          <a href="ch4.xhtml#lev25">Item 25: Limit source files to a single top-level class</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch5.xhtml#ch5">5 Generics</a>
+      <ul>
+        <li>
+          <a href="ch5.xhtml#lev26">Item 26: Don’t use raw types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev27">Item 27: Eliminate unchecked warnings</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev28">Item 28: Prefer lists to arrays</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev29">Item 29: Favor generic types</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev30">Item 30: Favor generic methods</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev31">Item 31: Use bounded wildcards to increase API flexibility</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev32">Item 32: Combine generics and varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch5.xhtml#lev33">Item 33: Consider typesafe heterogeneous containers</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch6.xhtml#ch6">6 Enums and Annotations</a>
+      <ul>
+        <li>
+          <a href="ch6.xhtml#lev34">Item 34: Use enums instead of int constants</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev35">Item 35: Use instance fields instead of ordinals</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev36">Item 36: Use EnumSet instead of bit fields</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev37">Item 37: Use EnumMap instead of ordinal indexing</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev38">Item 38: Emulate extensible enums with interfaces</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev39">Item 39: Prefer annotations to naming patterns</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev40">Item 40: Consistently use the Override annotation</a>
+        </li>
+        <li>
+          <a href="ch6.xhtml#lev41">Item 41: Use marker interfaces to define types</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch7.xhtml#ch7">7 Lambdas and Streams</a>
+      <ul>
+        <li>
+          <a href="ch7.xhtml#lev42">Item 42: Prefer lambdas to anonymous classes</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev43">Item 43: Prefer method references to lambdas</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev44">Item 44: Favor the use of standard functional interfaces</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev45">Item 45: Use streams judiciously</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev46">Item 46: Prefer side-effect-free functions in streams</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev47">Item 47: Prefer Collection to Stream as a return type</a>
+        </li>
+        <li>
+          <a href="ch7.xhtml#lev48">Item 48: Use caution when making streams parallel</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch8.xhtml#ch8">8 Methods</a>
+      <ul>
+        <li>
+          <a href="ch8.xhtml#lev49">Item 49: Check parameters for validity</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev50">Item 50: Make defensive copies when needed</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev51">Item 51: Design method signatures carefully</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev52">Item 52: Use overloading judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev53">Item 53: Use varargs judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev54">Item 54: Return empty collections or arrays, not nulls</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev55">Item 55: Return optionals judiciously</a>
+        </li>
+        <li>
+          <a href="ch8.xhtml#lev56">Item 56: Write doc comments for all exposed API elements</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch9.xhtml#ch9">9 General Programming</a>
+      <ul>
+        <li>
+          <a href="ch9.xhtml#lev57">Item 57: Minimize the scope of local variables</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev58">Item 58: Prefer for-each loops to traditional for loops</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev59">Item 59: Know and use the libraries</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev60">Item 60: Avoid float and double if exact answers are required</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev61">Item 61: Prefer primitive types to boxed primitives</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev62">Item 62: Avoid strings where other types are more appropriate</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev63">Item 63: Beware the performance of string concatenation</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev64">Item 64: Refer to objects by their interfaces</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev65">Item 65: Prefer interfaces to reflection</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev66">Item 66: Use native methods judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev67">Item 67: Optimize judiciously</a>
+        </li>
+        <li>
+          <a href="ch9.xhtml#lev68">Item 68: Adhere to generally accepted naming conventions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch10.xhtml#ch10">10 Exceptions</a>
+      <ul>
+        <li>
+          <a href="ch10.xhtml#lev69">Item 69: Use exceptions only for exceptional conditions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev70">Item 70: Use checked exceptions for recoverable conditions and runtime exceptions for programming errors</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev71">Item 71: Avoid unnecessary use of checked exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev72">Item 72: Favor the use of standard exceptions</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev73">Item 73: Throw exceptions appropriate to the abstraction</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev74">Item 74: Document all exceptions thrown by each method</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev75">Item 75: Include failure-capture information in detail messages</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev76">Item 76: Strive for failure atomicity</a>
+        </li>
+        <li>
+          <a href="ch10.xhtml#lev77">Item 77: Don’t ignore exceptions</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch11.xhtml#ch11">11 Concurrency</a>
+      <ul>
+        <li>
+          <a href="ch11.xhtml#lev78">Item 78: Synchronize access to shared mutable data</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev79">Item 79: Avoid excessive synchronization</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev80">Item 80: Prefer executors, tasks, and streams to threads</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev81">Item 81: Prefer concurrency utilities to wait and notify</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev82">Item 82: Document thread safety</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev83">Item 83: Use lazy initialization judiciously</a>
+        </li>
+        <li>
+          <a href="ch11.xhtml#lev84">Item 84: Don’t depend on the thread scheduler</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="ch12.xhtml#ch12">12 Serialization</a>
+      <ul>
+        <li>
+          <a href="ch12.xhtml#lev85">Item 85: Prefer alternatives to Java serialization</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev86">Item 86: Implement Serializable with great caution</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev87">Item 87: Consider using a custom serialized form</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev88">Item 88: Write readObject methods defensively</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev89">Item 89: For instance control, prefer enum types to readResolve</a>
+        </li>
+        <li>
+          <a href="ch12.xhtml#lev90">Item 90: Consider serialization proxies instead of serialized instances</a>
+        </li>
+      </ul>
+    </li>
+    <li>
+      <a href="app.xhtml#app">Items Corresponding to Second Edition</a>
+    </li>
+    <li>
+      <a href="ref.xhtml#ref">References</a>
+    </li>
+    <li>
+      <a href="index.xhtml#index">Index</a>
+    </li>
+    <li>
+      <a href="ch2_images.xhtml#ch2_images">Code Snippets</a>
+    </li>
+  </ul>
+</div>
+
+
+  </div>
+  
+
+  <div class="calibreEbNav">
+    
+      <a href="ch8.xhtml" class="calibreAPrev">previous page
+</a>
+    
+
+    <a href="../../../4bgup-l038f.html" class="calibreAHome">start
+</a>
+
+    
+      <a href="ch10.xhtml" class="calibreANext">next page
+</a>
+    
+  </div>
+
+</div>
+
+</body>
+</html>
